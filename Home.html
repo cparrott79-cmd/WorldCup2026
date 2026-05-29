@@ -145,9 +145,9 @@
   table.matrix thead tr.games th .gh-meta{color:var(--muted);font-weight:400;font-size:.66rem;margin-top:2px}
   table.matrix tr.dayband th{top:0}
   table.matrix thead tr.games th{top:31px}
+  /* Player column: shrink-wrap to the longest name; that width applies to every row */
   table.matrix th.namecol,table.matrix td.namecol{position:sticky;left:0;z-index:3;background:var(--card);
-    width:60px;min-width:60px;max-width:60px;padding:7px 6px;text-align:left;font-weight:700;box-shadow:1px 0 0 #2a3a52;
-    overflow:hidden;text-overflow:ellipsis}
+    width:1px;white-space:nowrap;padding:7px 8px 7px 6px;text-align:left;font-weight:700;box-shadow:1px 0 0 #2a3a52}
   table.matrix thead tr.games th.namecol{z-index:6;background:#15263b}
   table.matrix td.cell{text-align:center;padding:6px 6px;font-variant-numeric:tabular-nums;width:140px;min-width:140px;max-width:140px}
   table.matrix td.cell .sc{font-size:.95rem;font-weight:700}
@@ -433,7 +433,6 @@ function renderThirdPanel(){
     <div class="third-grid">${rows}</div></div>`;
 }
 
-// result label for the RESULTS card (and for the entry sheet matrix labels elsewhere)
 function resultLabelHtml(num){
   const f=FIXTURES.find(x=>x[0]===num);
   const homeName=resolveTeam(f[3])||f[3];
@@ -448,7 +447,6 @@ function resultLabelHtml(num){
   }
   return{lab,cls};
 }
-// entry-sheet label (used by renderEntry only)
 function entryLabel(num){
   const f=FIXTURES.find(x=>x[0]===num);
   const rec=data.entry.preds[num];
@@ -472,8 +470,7 @@ function render(){
   renderResults();
 }
 
-// ---------- RESULTS (stacked card + stepper, ported from predictions page) ----------
-// update the result label cell for a results card
+// ---------- RESULTS (stacked card + stepper) ----------
 function updateResultsLabel(num){
   num=+num;
   const cell=content.querySelector('.result-cell[data-result="'+num+'"]');
@@ -711,26 +708,63 @@ function renderEntry(){
         <option value="H"${val==="H"?" selected":""}>${homeName}</option>
         <option value="A"${val==="A"?" selected":""}>${awayName}</option></select>`;}
     const dblPill=isFinal?` · <span class="dblpill">points ×2</span>`:"";
-    html+=`<div class="match${isFinal?" finalmatch":""}">
-      <div class="team home" style="text-align:right">${homeLabel}<span class="meta" style="display:block;border:0;margin:2px 0 0;padding:0;text-align:right">${groupTxt}${date} · ${ko}${knockout?" · KO":""}${dblPill}</span></div>
-      <div style="display:flex;align-items:center;gap:6px;justify-content:center;flex-direction:column">
-        <div style="display:flex;align-items:center;gap:6px">
-          <input type="number" min="0" max="99" data-num="${num}" data-side="h" value="${rec.h}" style="width:44px;text-align:center;font-size:1.05rem;padding:6px;background:#0d1b2a;border:1px solid #415a77;color:var(--text);border-radius:6px">
-          <span>–</span>
-          <input type="number" min="0" max="99" data-num="${num}" data-side="a" value="${rec.a}" style="width:44px;text-align:center;font-size:1.05rem;padding:6px;background:#0d1b2a;border:1px solid #415a77;color:var(--text);border-radius:6px">
-        </div>${pickHtml}
+    const hDisp=rec.h===""?"–":rec.h, aDisp=rec.a===""?"–":rec.a;
+    html+=`<div class="match${isFinal?" finalmatch":""}" data-matchnum="${num}" data-entry="1">
+      <div class="match-top">
+        <div class="side">
+          <div class="team home">${homeLabel}</div>
+          <div class="stepper">
+            <button type="button" class="stepbtn minus" data-estep="-1" data-num="${num}" data-side="h" aria-label="Decrease home score">−</button>
+            <span class="scoreval${rec.h===""?" empty":""}" data-num="${num}" data-side="h">${hDisp}</span>
+            <button type="button" class="stepbtn plus" data-estep="1" data-num="${num}" data-side="h" aria-label="Increase home score">+</button>
+          </div>
+        </div>
+        <div class="side">
+          <div class="team away">${awayLabel}</div>
+          <div class="stepper">
+            <button type="button" class="stepbtn minus" data-estep="-1" data-num="${num}" data-side="a" aria-label="Decrease away score">−</button>
+            <span class="scoreval${rec.a===""?" empty":""}" data-num="${num}" data-side="a">${aDisp}</span>
+            <button type="button" class="stepbtn plus" data-estep="1" data-num="${num}" data-side="a" aria-label="Increase away score">+</button>
+          </div>
+        </div>
       </div>
-      <div class="team away" style="text-align:left">${awayLabel}</div>
-      <div class="${cls}" style="min-width:120px">${lab}</div>`;
-    // NOTE: entry sheet kept as simple inline layout (unchanged behaviour)
-    html=html.replace(/<div class="match(.*?)">\s*<div class="team home"/, m=>m); // no-op guard
-    html+=`</div>`;
+      ${pickHtml?`<div class="prog-row">${pickHtml}</div>`:""}
+      <div class="meta"><span class="num">#${num}</span> · ${groupTxt}${date} · ${ko}${knockout?" · KO":""}${dblPill}</div>
+      <div class="result-cell" data-result="${num}"><span class="${cls}">${lab}</span></div>
+    </div>`;
   });
   if(openRound)html+=closeRoundFooter(openRound);
   contextLabel.textContent+=` · ${done}/${total} entered`;
   content.innerHTML=html;
   const nm=document.getElementById("entryName");
   if(nm)nm.addEventListener("input",e=>{data.entry.name=e.target.value;save();});
+}
+// entry steppers
+function updateEntryLabel(num){
+  num=+num;
+  const cell=content.querySelector('.result-cell[data-result="'+num+'"]');
+  if(!cell)return;
+  const{lab,cls}=entryLabel(num);
+  cell.innerHTML='<span class="'+cls+'">'+lab+'</span>';
+}
+function updateEntryScoreDisplay(num,side){
+  num=+num;
+  const row=content.querySelector('.match[data-matchnum="'+num+'"]');if(!row)return;
+  const valEl=row.querySelector('.scoreval[data-num="'+num+'"][data-side="'+side+'"]');if(!valEl)return;
+  const rec=data.entry.preds[num]||{h:"",a:"",prog:""};
+  const v=rec[side];
+  valEl.textContent=v===""?"–":v;
+  valEl.classList.toggle("empty",v==="");
+}
+function adjustEntryScore(num,side,delta){
+  num=+num;
+  const s=data.entry.preds[num]=data.entry.preds[num]||{h:"",a:"",prog:""};
+  let cur=s[side]===""?0:(+s[side]||0);
+  cur+=delta;if(cur<0)cur=0;if(cur>99)cur=99;
+  s[side]=String(cur);
+  save();
+  updateEntryScoreDisplay(num,side);
+  updateEntryLabel(num);
 }
 
 function renderGroups(){
@@ -918,25 +952,20 @@ function renderLeaderboard(){
 
 // ---- event handlers ----
 content.addEventListener("click",e=>{
-  // Results tab stepper pills
   const btn=e.target.closest(".stepbtn");
-  if(btn&&view.mode==="results"){
-    adjustResultScore(btn.dataset.num,btn.dataset.side,+btn.dataset.step);
-    return;
+  if(btn){
+    if(view.mode==="results"&&btn.dataset.step!==undefined){
+      adjustResultScore(btn.dataset.num,btn.dataset.side,+btn.dataset.step);return;
+    }
+    if(view.mode==="entry"&&btn.dataset.estep!==undefined){
+      adjustEntryScore(btn.dataset.num,btn.dataset.side,+btn.dataset.estep);return;
+    }
   }
-  // Enter-predictions export buttons
   const exp=e.target.dataset.export;
   if(exp){const round=ROUNDS.find(r=>r.key===exp);exportRound(round);}
 });
 content.addEventListener("input",e=>{
-  const num=e.target.dataset.num;if(!num)return;
-  if(!e.target.dataset.side)return;
-  if(view.mode==="entry"){
-    const store=data.entry.preds[num]=data.entry.preds[num]||{h:"",a:"",prog:""};
-    store[e.target.dataset.side]=e.target.value;save();
-    // refresh entry label cell if present
-    const lblCell=e.target.closest(".match")?.querySelector('.result, .result.home, .result.away, .result.draw');
-  }
+  if(e.target.id==="entryName"){data.entry.name=e.target.value;save();}
 });
 content.addEventListener("change",e=>{
   if(e.target.dataset.hide!==undefined){
@@ -952,7 +981,7 @@ content.addEventListener("change",e=>{
       store[e.target.dataset.field]=e.target.value;save();updateResultsLabel(+num);
     }else if(view.mode==="entry"){
       const store=data.entry.preds[num]=data.entry.preds[num]||{h:"",a:"",prog:""};
-      store[e.target.dataset.field]=e.target.value;save();render();
+      store[e.target.dataset.field]=e.target.value;save();updateEntryLabel(+num);
     }
   }
 });
