@@ -17,7 +17,7 @@
   button:hover{background:var(--accent);color:#001219;border-color:var(--accent)}
   .entry-name{max-width:560px;margin:0 auto 14px;background:var(--card);border:1px solid #415a77;border-radius:12px;padding:12px 16px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
   .entry-name label{font-size:.85rem;color:var(--muted)}
-  .entry-name input{flex:1;min-width:160px}
+  .entry-name select{flex:1;min-width:160px}
   .stage-row{margin:16px 0 10px}
   .stage-title{background:var(--accent);color:#001219;padding:6px 12px;border-radius:8px;font-weight:700;font-size:.92rem;margin:0;display:inline-block}
   .stage-title .dbl{background:#001219;color:var(--gold);padding:1px 7px;border-radius:6px;font-size:.74rem;margin-left:8px}
@@ -53,12 +53,12 @@
 <body>
 <header>
   <h1>⚽ World Cup 2026 — Your Predictions</h1>
-  <div class="sub">Fill in your scores, then tap <b>Copy</b> and paste into WhatsApp to send them in.</div>
+  <div class="sub">Pick your name, fill in your scores, then tap <b>Copy</b> and paste into WhatsApp to send them in.</div>
 </header>
 
 <div class="entry-name">
   <label for="entryName">Your name:</label>
-  <input type="text" id="entryName" maxlength="24" placeholder="Type your name (so I know whose these are)">
+  <select id="entryName"></select>
 </div>
 
 <div class="controls">
@@ -73,6 +73,8 @@
 <div class="toast" id="toast"></div>
 
 <script>
+// IMPORTANT: keep this list identical to the players in the Home (admin) page
+const PLAYERS=["Chris","Alfie","Owen","Josh","Naomi","Mama","Grandad","Marie","Smithy"];
 const FINAL_MATCH=104;
 const FIXTURES=[
 [1,"Thu 11 Jun 2026","20:00","Mexico","South Africa","First Stage","A"],
@@ -209,7 +211,17 @@ const toast=document.getElementById("toast");
 let missing=null;
 
 FILTERS.forEach(f=>{const o=document.createElement("option");o.value=f.val;o.textContent=f.label;stageFilter.appendChild(o);});
-entryName.value=data.name;
+
+// populate the name dropdown from saved players
+(function buildNameDropdown(){
+  const placeholder=document.createElement("option");
+  placeholder.value="";placeholder.textContent="— select your name —";
+  entryName.appendChild(placeholder);
+  PLAYERS.forEach(p=>{const o=document.createElement("option");o.value=p;o.textContent=p;entryName.appendChild(o);});
+  // restore previous selection if it's still a valid player
+  if(data.name&&PLAYERS.includes(data.name))entryName.value=data.name;
+  else{data.name="";save();}
+})();
 
 function isCode(s){return /^([12][A-L]|3[A-L]+|W\d+|RU\d+)$/.test(s);}
 function label(num){
@@ -241,14 +253,12 @@ function missingForRound(round){
   return items;
 }
 
-// Build the WhatsApp text. roundKey null = all rounds.
 function buildText(roundKey){
   const name=(data.name||"").trim()||"(no name)";
   let lines=["WC2026 Predictions — "+name];
   ROUNDS.forEach(round=>{
     if(roundKey&&round.key!==roundKey)return;
     const ms=FIXTURES.filter(f=>round.test(f[0]));
-    // only include the round if at least one game has a score
     const any=ms.some(f=>{const r=data.preds[f[0]];return r&&r.h!==""&&r.a!=="";});
     if(!any)return;
     lines.push("["+round.tag+"]");
@@ -340,15 +350,15 @@ content.addEventListener("change",e=>{
 content.addEventListener("click",e=>{
   const ck=e.target.dataset.copy;if(!ck)return;
   const round=ROUNDS.find(r=>r.key===ck);
-  if(!(data.name||"").trim()){alert("Please type your name at the top first.");entryName.focus();return;}
+  if(!(data.name||"").trim()){alert("Please choose your name at the top first.");entryName.focus();return;}
   const m=missingForRound(round);missing=m.length?{round:ck,items:m}:null;
   copyText(buildText(ck));render();
 });
-entryName.addEventListener("input",e=>{data.name=e.target.value;save();});
+entryName.addEventListener("change",e=>{data.name=e.target.value;save();});
 stageFilter.addEventListener("change",()=>{missing=null;render();});
 search.addEventListener("input",render);
 document.getElementById("copyAllBtn").onclick=()=>{
-  if(!(data.name||"").trim()){alert("Please type your name at the top first.");entryName.focus();return;}
+  if(!(data.name||"").trim()){alert("Please choose your name at the top first.");entryName.focus();return;}
   copyText(buildText(null));
 };
 render();
