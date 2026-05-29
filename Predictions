@@ -11,39 +11,40 @@
   header{text-align:center;margin-bottom:14px}
   h1{margin:0 0 4px;font-size:1.5rem}
   .sub{color:var(--muted);font-size:.85rem}
-  .tabs{display:flex;gap:6px;justify-content:center;margin:14px 0;flex-wrap:wrap}
+  .tabrow{display:flex;gap:6px;justify-content:center;flex-wrap:wrap}
+  .tabrow.admin{margin:14px 0 8px}
   .tab{background:var(--card);border:1px solid #415a77;color:var(--text);padding:8px 16px;border-radius:8px;cursor:pointer;font-size:.9rem;display:inline-flex;align-items:center;gap:6px}
   .tab.active{background:var(--accent);color:#001219;border-color:var(--accent);font-weight:700}
-  .tab.sep{margin-left:14px;border-left:2px solid #415a77}
-  .tab.addbtn{background:transparent;border:1px dashed #415a77;color:var(--accent)}
-  .tab.addbtn:hover{background:var(--accent);color:#001219}
-  .tab .rm{color:var(--danger);font-weight:700;font-size:.95rem;line-height:1;opacity:.7}
-  .tab .rm:hover{opacity:1}
+  .tab.enter{background:transparent;border:1px dashed var(--gold);color:var(--gold)}
+  .tab.enter.active,.tab.enter:hover{background:var(--gold);color:#001219;border-color:var(--gold)}
   .controls{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;align-items:center;margin:12px 0}
-  select,input[type=text],button{background:var(--card);color:var(--text);border:1px solid #415a77;border-radius:8px;padding:8px 12px;font-size:.9rem}
+  select,input[type=text],input[type=password],button{background:var(--card);color:var(--text);border:1px solid #415a77;border-radius:8px;padding:8px 12px;font-size:.9rem}
   button{cursor:pointer;transition:.2s}
   button:hover{background:var(--accent);color:#001219;border-color:var(--accent)}
   button.danger{border-color:var(--danger);color:var(--danger)}
   button.danger:hover{background:var(--danger);color:#001219;border-color:var(--danger)}
-  .addbox{display:flex;gap:8px;justify-content:center;align-items:center;margin:0 0 14px}
-  .addbox input{min-width:220px}
-  .addbox .go{background:var(--accent);color:#001219;border-color:var(--accent);font-weight:700}
+  .gate{max-width:420px;margin:40px auto;background:var(--card);border:1px solid #415a77;border-radius:14px;padding:24px;text-align:center}
+  .gate h3{margin:0 0 6px;color:var(--accent)}
+  .gate p{color:var(--muted);font-size:.85rem;margin:0 0 16px}
+  .gate input{width:160px;text-align:center;font-size:1.2rem;letter-spacing:3px;margin-bottom:12px}
+  .gate .err{color:var(--danger);font-size:.82rem;min-height:18px;margin-top:8px}
+  .entry-name{max-width:560px;margin:0 auto 14px;background:var(--card);border:1px solid #415a77;border-radius:12px;padding:12px 16px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+  .entry-name label{font-size:.85rem;color:var(--muted)}
+  .entry-name input{flex:1;min-width:160px}
   .stage-row{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:16px 0 10px;flex-wrap:wrap}
   .stage-title{background:var(--accent);color:#001219;padding:6px 12px;border-radius:8px;font-weight:700;font-size:.92rem;margin:0}
-  .stage-title.locked{background:var(--lock);color:#001219}
-  .round-actions{display:flex;align-items:center;gap:8px}
-  .lockbadge{display:inline-flex;align-items:center;gap:5px;font-size:.8rem;color:var(--lock);font-weight:700}
-  .submitbtn{background:var(--win);color:#001219;border-color:var(--win);font-weight:700}
-  .submitbtn:hover{background:#34c2b0;border-color:#34c2b0;color:#001219}
-  .unlockbtn{border-color:var(--gold);color:var(--gold)}
-  .unlockbtn:hover{background:var(--gold);color:#001219;border-color:var(--gold)}
+  .stage-title .dbl{background:#001219;color:var(--gold);padding:1px 7px;border-radius:6px;font-size:.74rem;margin-left:8px}
+  .submit-row{display:flex;align-items:center;justify-content:flex-end;gap:8px;margin:8px 0 18px}
+  .exportbtn{background:var(--gold);color:#001219;border-color:var(--gold);font-weight:700}
+  .exportbtn:hover{background:#ffdf85;border-color:#ffdf85;color:#001219}
   .match{display:grid;grid-template-columns:32px 1fr auto 1fr 130px;align-items:center;gap:8px;background:var(--card);padding:9px 12px;border-radius:10px;margin-bottom:7px}
-  .match.locked{opacity:.55}
+  .match.finalmatch{border:1px solid var(--gold)}
   .num{color:var(--muted);font-size:.78rem;text-align:center}
   .team{font-weight:600}
   .home{text-align:right}.away{text-align:left}
   .code{color:var(--muted);font-weight:400;font-size:.78rem}
   .meta{font-size:.7rem;color:var(--muted);display:block;font-weight:400}
+  .meta .dblpill{color:var(--gold);font-weight:700}
   .score{display:flex;align-items:center;gap:6px;justify-content:center;flex-direction:column}
   .scoreline{display:flex;align-items:center;gap:6px}
   .score input{width:44px;text-align:center;font-size:1.05rem;padding:6px;background:#0d1b2a;border:1px solid #415a77;color:var(--text);border-radius:6px}
@@ -102,21 +103,41 @@
   .legend{max-width:1100px;margin:14px auto 0;color:var(--muted);font-size:.78rem;text-align:center}
   .legend span{display:inline-block;margin:0 8px}
   .swatch{display:inline-block;width:10px;height:10px;border-radius:2px;vertical-align:middle;margin-right:4px}
-  @media(max-width:640px){.match{grid-template-columns:28px 1fr auto 1fr}.result{grid-column:1/-1}.third-row label{min-width:80px}}
+  .round-block{max-width:100%;margin:0 auto 16px}
+  .round-head{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin:18px 0 8px}
+  .round-head .rh-title{background:var(--accent);color:#001219;padding:6px 12px;border-radius:8px;font-weight:700;font-size:.92rem}
+  .round-head .rh-title.open{background:var(--win)}
+  .round-head .rh-actions{display:flex;gap:8px;align-items:center}
+  .lockstate{font-size:.78rem;color:var(--muted)}
+  .lockstate b{color:var(--text)}
+  .err-inline{background:#3d1f1b;border:1px solid var(--danger);color:#ffb4a2;padding:8px 12px;border-radius:8px;font-size:.8rem;margin:0 0 10px}
+  .err-inline b{color:#fff}
+  .matrixwrap{overflow-x:auto;max-width:100%;border:1px solid #2a3a52;border-radius:10px}
+  table.matrix{border-collapse:separate;border-spacing:0;font-size:.8rem;width:max-content;min-width:100%}
+  table.matrix th,table.matrix td{padding:7px 9px;text-align:center;border-bottom:1px solid #2a3a52;white-space:nowrap}
+  table.matrix thead th{position:sticky;top:0;background:#15263b;color:var(--accent);z-index:3;font-size:.76rem}
+  table.matrix .gamecol{position:sticky;left:0;background:var(--card);text-align:left;z-index:2;min-width:172px;max-width:172px;box-shadow:1px 0 0 #2a3a52}
+  table.matrix thead th.gamecol{z-index:4;background:#15263b}
+  table.matrix .gamecol .g-teams{font-weight:600;font-size:.8rem;white-space:normal}
+  table.matrix .gamecol .g-meta{color:var(--muted);font-size:.68rem}
+  table.matrix td.cell{font-variant-numeric:tabular-nums}
+  table.matrix td.cell.empty{color:#43526a}
+  table.matrix td.cell .thru{color:var(--accent);font-size:.66rem;display:block}
+  table.matrix tr:nth-child(even) td:not(.gamecol){background:rgba(255,255,255,.015)}
+  @media(max-width:640px){
+    .match{grid-template-columns:28px 1fr auto 1fr}.result{grid-column:1/-1}.third-row label{min-width:80px}
+    table.matrix .gamecol{min-width:120px;max-width:120px}
+    table.matrix th,table.matrix td{padding:6px 7px}
+  }
 </style>
 </head>
 <body>
 <header>
   <h1>⚽ World Cup 2026 — Prediction Game</h1>
-  <div class="sub">Admin entry · saved in this browser · remember to Export to back up</div>
+  <div class="sub">saved in this browser · remember to Export to back up</div>
 </header>
 
-<div class="tabs" id="mainTabs"></div>
-<div class="addbox" id="addBox" style="display:none">
-  <input type="text" id="newPlayerName" placeholder="New player's name…" maxlength="24">
-  <button class="go" id="addConfirm">Add player</button>
-  <button id="addCancel">Cancel</button>
-</div>
+<div class="tabrow admin" id="adminTabs"></div>
 
 <div class="controls">
   <span id="contextLabel" style="color:var(--muted)"></span>
@@ -125,13 +146,15 @@
   <button id="exportBtn">⬇ Export backup</button>
   <button id="importBtn">⬆ Import backup</button>
   <input type="file" id="importFile" accept=".json" style="display:none">
-  <button class="danger" id="clearResultsBtn">🗑 Clear all results</button>
+  <button class="danger" id="clearResultsBtn" style="display:none">🗑 Clear all results</button>
 </div>
 
 <div id="content"></div>
 
 <script>
 const ADMIN_PASSWORD="4dm1n";
+const FINAL_MATCH=104;
+const ENTRY_KEY="__entry"; // single prediction-entry sheet
 const DEFAULT_PLAYERS=["Chris","Alfie","Owen","Josh","Naomi","Mama","Grandad","Marie","Smithy"];
 const FIXTURES=[
 [1,"Thu 11 Jun 2026","20:00","Mexico","South Africa","First Stage","A"],
@@ -242,8 +265,6 @@ const FIXTURES=[
 const FIRST_KO=73;
 const isKO=n=>n>=FIRST_KO;
 const THIRD_SLOTS=["3ABCDF","3CDFGH","3CEFHI","3EHIJK","3AEHIJ","3BEFIJ","3EFGIJ","3DEIJL"];
-
-// rounds used for locking + the stage filter + leaderboard buckets
 const ROUNDS=[
   {key:"fs1",label:"First Stage (1–24)",test:n=>n>=1&&n<=24},
   {key:"fs2",label:"First Stage (25–48)",test:n=>n>=25&&n<=48},
@@ -256,7 +277,6 @@ const ROUNDS=[
   {key:"fin",label:"Final",test:n=>n===104}
 ];
 const roundOf=n=>ROUNDS.find(r=>r.test(n));
-
 const FILTERS=[{val:"",label:"All stages",test:()=>true}].concat(ROUNDS.map(r=>({val:r.key,label:r.label,test:r.test})));
 const BUCKETS=[
   {key:"g1",label:"G1–24",test:n=>n>=1&&n<=24},
@@ -267,7 +287,7 @@ const BUCKETS=[
   {key:"qf",label:"QF",test:n=>n>=97&&n<=100},
   {key:"sf",label:"SF",test:n=>n>=101&&n<=102},
   {key:"tp",label:"3rd Pl",test:n=>n===103},
-  {key:"fin",label:"Final",test:n=>n===104}
+  {key:"fin",label:"Final ×2",test:n=>n===104}
 ];
 const SERIES_COLORS=["#00b4d8","#ffd166","#2a9d8f","#e76f51","#e9c46a","#9b5de5","#f15bb5","#00bbf9","#80ed99","#ff8fab","#c77dff","#fee440"];
 
@@ -277,98 +297,46 @@ data.players=data.players||DEFAULT_PLAYERS.slice();
 data.preds=data.preds||{};
 data.results=data.results||{};
 data.thirds=data.thirds||{};
-data.locks=data.locks||{}; // locks[player][roundKey]=true
+data.locks=data.locks||{};
+data.pins=data.pins||{};
+data.entry=data.entry||{name:"",preds:{}}; // the single entry sheet
 data.players.forEach(p=>{data.preds[p]=data.preds[p]||{};data.locks[p]=data.locks[p]||{};});
 function save(){localStorage.setItem(STORE,JSON.stringify(data));}
 
 let view={mode:"results"};
-let missingNote=null; // {round, items[]} shown transiently on a player tab
+let matrixRevealed={};
+let matrixErr={};
 
-const mainTabs=document.getElementById("mainTabs");
+const adminTabs=document.getElementById("adminTabs");
 const content=document.getElementById("content");
 const stageFilter=document.getElementById("stageFilter");
 const search=document.getElementById("search");
 const contextLabel=document.getElementById("contextLabel");
-const addBox=document.getElementById("addBox");
-const newPlayerName=document.getElementById("newPlayerName");
+const clearBtn=document.getElementById("clearResultsBtn");
 
 FILTERS.forEach(f=>{const o=document.createElement("option");o.value=f.val;o.textContent=f.label;stageFilter.appendChild(o);});
 
 function buildTabs(){
-  mainTabs.innerHTML="";
-  const mk=(mode,label,sep)=>{
+  adminTabs.innerHTML="";
+  const mk=(mode,label,cls)=>{
     const t=document.createElement("div");
-    t.className="tab"+(view.mode===mode?" active":"")+(sep?" sep":"");
-    t.textContent=label;t.onclick=()=>{view={mode};missingNote=null;render();};mainTabs.appendChild(t);
+    t.className="tab"+(cls?(" "+cls):"")+(view.mode===mode?" active":"");
+    t.textContent=label;t.onclick=()=>{view={mode};render();};adminTabs.appendChild(t);
   };
   mk("results","🎯 Results");
   mk("groups","📊 Group Tables");
+  mk("matrix","🗒 All Predictions");
   mk("leaderboard","🏆 Leaderboard");
-  data.players.forEach((p,i)=>{
-    const b=document.createElement("div");
-    b.className="tab"+(view.mode==="player"&&view.player===p?" active":"")+(i===0?" sep":"");
-    const nameSpan=document.createElement("span");nameSpan.textContent=p;
-    nameSpan.onclick=()=>{view={mode:"player",player:p};missingNote=null;render();};
-    b.appendChild(nameSpan);
-    const rm=document.createElement("span");rm.className="rm";rm.textContent="×";rm.title="Remove "+p;
-    rm.onclick=e=>{e.stopPropagation();removePlayer(p);};
-    b.appendChild(rm);mainTabs.appendChild(b);
-  });
-  const add=document.createElement("div");
-  add.className="tab addbtn";add.textContent="+ Player";
-  add.onclick=()=>{addBox.style.display="flex";newPlayerName.value="";newPlayerName.focus();};
-  mainTabs.appendChild(add);
+  mk("entry","📝 Enter predictions","enter");
+  clearBtn.style.display=view.mode==="results"?"":"none";
 }
 
-function addPlayer(rawName){
-  const name=(rawName||"").trim();
-  if(!name){alert("Please enter a name.");return false;}
-  if(data.players.some(p=>p.toLowerCase()===name.toLowerCase())){alert("A player called \""+name+"\" already exists.");return false;}
-  data.players.push(name);data.preds[name]=data.preds[name]||{};data.locks[name]=data.locks[name]||{};save();
-  addBox.style.display="none";view={mode:"player",player:name};render();return true;
-}
-function removePlayer(name){
-  if(!confirm("Remove player \""+name+"\" and all their predictions? This cannot be undone (unless you re-import a backup).")) return;
-  data.players=data.players.filter(p=>p!==name);delete data.preds[name];delete data.locks[name];save();
-  if(view.mode==="player"&&view.player===name)view={mode:"leaderboard"};render();
-}
 function clearAllResults(){
-  if(!confirm("Clear ALL entered results (scores, pens winners, and 3rd-place assignments)? Player predictions and locks are kept. This cannot be undone unless you re-import a backup.")) return;
-  data.results={};data.thirds={};save();render();
-  alert("All results cleared ✅");
+  if(!confirm("Clear ALL entered results (scores, pens winners, and 3rd-place assignments)? Player predictions are kept. This cannot be undone unless you re-import a backup.")) return;
+  data.results={};data.thirds={};save();render();alert("All results cleared ✅");
 }
 
-// validation: what's missing for a player in a given round
-function missingForRound(player,round){
-  const items=[];
-  FIXTURES.forEach(f=>{
-    const num=f[0];if(!round.test(num))return;
-    const rec=data.preds[player][num]||{h:"",a:"",prog:""};
-    const probs=[];
-    if(rec.h==="")probs.push("home score");
-    if(rec.a==="")probs.push("away score");
-    // knockout: require a "who goes through" pick when scores are level
-    if(isKO(num)&&rec.h!==""&&rec.a!==""&&(+rec.h===+rec.a)&&!rec.prog)probs.push("who goes through (draw)");
-    if(probs.length)items.push("Match "+num+": "+probs.join(", "));
-  });
-  return items;
-}
-
-function submitRound(player,round){
-  const missing=missingForRound(player,round);
-  if(missing.length){missingNote={round:round.key,items:missing};render();return;}
-  if(confirm("Are you really sure?\n\nThese predictions for \""+round.label+"\" will be LOCKED and "+player+" cannot change them.\n\nClick OK to lock, or Cancel to keep editing.")){
-    data.locks[player][round.key]=true;missingNote=null;save();render();
-  }
-}
-function unlockRound(player,round){
-  const pw=prompt("Admin unlock — enter password to unlock \""+round.label+"\" for "+player+":");
-  if(pw===null)return; // cancelled
-  if(pw===ADMIN_PASSWORD){data.locks[player][round.key]=false;save();render();}
-  else{alert("Incorrect password.");}
-}
-
-function scoreMatch(pred,res,ko){
+function scoreMatch(pred,res,ko,num){
   if(!pred||!res)return null;
   if(pred.h===""||pred.a===""||res.h===""||res.a==="")return null;
   const ph=+pred.h,pa=+pred.a,rh=+res.h,ra=+res.a;
@@ -378,6 +346,7 @@ function scoreMatch(pred,res,ko){
   const homeOK=ph===rh,awayOK=pa===ra;
   if(resultOK)pts+=2;if(homeOK)pts+=2;if(awayOK)pts+=2;
   if(resultOK&&homeOK&&awayOK)pts+=2;
+  if(num===FINAL_MATCH)pts*=2;
   return pts;
 }
 
@@ -396,7 +365,6 @@ function computeGroups(){
     arr.sort((a,b)=>b.Pts-a.Pts||b.GD-a.GD||b.GF-a.GF||a.team.localeCompare(b.team));out[g]=arr;});
   return out;
 }
-
 function resolveCode(code){
   if(!code)return null;
   let m=code.match(/^([12])([A-L])$/);
@@ -417,6 +385,7 @@ function isCode(s){return /^([12][A-L]|3[A-L]+|W\d+|RU\d+)$/.test(s);}
 function resolveTeam(c){return isCode(c)?resolveCode(c):c;}
 function displayTeam(c){const r=resolveTeam(c);if(r&&r!==c)return{name:r,code:c};if(isCode(c))return{name:null,code:c};return{name:c,code:null};}
 function thirdPlacedTeams(){const groups=computeGroups(),out={};Object.keys(groups).forEach(g=>{if(groups[g][2])out[g]=groups[g][2].team;});return out;}
+function playersNotLocked(round){return data.players.filter(p=>!(data.locks[p]&&data.locks[p][round.key]));}
 
 function renderThirdPanel(){
   const thirds=thirdPlacedTeams();let rows="";
@@ -432,95 +401,82 @@ function renderThirdPanel(){
     <div class="third-grid">${rows}</div></div>`;
 }
 
+// shared label builder. mode: "results" | "entry"
+function matchLabel(num,mode){
+  const f=FIXTURES.find(x=>x[0]===num);
+  const isResults=mode==="results";
+  const homeName=(isResults?resolveTeam(f[3]):null)||f[3];
+  const awayName=(isResults?resolveTeam(f[4]):null)||f[4];
+  const rec=isResults?data.results[num]:data.entry.preds[num];
+  let label="—",cls="result";
+  if(rec&&rec.h!==""&&rec.a!==""){
+    const h=+rec.h,a=+rec.a;
+    if(isResults){
+      if(h>a){label=homeName+" win";cls="result home";}
+      else if(a>h){label=awayName+" win";cls="result away";}
+      else{label="Draw"+(rec.pen?" · "+(rec.pen==="H"?homeName:awayName)+" (pens)":"");cls="result draw";}
+    }else{
+      if(h>a){label=homeName+" win";cls="result home";}
+      else if(a>h){label=awayName+" win";cls="result away";}
+      else{label="Draw"+(rec.prog?" · "+(rec.prog==="H"?homeName:awayName)+" thru":"");cls="result draw";}
+    }
+  }
+  return{label,cls};
+}
+function updateResultLabel(inputEl,num,mode){
+  const row=inputEl.closest(".match");if(!row)return;
+  const labelEl=row.querySelector(".result");if(!labelEl)return;
+  const{label,cls}=matchLabel(num,mode);labelEl.className=cls;labelEl.textContent=label;
+}
+
 function render(){
   buildTabs();
   if(view.mode==="leaderboard"){renderLeaderboard();return;}
   if(view.mode==="groups"){renderGroups();return;}
-  if(view.mode==="player"&&!data.players.includes(view.player)){view={mode:"leaderboard"};renderLeaderboard();return;}
-  const isResults=view.mode==="results";
-  const player=isResults?null:view.player;
-  contextLabel.textContent=isResults?"Entering ACTUAL results":"Predictions for: "+player;
+  if(view.mode==="matrix"){renderMatrix();return;}
+  if(view.mode==="entry"){renderEntry();return;}
+  renderResults();
+}
+
+function renderResults(){
+  contextLabel.textContent="Entering ACTUAL results";
   const filter=FILTERS.find(f=>f.val===stageFilter.value)||FILTERS[0];
   const q=search.value.trim().toLowerCase();
-  let html="";
-  if(isResults){
-    html+=`<div class="admin-note">🎯 Admin: enter the real results here. For knockout draws, also pick who won on penalties.</div>`;
-    html+=renderThirdPanel();
-  }
+  let html=`<div class="admin-note">🎯 Admin: enter the real results here. For knockout draws, also pick who won on penalties.</div>`;
+  html+=renderThirdPanel();
   let lastRoundKey=null,done=0,total=0;
   FIXTURES.forEach(f=>{
     const[num,date,ko,homeCode,awayCode,fstage,group]=f;
     if(!filter.test(num))return;
-    const round=roundOf(num);
-    const locked=!isResults&&data.locks[player]&&data.locks[player][round.key];
-    const resolveNames=isResults;
-    const homeD=resolveNames?displayTeam(homeCode):{name:(isCode(homeCode)?null:homeCode),code:(isCode(homeCode)?homeCode:null)};
-    const awayD=resolveNames?displayTeam(awayCode):{name:(isCode(awayCode)?null:awayCode),code:(isCode(awayCode)?awayCode:null)};
+    const round=roundOf(num);const isFinal=num===FINAL_MATCH;
+    const homeD=displayTeam(homeCode),awayD=displayTeam(awayCode);
     const homeLabel=homeD.name?homeD.name+(homeD.code?` <span class="code">(${homeD.code})</span>`:""):`<span class="code">${homeD.code}</span>`;
     const awayLabel=awayD.name?awayD.name+(awayD.code?` <span class="code">(${awayD.code})</span>`:""):`<span class="code">${awayD.code}</span>`;
     const homeName=homeD.name||homeCode, awayName=awayD.name||awayCode;
     if(q){const hay=(homeName+" "+awayName+" "+homeCode+" "+awayCode).toLowerCase();if(!hay.includes(q))return;}
     total++;
     const knockout=isKO(num);
-    let rec=isResults?(data.results[num]||{h:"",a:"",pen:""}):(data.preds[player][num]||{h:"",a:"",prog:""});
+    let rec=data.results[num]||{h:"",a:"",pen:""};
     if(rec.h!==""&&rec.a!=="")done++;
-
-    // round header with submit/lock controls (player tabs only)
-    if(round.key!==lastRoundKey){
-      lastRoundKey=round.key;
-      let actions="";
-      if(!isResults){
-        if(locked){
-          actions=`<span class="lockbadge">🔒 Locked</span>
-            <button class="unlockbtn" data-unlock="${round.key}">🔓 Unlock (admin)</button>`;
-        }else{
-          actions=`<button class="submitbtn" data-submit="${round.key}">✅ Submit &amp; lock</button>`;
-        }
-      }
-      html+=`<div class="stage-row">
-        <div class="stage-title${locked?" locked":""}">${round.label}</div>
-        <div class="round-actions">${actions}</div>
-      </div>`;
-      // missing-items note for this round if just attempted
-      if(!isResults&&missingNote&&missingNote.round===round.key){
-        html+=`<div class="missing-note"><b>Can't lock "${round.label}" yet — these predictions are missing:</b><br>${missingNote.items.join("<br>")}</div>`;
-      }
-    }
+    if(round.key!==lastRoundKey){lastRoundKey=round.key;
+      const dbl=isFinal?`<span class="dbl">POINTS ×2</span>`:"";
+      html+=`<div class="stage-row"><div class="stage-title">${round.label}${dbl}</div></div>`;}
     const groupTxt=group?"Group "+group+" · ":"";
-    let label="—",cls="result";
-    if(rec.h!==""&&rec.a!==""){
-      const h=+rec.h,a=+rec.a;
-      if(isResults){
-        if(h>a){label=homeName+" win";cls="result home";}
-        else if(a>h){label=awayName+" win";cls="result away";}
-        else{label="Draw"+(rec.pen?" · "+(rec.pen==="H"?homeName:awayName)+" (pens)":"");cls="result draw";}
-      }else{
-        const pts=scoreMatch(rec,data.results[num],knockout);
-        if(pts!==null){label=pts+" pts";cls="result pts";}
-        else{
-          if(h>a){label=homeName+" win";cls="result home";}
-          else if(a>h){label=awayName+" win";cls="result away";}
-          else{label="Draw"+(rec.prog?" · "+(rec.prog==="H"?homeName:awayName)+" thru":"");cls="result draw";}
-        }
-      }
-    }
-    const dis=locked?" disabled":"";
+    const{label,cls}=matchLabel(num,"results");
     let pickHtml="";
-    if(knockout){
-      const field=isResults?"pen":"prog";const val=rec[field]||"";
-      const lbl=isResults?"Pens winner":"Who goes through";
-      pickHtml=`<select class="prog" data-num="${num}" data-field="${field}"${dis} title="${lbl}">
-        <option value="">${lbl}…</option>
+    if(knockout){const val=rec.pen||"";
+      pickHtml=`<select class="prog" data-num="${num}" data-field="pen" title="Pens winner">
+        <option value="">Pens winner…</option>
         <option value="H"${val==="H"?" selected":""}>${homeName}</option>
-        <option value="A"${val==="A"?" selected":""}>${awayName}</option></select>`;
-    }
-    html+=`<div class="match${locked?" locked":""}">
+        <option value="A"${val==="A"?" selected":""}>${awayName}</option></select>`;}
+    const dblPill=isFinal?` · <span class="dblpill">points ×2</span>`:"";
+    html+=`<div class="match${isFinal?" finalmatch":""}">
       <div class="num">#${num}</div>
-      <div class="team home">${homeLabel}<span class="meta">${groupTxt}${date} · ${ko}${knockout?" · KO":""}</span></div>
+      <div class="team home">${homeLabel}<span class="meta">${groupTxt}${date} · ${ko}${knockout?" · KO":""}${dblPill}</span></div>
       <div class="score"><div class="scoreline">
-        <input type="number" min="0" max="99" data-num="${num}" data-side="h" value="${rec.h}"${dis}>
+        <input type="number" min="0" max="99" data-num="${num}" data-side="h" value="${rec.h}">
         <span>–</span>
-        <input type="number" min="0" max="99" data-num="${num}" data-side="a" value="${rec.a}"${dis}>
+        <input type="number" min="0" max="99" data-num="${num}" data-side="a" value="${rec.a}">
       </div>${pickHtml}</div>
       <div class="team away">${awayLabel}</div>
       <div class="${cls}">${label}</div>
@@ -528,6 +484,98 @@ function render(){
   });
   contextLabel.textContent+=` · ${done}/${total} entered`;
   content.innerHTML=html;
+}
+
+// ---------- ENTER PREDICTIONS (single sheet, per-round Export) ----------
+function missingForRoundEntry(round){
+  const items=[];
+  FIXTURES.forEach(f=>{
+    const num=f[0];if(!round.test(num))return;
+    const rec=data.entry.preds[num]||{h:"",a:"",prog:""};
+    const probs=[];
+    if(rec.h==="")probs.push("home score");
+    if(rec.a==="")probs.push("away score");
+    if(isKO(num)&&rec.h!==""&&rec.a!==""&&(+rec.h===+rec.a)&&!rec.prog)probs.push("who goes through (draw)");
+    if(probs.length)items.push("Match "+num+": "+probs.join(", "));
+  });
+  return items;
+}
+let entryMissing=null;
+function exportRound(round){
+  const missing=missingForRoundEntry(round);
+  if(missing.length){entryMissing={round:round.key,items:missing};render();return;}
+  entryMissing=null;
+  // export just this round's predictions (placeholder behaviour — to be refined)
+  const out={name:data.entry.name||"",round:round.key,roundLabel:round.label,predictions:{}};
+  FIXTURES.forEach(f=>{const num=f[0];if(!round.test(num))return;
+    out.predictions[num]=data.entry.preds[num]||{};});
+  const blob=new Blob([JSON.stringify(out,null,2)],{type:"application/json"});
+  const a=document.createElement("a");a.href=URL.createObjectURL(blob);
+  const who=(data.entry.name||"predictions").replace(/[^a-z0-9]+/gi,"-").toLowerCase();
+  a.download=`wc2026-${who}-${round.key}.json`;a.click();
+  render();
+}
+
+function renderEntry(){
+  contextLabel.textContent="Enter your predictions";
+  const filter=FILTERS.find(f=>f.val===stageFilter.value)||FILTERS[0];
+  const q=search.value.trim().toLowerCase();
+  let html=`<div class="entry-name">
+    <label for="entryName">Your name:</label>
+    <input type="text" id="entryName" maxlength="24" placeholder="Enter your name" value="${data.entry.name||""}">
+  </div>`;
+  let lastRoundKey=null,openRound=null,done=0,total=0;
+  function closeRoundFooter(round){
+    if(!round)return "";
+    let note="";
+    if(entryMissing&&entryMissing.round===round.key){
+      note=`<div class="missing-note"><b>Can't export "${round.label}" yet — these predictions are missing:</b><br>${entryMissing.items.join("<br>")}</div>`;}
+    return `${note}<div class="submit-row"><button class="exportbtn" data-export="${round.key}">⬇ Export "${round.label}"</button></div>`;
+  }
+  FIXTURES.forEach(f=>{
+    const[num,date,ko,homeCode,awayCode,fstage,group]=f;
+    if(!filter.test(num))return;
+    const round=roundOf(num);const isFinal=num===FINAL_MATCH;
+    const homeName=(isCode(homeCode)?homeCode:homeCode),awayName=(isCode(awayCode)?awayCode:awayCode);
+    const homeLabel=isCode(homeCode)?`<span class="code">${homeCode}</span>`:homeCode;
+    const awayLabel=isCode(awayCode)?`<span class="code">${awayCode}</span>`:awayCode;
+    if(q){const hay=(homeName+" "+awayName).toLowerCase();if(!hay.includes(q))return;}
+    total++;
+    const knockout=isKO(num);
+    let rec=data.entry.preds[num]||{h:"",a:"",prog:""};
+    if(rec.h!==""&&rec.a!=="")done++;
+    if(round.key!==lastRoundKey){
+      if(openRound)html+=closeRoundFooter(openRound);
+      lastRoundKey=round.key;openRound=round;
+      const dbl=isFinal?`<span class="dbl">POINTS ×2</span>`:"";
+      html+=`<div class="stage-row"><div class="stage-title">${round.label}${dbl}</div></div>`;
+    }
+    const groupTxt=group?"Group "+group+" · ":"";
+    const{label,cls}=matchLabel(num,"entry");
+    let pickHtml="";
+    if(knockout){const val=rec.prog||"";
+      pickHtml=`<select class="prog" data-num="${num}" data-field="prog" title="Who goes through">
+        <option value="">Who goes through…</option>
+        <option value="H"${val==="H"?" selected":""}>${homeName}</option>
+        <option value="A"${val==="A"?" selected":""}>${awayName}</option></select>`;}
+    const dblPill=isFinal?` · <span class="dblpill">points ×2</span>`:"";
+    html+=`<div class="match${isFinal?" finalmatch":""}">
+      <div class="num">#${num}</div>
+      <div class="team home">${homeLabel}<span class="meta">${groupTxt}${date} · ${ko}${knockout?" · KO":""}${dblPill}</span></div>
+      <div class="score"><div class="scoreline">
+        <input type="number" min="0" max="99" data-num="${num}" data-side="h" value="${rec.h}">
+        <span>–</span>
+        <input type="number" min="0" max="99" data-num="${num}" data-side="a" value="${rec.a}">
+      </div>${pickHtml}</div>
+      <div class="team away">${awayLabel}</div>
+      <div class="${cls}">${label}</div>
+    </div>`;
+  });
+  if(openRound)html+=closeRoundFooter(openRound);
+  contextLabel.textContent+=` · ${done}/${total} entered`;
+  content.innerHTML=html;
+  const nm=document.getElementById("entryName");
+  if(nm)nm.addEventListener("input",e=>{data.entry.name=e.target.value;save();});
 }
 
 function renderGroups(){
@@ -549,16 +597,71 @@ function renderGroups(){
   content.innerHTML=html;
 }
 
+function renderMatrix(){
+  contextLabel.textContent="All Predictions — locked per round until everyone has submitted";
+  const q=search.value.trim().toLowerCase();
+  const filter=FILTERS.find(f=>f.val===stageFilter.value)||FILTERS[0];
+  let html="";
+  ROUNDS.forEach(round=>{
+    const roundMatches=FIXTURES.filter(f=>round.test(f[0])&&filter.test(f[0]));
+    if(!roundMatches.length)return;
+    const notLocked=playersNotLocked(round);
+    const open=!!matrixRevealed[round.key];
+    const lockTxt=`<b>${data.players.length-notLocked.length}/${data.players.length}</b> locked`;
+    let actions;
+    if(open){actions=`<span class="lockstate">🔓 Revealed</span><button class="exportbtn" data-mxhide="${round.key}">Hide again</button>`;}
+    else{actions=`<span class="lockstate">${lockTxt}</span><button class="exportbtn" data-mxunlock="${round.key}">🔓 Unlock round</button>`;}
+    html+=`<div class="round-block"><div class="round-head">
+        <div class="rh-title${open?" open":""}">${round.label}${round.key==="fin"?" — points ×2":""}</div>
+        <div class="rh-actions">${actions}</div></div>`;
+    if(matrixErr[round.key]){
+      html+=`<div class="err-inline"><b>Not everyone has locked "${round.label}" yet.</b><br>Waiting on: ${matrixErr[round.key]}</div>`;}
+    if(open){
+      let head=`<tr><th class="gamecol">Game</th>`;
+      data.players.forEach(p=>head+=`<th>${p}</th>`);head+=`</tr>`;
+      let body="";
+      roundMatches.forEach(f=>{
+        const[num,date,ko,homeCode,awayCode,fstage,group]=f;
+        const hN=resolveTeam(homeCode)||homeCode,aN=resolveTeam(awayCode)||awayCode;
+        if(q){const hay=(hN+" "+aN+" "+homeCode+" "+awayCode).toLowerCase();if(!hay.includes(q))return;}
+        let cells="";
+        data.players.forEach(p=>{
+          const rec=data.preds[p][num];
+          if(!rec||rec.h===""||rec.a===""){cells+=`<td class="cell empty">–</td>`;}
+          else{let thru="";
+            if(isKO(num)&&(+rec.h===+rec.a)&&rec.prog)thru=`<span class="thru">▸ ${rec.prog==="H"?hN:aN}</span>`;
+            cells+=`<td class="cell">${rec.h}–${rec.a}${thru}</td>`;}
+        });
+        body+=`<tr><td class="gamecol"><div class="g-teams">${hN} v ${aN}</div>
+          <div class="g-meta">#${num} · ${date}${group?" · Grp "+group:""}</div></td>${cells}</tr>`;
+      });
+      html+=`<div class="matrixwrap"><table class="matrix"><thead>${head}</thead><tbody>${body}</tbody></table></div>`;
+    }
+    html+=`</div>`;
+  });
+  html+=`<div class="hint">Each round stays hidden until <b>every player has locked</b> their predictions for it, then needs the admin password to reveal.</div>`;
+  content.innerHTML=html;
+}
+function matrixUnlock(roundKey){
+  const round=ROUNDS.find(r=>r.key===roundKey);
+  matrixErr={};
+  const notLocked=playersNotLocked(round);
+  if(notLocked.length){matrixErr[roundKey]=notLocked.join(", ");render();return;}
+  const pw=prompt("All players have locked \""+round.label+"\".\nEnter the admin password to reveal everyone's predictions:");
+  if(pw===null)return;
+  if(pw===ADMIN_PASSWORD){matrixRevealed[roundKey]=true;render();}else{alert("Incorrect password.");}
+}
+
 function computeStats(){
   return data.players.map(p=>{
     const b={};BUCKETS.forEach(x=>b[x.key]=0);
     let total=0,scored=0,perfect=0,resultHits=0,homeHits=0,awayHits=0;
     FIXTURES.forEach(f=>{
       const num=f[0];const pred=data.preds[p][num],res=data.results[num];
-      const s=scoreMatch(pred,res,isKO(num));
+      const s=scoreMatch(pred,res,isKO(num),num);
       if(s!==null){
         total+=s;scored++;const bk=BUCKETS.find(x=>x.test(num));if(bk)b[bk.key]+=s;
-        if(s===8)perfect++;
+        const maxForMatch=num===FINAL_MATCH?16:8;if(s===maxForMatch)perfect++;
         const ph=+pred.h,pa=+pred.a,rh=+res.h,ra=+res.a;
         let resultOK;
         if(isKO(num)){let ap=rh>ra?"H":ra>rh?"A":(res.pen||"");let pp=ph>pa?"H":pa>ph?"A":(pred.prog||"");resultOK=pp!==""&&pp===ap;}
@@ -597,30 +700,24 @@ function buildChartSVG(stats){
 function buildChartLegend(stats){
   return `<div class="legend-chart">`+stats.map((s,si)=>{
     const col=SERIES_COLORS[si%SERIES_COLORS.length];
-    return `<span class="li"><span class="ln" style="background:${col}"></span>${s.player}</span>`;
-  }).join("")+`</div>`;
+    return `<span class="li"><span class="ln" style="background:${col}"></span>${s.player}</span>`;}).join("")+`</div>`;
 }
 function buildSummary(stats){
   const anyScored=stats.some(s=>s.scored>0);
-  if(!anyScored){
-    return `<div class="summary-wrap"><div class="scard" style="grid-column:1/-1;border-left-color:var(--muted)">
-      <h4>No results scored yet</h4>
-      <p>Enter actual results in the 🎯 Results tab and a performance summary for each player will appear here automatically.</p></div></div>`;
-  }
+  if(!anyScored){return `<div class="summary-wrap"><div class="scard" style="grid-column:1/-1;border-left-color:var(--muted)">
+      <h4>No results scored yet</h4><p>Enter actual results in the 🎯 Results tab and a performance summary will appear here automatically.</p></div></div>`;}
   const leader=stats[0];
   const cards=stats.map((s,i)=>{
     const pos=i+1;const ordinal=pos===1?"1st":pos===2?"2nd":pos===3?"3rd":pos+"th";
     const accuracy=s.scored?Math.round(100*s.resultHits/s.scored):0;
     let blurb;
     if(s.scored===0){blurb=`No scored predictions yet.`;}
-    else{
-      const gap=leader.total-s.total;
+    else{const gap=leader.total-s.total;
       const lead=i===0?`Out in front on <span class="stat">${s.total}</span> pts.`:`<span class="stat">${gap}</span> pt${gap===1?"":"s"} behind the leader (${leader.player}).`;
       blurb=`${lead} Correct outcome in <span class="stat">${s.resultHits}/${s.scored}</span> games (${accuracy}%), `
         +`nailed the home score <span class="stat">${s.homeHits}</span>× and away score <span class="stat">${s.awayHits}</span>×, `
-        +`with <span class="stat">${s.perfect}</span> perfect 8-pointer${s.perfect===1?"":"s"}. `
-        +`Averaging <span class="stat">${s.avg.toFixed(1)}</span> pts per scored game.`;
-    }
+        +`with <span class="stat">${s.perfect}</span> perfect prediction${s.perfect===1?"":"s"}. `
+        +`Averaging <span class="stat">${s.avg.toFixed(1)}</span> pts per scored game.`;}
     return `<div class="scard"><h4>${s.player} <span class="badge">— ${ordinal}, ${s.total} pts</span></h4><p>${blurb}</p></div>`;
   }).join("");
   return `<div class="summary-wrap">${cards}</div>`;
@@ -629,8 +726,7 @@ function renderLeaderboard(){
   contextLabel.textContent="Overall standings, trend & summary";
   const stats=computeStats();
   let header=`<tr><th>#</th><th style="text-align:left">Player</th><th class="total">Total</th>`;
-  BUCKETS.forEach(x=>header+=`<th>${x.label}</th>`);
-  header+=`<th class="perfect">Perfect 8s</th></tr>`;
+  BUCKETS.forEach(x=>header+=`<th>${x.label}</th>`);header+=`<th class="perfect">Perfect</th></tr>`;
   let rows="";let rank=0,prev=null;
   stats.forEach((t,i)=>{
     if(t.total!==prev){rank=i+1;prev=t.total;}
@@ -638,9 +734,9 @@ function renderLeaderboard(){
     rows+=`<tr><td class="rank">${rank}</td><td class="name">${t.player}</td><td class="total">${t.total}</td>${cells}<td class="perfect">${t.perfect}</td></tr>`;
   });
   const table=`<div class="lbwrap"><table class="lb">${header}${rows}</table></div>
-    <div class="hint">Total sits beside the name; stage breakdown across; <b>Perfect 8s</b> counts exact-scoreline predictions. Updates automatically as results are entered.</div>`;
+    <div class="hint">Total sits beside the name; stage breakdown across (Final column is doubled). <b>Perfect</b> counts exact-scoreline predictions (Final perfect = 16).</div>`;
   const chart=`<div class="chart-card"><h3>📈 Cumulative points by stage</h3>
-    <div class="pdesc">Each line is a player's running total as the tournament progresses. Updates automatically as results are entered.</div>
+    <div class="pdesc">Each line is a player's running total as the tournament progresses (Final points are doubled).</div>
     ${buildChartSVG(stats)}${buildChartLegend(stats)}</div>`;
   const summaryTitle=`<div class="stage-title" style="max-width:1060px;margin:18px auto 10px">📝 How each player is performing</div>`;
   content.innerHTML=table+chart+summaryTitle+buildSummary(stats);
@@ -649,35 +745,32 @@ function renderLeaderboard(){
 content.addEventListener("input",e=>{
   const num=e.target.dataset.num;if(!num)return;
   if(!e.target.dataset.side)return;
-  if(e.target.disabled)return;
-  const isResults=view.mode==="results";
-  const store=isResults?(data.results[num]=data.results[num]||{h:"",a:"",pen:""})
-                       :(data.preds[view.player][num]=data.preds[view.player][num]||{h:"",a:"",prog:""});
-  store[e.target.dataset.side]=e.target.value;save();
+  if(view.mode==="results"){
+    const store=data.results[num]=data.results[num]||{h:"",a:"",pen:""};
+    store[e.target.dataset.side]=e.target.value;save();updateResultLabel(e.target,+num,"results");
+  }else if(view.mode==="entry"){
+    const store=data.entry.preds[num]=data.entry.preds[num]||{h:"",a:"",prog:""};
+    store[e.target.dataset.side]=e.target.value;save();updateResultLabel(e.target,+num,"entry");
+  }
 });
 content.addEventListener("change",e=>{
   if(e.target.dataset.slot){data.thirds[e.target.dataset.slot]=e.target.value;save();render();return;}
   if(e.target.dataset.field){
-    if(e.target.disabled)return;
-    const num=e.target.dataset.num;const isResults=view.mode==="results";
-    const store=isResults?(data.results[num]=data.results[num]||{h:"",a:"",pen:""})
-                         :(data.preds[view.player][num]=data.preds[view.player][num]||{h:"",a:"",prog:""});
-    store[e.target.dataset.field]=e.target.value;save();render();
+    const num=e.target.dataset.num;
+    if(view.mode==="results"){const store=data.results[num]=data.results[num]||{h:"",a:"",pen:""};store[e.target.dataset.field]=e.target.value;save();render();}
+    else if(view.mode==="entry"){const store=data.entry.preds[num]=data.entry.preds[num]||{h:"",a:"",prog:""};store[e.target.dataset.field]=e.target.value;save();render();}
   }
 });
-// submit / unlock buttons (player tabs)
 content.addEventListener("click",e=>{
-  const sub=e.target.dataset.submit, unl=e.target.dataset.unlock;
-  if(sub&&view.mode==="player"){const round=ROUNDS.find(r=>r.key===sub);submitRound(view.player,round);}
-  if(unl&&view.mode==="player"){const round=ROUNDS.find(r=>r.key===unl);unlockRound(view.player,round);}
+  const exp=e.target.dataset.export;
+  const mxU=e.target.dataset.mxunlock, mxH=e.target.dataset.mxhide;
+  if(exp){const round=ROUNDS.find(r=>r.key===exp);exportRound(round);}
+  if(mxU){matrixUnlock(mxU);}
+  if(mxH){delete matrixRevealed[mxH];render();}
 });
 
-stageFilter.addEventListener("change",()=>{missingNote=null;render();});
+stageFilter.addEventListener("change",()=>{entryMissing=null;render();});
 search.addEventListener("input",render);
-
-document.getElementById("addConfirm").onclick=()=>addPlayer(newPlayerName.value);
-document.getElementById("addCancel").onclick=()=>{addBox.style.display="none";};
-newPlayerName.addEventListener("keydown",e=>{if(e.key==="Enter")addPlayer(newPlayerName.value);if(e.key==="Escape")addBox.style.display="none";});
 
 document.getElementById("exportBtn").onclick=()=>{
   const blob=new Blob([JSON.stringify(data,null,2)],{type:"application/json"});
@@ -685,17 +778,19 @@ document.getElementById("exportBtn").onclick=()=>{
   a.download="wc2026-game-backup-"+new Date().toISOString().slice(0,10)+".json";a.click();
 };
 document.getElementById("importBtn").onclick=()=>document.getElementById("importFile").click();
-document.getElementById("clearResultsBtn").onclick=clearAllResults;
+clearBtn.onclick=clearAllResults;
 document.getElementById("importFile").onchange=e=>{
   const file=e.target.files[0];if(!file)return;
   const r=new FileReader();
   r.onload=()=>{
     try{
       const loaded=JSON.parse(r.result);
-      if(!loaded.preds||!loaded.results)throw new Error("Not a valid backup file");
+      if(!loaded.results)throw new Error("Not a valid backup file");
       data=loaded;data.players=data.players||DEFAULT_PLAYERS.slice();
-      data.preds=data.preds||{};data.results=data.results||{};data.thirds=data.thirds||{};data.locks=data.locks||{};
+      data.preds=data.preds||{};data.results=data.results||{};data.thirds=data.thirds||{};data.locks=data.locks||{};data.pins=data.pins||{};
+      data.entry=data.entry||{name:"",preds:{}};
       data.players.forEach(p=>{data.preds[p]=data.preds[p]||{};data.locks[p]=data.locks[p]||{};});
+      matrixRevealed={};matrixErr={};
       save();view={mode:"leaderboard"};render();alert("Backup imported successfully ✅");
     }catch(err){alert("Could not import: "+err.message);}
   };
