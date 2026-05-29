@@ -26,16 +26,22 @@
   .copybtn:hover{background:#ffdf85;border-color:#ffdf85;color:#001219}
   .copyall{background:var(--win);color:#001219;border-color:var(--win);font-weight:700}
   .copyall:hover{background:#34c2b0;border-color:#34c2b0;color:#001219}
-  .match{display:grid;grid-template-columns:32px 1fr auto 1fr 120px;align-items:center;gap:8px;background:var(--card);padding:9px 12px;border-radius:10px;margin-bottom:7px}
+
+  /* --- match card: full-width, stacked rows --- */
+  .match{background:var(--card);padding:10px 14px;border-radius:10px;margin-bottom:7px}
   .match.finalmatch{border:1px solid var(--gold)}
-  .num{color:var(--muted);font-size:.78rem;text-align:center}
-  .team{font-weight:600}
+  /* top row: home name | score | away name */
+  .match-top{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:12px}
+  .num{color:var(--muted);font-size:.78rem;font-weight:600}
+  .team{font-weight:600;font-size:1rem;line-height:1.2;min-width:0;overflow-wrap:break-word}
   .home{text-align:right}.away{text-align:left}
-  .code{color:var(--muted);font-weight:400;font-size:.78rem}
-  .meta{font-size:.7rem;color:var(--muted);display:block;font-weight:400}
+  .code{color:var(--muted);font-weight:400;font-size:.82rem}
+  /* meta line: full width under the top row */
+  .meta{display:block;width:100%;text-align:center;margin-top:8px;padding-top:7px;border-top:1px solid #2b3a52;font-size:.72rem;color:var(--muted)}
   .meta .dblpill{color:var(--gold);font-weight:700}
+  /* score block */
   .score{display:flex;align-items:center;gap:6px;justify-content:center;flex-direction:column}
-  .scoreline{display:flex;align-items:center;gap:6px}
+  .scoreline{display:flex;align-items:center;gap:8px}
   /* --- stepper styles --- */
   .stepper{display:flex;align-items:center;gap:8px}
   .stepbtn{
@@ -59,8 +65,8 @@
   }
   .scoreval.empty{color:var(--muted);font-weight:400}
   /* ----------------------- */
-  .prog{font-size:.72rem;padding:3px;background:#0d1b2a;border:1px solid #415a77;color:var(--text);border-radius:6px;max-width:130px}
-  .result{font-size:.7rem;text-align:center;padding:4px 6px;border-radius:6px;background:#0d1b2a;color:var(--muted);min-width:110px}
+  .prog{font-size:.72rem;padding:4px;background:#0d1b2a;border:1px solid #415a77;color:var(--text);border-radius:6px;max-width:160px}
+  .result{font-size:.7rem;text-align:center;padding:4px 6px;border-radius:6px;background:#0d1b2a;color:var(--muted);margin-top:8px}
   .result.home,.result.away{background:var(--win);color:#001219;font-weight:700}
   .result.draw{background:var(--draw);color:#001219;font-weight:700}
   .missing-note{background:#3d1f1b;border:1px solid var(--danger);color:#ffb4a2;padding:10px 14px;border-radius:8px;max-width:920px;margin:0 auto 12px;font-size:.82rem}
@@ -68,7 +74,12 @@
   .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:var(--win);color:#001219;font-weight:700;padding:10px 18px;border-radius:10px;box-shadow:0 6px 20px rgba(0,0,0,.4);opacity:0;transition:opacity .25s;pointer-events:none;z-index:50}
   .toast.show{opacity:1}
   .hint{max-width:760px;margin:8px auto;color:var(--muted);font-size:.8rem;text-align:center}
-  @media(max-width:640px){.match{grid-template-columns:28px 1fr auto 1fr}.result{grid-column:1/-1}}
+  @media(max-width:640px){
+    .match-top{grid-template-columns:1fr auto 1fr;gap:6px}
+    .team{font-size:.92rem}
+    .scoreline{gap:5px}
+    .stepbtn{width:30px;height:30px}
+  }
 </style>
 </head>
 <body>
@@ -365,22 +376,24 @@ function render(){
     const dblPill=isFinal?` · <span class="dblpill">points ×2</span>`:"";
     const hDisp=rec.h===""?"–":rec.h, aDisp=rec.a===""?"–":rec.a;
     html+=`<div class="match${isFinal?" finalmatch":""}" data-matchnum="${num}">
-      <div class="num">#${num}</div>
-      <div class="team home">${homeLabel}<span class="meta">${groupTxt}${date} · ${ko}${isKO(num)?" · KO":""}${dblPill}</span></div>
-      <div class="score"><div class="scoreline">
-        <span class="stepper">
-          <button type="button" class="stepbtn minus" data-step="-1" data-num="${num}" data-side="h" aria-label="Decrease home score">−</button>
-          <span class="scoreval${rec.h===""?" empty":""}" data-num="${num}" data-side="h">${hDisp}</span>
-          <button type="button" class="stepbtn plus" data-step="1" data-num="${num}" data-side="h" aria-label="Increase home score">+</button>
-        </span>
-        <span>–</span>
-        <span class="stepper">
-          <button type="button" class="stepbtn minus" data-step="-1" data-num="${num}" data-side="a" aria-label="Decrease away score">−</button>
-          <span class="scoreval${rec.a===""?" empty":""}" data-num="${num}" data-side="a">${aDisp}</span>
-          <button type="button" class="stepbtn plus" data-step="1" data-num="${num}" data-side="a" aria-label="Increase away score">+</button>
-        </span>
-      </div>${pick}</div>
-      <div class="team away">${awayLabel}</div>
+      <div class="match-top">
+        <div class="team home">${homeLabel}</div>
+        <div class="score"><div class="scoreline">
+          <span class="stepper">
+            <button type="button" class="stepbtn minus" data-step="-1" data-num="${num}" data-side="h" aria-label="Decrease home score">−</button>
+            <span class="scoreval${rec.h===""?" empty":""}" data-num="${num}" data-side="h">${hDisp}</span>
+            <button type="button" class="stepbtn plus" data-step="1" data-num="${num}" data-side="h" aria-label="Increase home score">+</button>
+          </span>
+          <span>–</span>
+          <span class="stepper">
+            <button type="button" class="stepbtn minus" data-step="-1" data-num="${num}" data-side="a" aria-label="Decrease away score">−</button>
+            <span class="scoreval${rec.a===""?" empty":""}" data-num="${num}" data-side="a">${aDisp}</span>
+            <button type="button" class="stepbtn plus" data-step="1" data-num="${num}" data-side="a" aria-label="Increase away score">+</button>
+          </span>
+        </div>${pick}</div>
+        <div class="team away">${awayLabel}</div>
+      </div>
+      <div class="meta"><span class="num">#${num}</span> · ${groupTxt}${date} · ${ko}${isKO(num)?" · KO":""}${dblPill}</div>
       <div class="${cls}">${lab}</div>
     </div>`;
   });
