@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WC2026 — Make Your Predictions</title>
+<style>
+  :root{--bg:#0d1b2a;--card:#1b263b;--accent:#00b4d8;--win:#2a9d8f;--draw:#e9c46a;--text:#e0e1dd;--muted:#8d99ae;--gold:#ffd166;--danger:#e76f51;}
+  *{box-sizing:border-box}
+  body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;background:var(--bg);color:var(--text);padding:14px}
+  header{text-align:center;margin-bottom:14px}
+  h1{margin:0 0 4px;font-size:1.4rem}
+  .sub{color:var(--muted);font-size:.85rem}
+  .controls{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;align-items:center;margin:12px 0}
+  select,input[type=text],button{background:var(--card);color:var(--text);border:1px solid #415a77;border-radius:8px;padding:8px 12px;font-size:.9rem}
+  button{cursor:pointer;transition:.2s}
+  button:hover{background:var(--accent);color:#001219;border-color:var(--accent)}
+  .entry-name{max-width:560px;margin:0 auto 14px;background:var(--card);border:1px solid #415a77;border-radius:12px;padding:12px 16px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+  .entry-name label{font-size:.85rem;color:var(--muted)}
+  .entry-name input{flex:1;min-width:160px}
+  .stage-row{margin:16px 0 10px}
+  .stage-title{background:var(--accent);color:#001219;padding:6px 12px;border-radius:8px;font-weight:700;font-size:.92rem;margin:0;display:inline-block}
+  .stage-title .dbl{background:#001219;color:var(--gold);padding:1px 7px;border-radius:6px;font-size:.74rem;margin-left:8px}
+  .submit-row{display:flex;align-items:center;justify-content:flex-end;gap:8px;margin:8px 0 18px;flex-wrap:wrap}
+  .copybtn{background:var(--gold);color:#001219;border-color:var(--gold);font-weight:700}
+  .copybtn:hover{background:#ffdf85;border-color:#ffdf85;color:#001219}
+  .copyall{background:var(--win);color:#001219;border-color:var(--win);font-weight:700}
+  .copyall:hover{background:#34c2b0;border-color:#34c2b0;color:#001219}
+  .match{display:grid;grid-template-columns:32px 1fr auto 1fr 120px;align-items:center;gap:8px;background:var(--card);padding:9px 12px;border-radius:10px;margin-bottom:7px}
+  .match.finalmatch{border:1px solid var(--gold)}
+  .num{color:var(--muted);font-size:.78rem;text-align:center}
+  .team{font-weight:600}
+  .home{text-align:right}.away{text-align:left}
+  .code{color:var(--muted);font-weight:400;font-size:.78rem}
+  .meta{font-size:.7rem;color:var(--muted);display:block;font-weight:400}
+  .meta .dblpill{color:var(--gold);font-weight:700}
+  .score{display:flex;align-items:center;gap:6px;justify-content:center;flex-direction:column}
+  .scoreline{display:flex;align-items:center;gap:6px}
+  .score input{width:44px;text-align:center;font-size:1.05rem;padding:6px;background:#0d1b2a;border:1px solid #415a77;color:var(--text);border-radius:6px}
+  .score input:focus{outline:2px solid var(--accent)}
+  .prog{font-size:.72rem;padding:3px;background:#0d1b2a;border:1px solid #415a77;color:var(--text);border-radius:6px;max-width:130px}
+  .result{font-size:.7rem;text-align:center;padding:4px 6px;border-radius:6px;background:#0d1b2a;color:var(--muted);min-width:110px}
+  .result.home,.result.away{background:var(--win);color:#001219;font-weight:700}
+  .result.draw{background:var(--draw);color:#001219;font-weight:700}
+  .missing-note{background:#3d1f1b;border:1px solid var(--danger);color:#ffb4a2;padding:10px 14px;border-radius:8px;max-width:920px;margin:0 auto 12px;font-size:.82rem}
+  .missing-note b{color:#fff}
+  .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:var(--win);color:#001219;font-weight:700;padding:10px 18px;border-radius:10px;box-shadow:0 6px 20px rgba(0,0,0,.4);opacity:0;transition:opacity .25s;pointer-events:none;z-index:50}
+  .toast.show{opacity:1}
+  .hint{max-width:760px;margin:8px auto;color:var(--muted);font-size:.8rem;text-align:center}
+  @media(max-width:640px){.match{grid-template-columns:28px 1fr auto 1fr}.result{grid-column:1/-1}}
+</style>
+</head>
+<body>
+<header>
+  <h1>⚽ World Cup 2026 — Your Predictions</h1>
+  <div class="sub">Fill in your scores, then tap <b>Copy</b> and paste into WhatsApp to send them in.</div>
+</header>
+
+<div class="entry-name">
+  <label for="entryName">Your name:</label>
+  <input type="text" id="entryName" maxlength="24" placeholder="Type your name (so I know whose these are)">
+</div>
+
+<div class="controls">
+  <span id="contextLabel" style="color:var(--muted)"></span>
+  <select id="stageFilter"></select>
+  <input type="text" id="search" placeholder="🔍 Search team…">
+  <button class="copyall" id="copyAllBtn">📋 Copy ALL predictions</button>
+</div>
+
+<div id="content"></div>
+<div class="hint">Your predictions are saved in this browser automatically. When you're ready, use a <b>Copy</b> button and paste the text into a WhatsApp message to Chris.</div>
+<div class="toast" id="toast"></div>
+
+<script>
+const FINAL_MATCH=104;
+const FIXTURES=[
+[1,"Thu 11 Jun 2026","20:00","Mexico","South Africa","First Stage","A"],
+[2,"Fri 12 Jun 2026","03:00","Korea Republic","Czechia","First Stage","A"],
+[3,"Fri 12 Jun 2026","20:00","Canada","Bosnia and Herzegovina","First Stage","B"],
+[4,"Sat 13 Jun 2026","02:00","USA","Paraguay","First Stage","D"],
+[5,"Sat 13 Jun 2026","20:00","Qatar","Switzerland","First Stage","B"],
+[6,"Sat 13 Jun 2026","23:00","Brazil","Morocco","First Stage","C"],
+[7,"Sun 14 Jun 2026","02:00","Haiti","Scotland","First Stage","C"],
+[8,"Sun 14 Jun 2026","05:00","Australia","Turkey","First Stage","D"],
+[9,"Sun 14 Jun 2026","18:00","Germany","Curacao","First Stage","E"],
+[10,"Sun 14 Jun 2026","21:00","Netherlands","Japan","First Stage","F"],
+[11,"Mon 15 Jun 2026","00:00","Ivory Coast","Ecuador","First Stage","E"],
+[12,"Mon 15 Jun 2026","03:00","Sweden","Tunisia","First Stage","F"],
+[13,"Mon 15 Jun 2026","17:00","Spain","Cabo Verde","First Stage","H"],
+[14,"Mon 15 Jun 2026","20:00","Belgium","Egypt","First Stage","G"],
+[15,"Mon 15 Jun 2026","23:00","Saudi Arabia","Uruguay","First Stage","H"],
+[16,"Tue 16 Jun 2026","02:00","IR Iran","New Zealand","First Stage","G"],
+[17,"Tue 16 Jun 2026","20:00","France","Senegal","First Stage","I"],
+[18,"Tue 16 Jun 2026","23:00","Iraq","Norway","First Stage","I"],
+[19,"Wed 17 Jun 2026","02:00","Argentina","Algeria","First Stage","J"],
+[20,"Wed 17 Jun 2026","05:00","Austria","Jordan","First Stage","J"],
+[21,"Wed 17 Jun 2026","18:00","Portugal","Congo DR","First Stage","K"],
+[22,"Wed 17 Jun 2026","21:00","England","Croatia","First Stage","L"],
+[23,"Thu 18 Jun 2026","00:00","Ghana","Panama","First Stage","L"],
+[24,"Thu 18 Jun 2026","03:00","Uzbekistan","Colombia","First Stage","K"],
+[25,"Thu 18 Jun 2026","17:00","Czechia","South Africa","First Stage","A"],
+[26,"Thu 18 Jun 2026","20:00","Switzerland","Bosnia and Herzegovina","First Stage","B"],
+[27,"Thu 18 Jun 2026","23:00","Canada","Qatar","First Stage","B"],
+[28,"Fri 19 Jun 2026","02:00","Mexico","Korea Republic","First Stage","A"],
+[29,"Fri 19 Jun 2026","20:00","USA","Australia","First Stage","D"],
+[30,"Fri 19 Jun 2026","23:00","Scotland","Morocco","First Stage","C"],
+[31,"Sat 20 Jun 2026","01:30","Brazil","Haiti","First Stage","C"],
+[32,"Sat 20 Jun 2026","04:00","Turkey","Paraguay","First Stage","D"],
+[33,"Sat 20 Jun 2026","18:00","Netherlands","Sweden","First Stage","F"],
+[34,"Sat 20 Jun 2026","21:00","Germany","Ivory Coast","First Stage","E"],
+[35,"Sun 21 Jun 2026","01:00","Ecuador","Curacao","First Stage","E"],
+[36,"Sun 21 Jun 2026","05:00","Tunisia","Japan","First Stage","F"],
+[37,"Sun 21 Jun 2026","17:00","Spain","Saudi Arabia","First Stage","H"],
+[38,"Sun 21 Jun 2026","20:00","Belgium","IR Iran","First Stage","G"],
+[39,"Sun 21 Jun 2026","23:00","Uruguay","Cabo Verde","First Stage","H"],
+[40,"Mon 22 Jun 2026","02:00","New Zealand","Egypt","First Stage","G"],
+[41,"Mon 22 Jun 2026","18:00","Argentina","Austria","First Stage","J"],
+[42,"Mon 22 Jun 2026","22:00","France","Iraq","First Stage","I"],
+[43,"Tue 23 Jun 2026","01:00","Norway","Senegal","First Stage","I"],
+[44,"Tue 23 Jun 2026","04:00","Jordan","Algeria","First Stage","J"],
+[45,"Tue 23 Jun 2026","18:00","Portugal","Uzbekistan","First Stage","K"],
+[46,"Tue 23 Jun 2026","21:00","England","Ghana","First Stage","L"],
+[47,"Wed 24 Jun 2026","00:00","Panama","Croatia","First Stage","L"],
+[48,"Wed 24 Jun 2026","03:00","Colombia","Congo DR","First Stage","K"],
+[49,"Wed 24 Jun 2026","20:00","Switzerland","Canada","First Stage","B"],
+[50,"Wed 24 Jun 2026","20:00","Bosnia and Herzegovina","Qatar","First Stage","B"],
+[51,"Wed 24 Jun 2026","23:00","Scotland","Brazil","First Stage","C"],
+[52,"Wed 24 Jun 2026","23:00","Morocco","Haiti","First Stage","C"],
+[53,"Thu 25 Jun 2026","02:00","Czechia","Mexico","First Stage","A"],
+[54,"Thu 25 Jun 2026","02:00","South Africa","Korea Republic","First Stage","A"],
+[55,"Thu 25 Jun 2026","21:00","Curacao","Ivory Coast","First Stage","E"],
+[56,"Thu 25 Jun 2026","21:00","Ecuador","Germany","First Stage","E"],
+[57,"Fri 26 Jun 2026","00:00","Japan","Sweden","First Stage","F"],
+[58,"Fri 26 Jun 2026","00:00","Tunisia","Netherlands","First Stage","F"],
+[59,"Fri 26 Jun 2026","03:00","Turkey","USA","First Stage","D"],
+[60,"Fri 26 Jun 2026","03:00","Paraguay","Australia","First Stage","D"],
+[61,"Fri 26 Jun 2026","20:00","Norway","France","First Stage","I"],
+[62,"Fri 26 Jun 2026","20:00","Senegal","Iraq","First Stage","I"],
+[63,"Sat 27 Jun 2026","01:00","Cabo Verde","Saudi Arabia","First Stage","H"],
+[64,"Sat 27 Jun 2026","01:00","Uruguay","Spain","First Stage","H"],
+[65,"Sat 27 Jun 2026","04:00","Egypt","IR Iran","First Stage","G"],
+[66,"Sat 27 Jun 2026","04:00","New Zealand","Belgium","First Stage","G"],
+[67,"Sat 27 Jun 2026","22:00","Panama","England","First Stage","L"],
+[68,"Sat 27 Jun 2026","22:00","Croatia","Ghana","First Stage","L"],
+[69,"Sun 28 Jun 2026","00:30","Colombia","Portugal","First Stage","K"],
+[70,"Sun 28 Jun 2026","00:30","Congo DR","Uzbekistan","First Stage","K"],
+[71,"Sun 28 Jun 2026","03:00","Algeria","Austria","First Stage","J"],
+[72,"Sun 28 Jun 2026","03:00","Jordan","Argentina","First Stage","J"],
+[73,"Sun 28 Jun 2026","20:00","2A","2B","Round of 32",""],
+[74,"Mon 29 Jun 2026","18:00","1C","2F","Round of 32",""],
+[75,"Mon 29 Jun 2026","21:30","1E","3ABCDF","Round of 32",""],
+[76,"Tue 30 Jun 2026","02:00","1F","2C","Round of 32",""],
+[77,"Tue 30 Jun 2026","18:00","2E","2I","Round of 32",""],
+[78,"Tue 30 Jun 2026","22:00","1I","3CDFGH","Round of 32",""],
+[79,"Wed 01 Jul 2026","02:00","1A","3CEFHI","Round of 32",""],
+[80,"Wed 01 Jul 2026","17:00","1L","3EHIJK","Round of 32",""],
+[81,"Wed 01 Jul 2026","21:00","1G","3AEHIJ","Round of 32",""],
+[82,"Thu 02 Jul 2026","01:00","1D","3BEFIJ","Round of 32",""],
+[83,"Thu 02 Jul 2026","20:00","1H","2J","Round of 32",""],
+[84,"Fri 03 Jul 2026","00:00","2K","2L","Round of 32",""],
+[85,"Fri 03 Jul 2026","04:00","1B","3EFGIJ","Round of 32",""],
+[86,"Fri 03 Jul 2026","19:00","2D","2G","Round of 32",""],
+[87,"Fri 03 Jul 2026","23:00","1J","2H","Round of 32",""],
+[88,"Sat 04 Jul 2026","02:30","1K","3DEIJL","Round of 32",""],
+[89,"Sat 04 Jul 2026","18:00","W73","W75","Round of 16",""],
+[90,"Sat 04 Jul 2026","22:00","W74","W77","Round of 16",""],
+[91,"Sun 05 Jul 2026","21:00","W76","W78","Round of 16",""],
+[92,"Mon 06 Jul 2026","01:00","W79","W80","Round of 16",""],
+[93,"Mon 06 Jul 2026","20:00","W83","W84","Round of 16",""],
+[94,"Tue 07 Jul 2026","01:00","W81","W82","Round of 16",""],
+[95,"Tue 07 Jul 2026","17:00","W86","W88","Round of 16",""],
+[96,"Tue 07 Jul 2026","21:00","W85","W87","Round of 16",""],
+[97,"Thu 09 Jul 2026","21:00","W89","W90","Quarter-final",""],
+[98,"Fri 10 Jul 2026","20:00","W93","W94","Quarter-final",""],
+[99,"Sat 11 Jul 2026","22:00","W91","W92","Quarter-final",""],
+[100,"Sun 12 Jul 2026","02:00","W95","W96","Quarter-final",""],
+[101,"Tue 14 Jul 2026","20:00","W97","W98","Semi-final",""],
+[102,"Wed 15 Jul 2026","20:00","W99","W100","Semi-final",""],
+[103,"Sat 18 Jul 2026","22:00","RU101","RU102","Play-off for third place",""],
+[104,"Sun 19 Jul 2026","20:00","W101","W102","Final",""]
+];
+const FIRST_KO=73;const isKO=n=>n>=FIRST_KO;
+const ROUNDS=[
+  {key:"fs1",label:"First Stage (1–24)",tag:"FS1",test:n=>n>=1&&n<=24},
+  {key:"fs2",label:"First Stage (25–48)",tag:"FS2",test:n=>n>=25&&n<=48},
+  {key:"fs3",label:"First Stage (49–72)",tag:"FS3",test:n=>n>=49&&n<=72},
+  {key:"r32",label:"Round of 32",tag:"R32",test:n=>n>=73&&n<=88},
+  {key:"r16",label:"Round of 16",tag:"R16",test:n=>n>=89&&n<=96},
+  {key:"qf",label:"Quarter-final",tag:"QF",test:n=>n>=97&&n<=100},
+  {key:"sf",label:"Semi-final",tag:"SF",test:n=>n>=101&&n<=102},
+  {key:"tp",label:"Play-off for third place",tag:"3RD",test:n=>n===103},
+  {key:"fin",label:"Final",tag:"FINAL",test:n=>n===104}
+];
+const roundOf=n=>ROUNDS.find(r=>r.test(n));
+const FILTERS=[{val:"",label:"All stages",test:()=>true}].concat(ROUNDS.map(r=>({val:r.key,label:r.label,test:r.test})));
+
+const STORE="wc2026predictions";
+let data=JSON.parse(localStorage.getItem(STORE)||"{}");
+data.name=data.name||"";data.preds=data.preds||{};
+function save(){localStorage.setItem(STORE,JSON.stringify(data));}
+
+const content=document.getElementById("content");
+const stageFilter=document.getElementById("stageFilter");
+const search=document.getElementById("search");
+const contextLabel=document.getElementById("contextLabel");
+const entryName=document.getElementById("entryName");
+const toast=document.getElementById("toast");
+let missing=null;
+
+FILTERS.forEach(f=>{const o=document.createElement("option");o.value=f.val;o.textContent=f.label;stageFilter.appendChild(o);});
+entryName.value=data.name;
+
+function isCode(s){return /^([12][A-L]|3[A-L]+|W\d+|RU\d+)$/.test(s);}
+function label(num){
+  const rec=data.preds[num];const f=FIXTURES.find(x=>x[0]===num);
+  let lab="—",cls="result";
+  if(rec&&rec.h!==""&&rec.a!==""){
+    const h=+rec.h,a=+rec.a;
+    if(h>a){lab=f[3]+" win";cls="result home";}
+    else if(a>h){lab=f[4]+" win";cls="result away";}
+    else{lab="Draw"+(rec.prog?" · "+(rec.prog==="H"?f[3]:f[4])+" thru":"");cls="result draw";}
+  }
+  return{lab,cls};
+}
+function updateLabel(inputEl,num){
+  const row=inputEl.closest(".match");if(!row)return;
+  const el=row.querySelector(".result");if(!el)return;
+  const{lab,cls}=label(num);el.className=cls;el.textContent=lab;
+}
+
+function missingForRound(round){
+  const items=[];
+  FIXTURES.forEach(f=>{const num=f[0];if(!round.test(num))return;
+    const rec=data.preds[num]||{h:"",a:"",prog:""};const probs=[];
+    if(rec.h==="")probs.push("home score");
+    if(rec.a==="")probs.push("away score");
+    if(isKO(num)&&rec.h!==""&&rec.a!==""&&(+rec.h===+rec.a)&&!rec.prog)probs.push("who goes through (draw)");
+    if(probs.length)items.push("Match "+num+": "+probs.join(", "));
+  });
+  return items;
+}
+
+// Build the WhatsApp text. roundKey null = all rounds.
+function buildText(roundKey){
+  const name=(data.name||"").trim()||"(no name)";
+  let lines=["WC2026 Predictions — "+name];
+  ROUNDS.forEach(round=>{
+    if(roundKey&&round.key!==roundKey)return;
+    const ms=FIXTURES.filter(f=>round.test(f[0]));
+    // only include the round if at least one game has a score
+    const any=ms.some(f=>{const r=data.preds[f[0]];return r&&r.h!==""&&r.a!=="";});
+    if(!any)return;
+    lines.push("["+round.tag+"]");
+    ms.forEach(f=>{
+      const[num,,,home,away]=f;const r=data.preds[num];
+      if(!r||r.h===""||r.a==="")return;
+      let line=num+". "+home+" "+r.h+"-"+r.a+" "+away;
+      if(isKO(num)&&(+r.h===+r.a)&&r.prog)line+=" > "+(r.prog==="H"?home:away);
+      lines.push(line);
+    });
+  });
+  return lines.join("\n");
+}
+
+function copyText(text){
+  if(navigator.clipboard&&navigator.clipboard.writeText){
+    navigator.clipboard.writeText(text).then(showCopied,()=>fallbackCopy(text));
+  }else fallbackCopy(text);
+}
+function fallbackCopy(text){
+  const ta=document.createElement("textarea");ta.value=text;ta.style.position="fixed";ta.style.opacity="0";
+  document.body.appendChild(ta);ta.focus();ta.select();
+  try{document.execCommand("copy");showCopied();}catch(e){alert("Couldn't auto-copy. Here's your text:\n\n"+text);}
+  document.body.removeChild(ta);
+}
+function showCopied(){toast.textContent="✅ Copied! Now paste into WhatsApp";toast.classList.add("show");
+  setTimeout(()=>toast.classList.remove("show"),2200);}
+
+function render(){
+  const filter=FILTERS.find(f=>f.val===stageFilter.value)||FILTERS[0];
+  const q=search.value.trim().toLowerCase();
+  let html="",lastKey=null,openRound=null,done=0,total=0;
+  function footer(round){
+    if(!round)return "";
+    let note="";
+    if(missing&&missing.round===round.key)
+      note=`<div class="missing-note"><b>"${round.label}" isn't complete — but you can still copy what you've got. Missing:</b><br>${missing.items.join("<br>")}</div>`;
+    return `${note}<div class="submit-row"><button class="copybtn" data-copy="${round.key}">📋 Copy "${round.label}"</button></div>`;
+  }
+  FIXTURES.forEach(f=>{
+    const[num,date,ko,home,away,fstage,group]=f;
+    if(!filter.test(num))return;
+    const round=roundOf(num);const isFinal=num===FINAL_MATCH;
+    if(q){const hay=(home+" "+away).toLowerCase();if(!hay.includes(q))return;}
+    total++;
+    const rec=data.preds[num]||{h:"",a:"",prog:""};
+    if(rec.h!==""&&rec.a!=="")done++;
+    if(round.key!==lastKey){if(openRound)html+=footer(openRound);lastKey=round.key;openRound=round;
+      const dbl=isFinal?`<span class="dbl">POINTS ×2</span>`:"";
+      html+=`<div class="stage-row"><div class="stage-title">${round.label}${dbl}</div></div>`;}
+    const groupTxt=group?"Group "+group+" · ":"";
+    const homeLabel=isCode(home)?`<span class="code">${home}</span>`:home;
+    const awayLabel=isCode(away)?`<span class="code">${away}</span>`:away;
+    const{lab,cls}=label(num);
+    let pick="";
+    if(isKO(num)){const v=rec.prog||"";
+      pick=`<select class="prog" data-num="${num}" data-field="prog" title="Who goes through">
+        <option value="">Who goes through…</option>
+        <option value="H"${v==="H"?" selected":""}>${home}</option>
+        <option value="A"${v==="A"?" selected":""}>${away}</option></select>`;}
+    const dblPill=isFinal?` · <span class="dblpill">points ×2</span>`:"";
+    html+=`<div class="match${isFinal?" finalmatch":""}">
+      <div class="num">#${num}</div>
+      <div class="team home">${homeLabel}<span class="meta">${groupTxt}${date} · ${ko}${isKO(num)?" · KO":""}${dblPill}</span></div>
+      <div class="score"><div class="scoreline">
+        <input type="number" min="0" max="99" data-num="${num}" data-side="h" value="${rec.h}">
+        <span>–</span>
+        <input type="number" min="0" max="99" data-num="${num}" data-side="a" value="${rec.a}">
+      </div>${pick}</div>
+      <div class="team away">${awayLabel}</div>
+      <div class="${cls}">${lab}</div>
+    </div>`;
+  });
+  if(openRound)html+=footer(openRound);
+  contextLabel.textContent=`${done}/${total} predicted`;
+  content.innerHTML=html;
+}
+
+content.addEventListener("input",e=>{
+  const num=e.target.dataset.num;if(!num||!e.target.dataset.side)return;
+  const s=data.preds[num]=data.preds[num]||{h:"",a:"",prog:""};
+  s[e.target.dataset.side]=e.target.value;save();updateLabel(e.target,+num);
+});
+content.addEventListener("change",e=>{
+  if(e.target.dataset.field){const num=e.target.dataset.num;
+    const s=data.preds[num]=data.preds[num]||{h:"",a:"",prog:""};
+    s[e.target.dataset.field]=e.target.value;save();render();}
+});
+content.addEventListener("click",e=>{
+  const ck=e.target.dataset.copy;if(!ck)return;
+  const round=ROUNDS.find(r=>r.key===ck);
+  if(!(data.name||"").trim()){alert("Please type your name at the top first.");entryName.focus();return;}
+  const m=missingForRound(round);missing=m.length?{round:ck,items:m}:null;
+  copyText(buildText(ck));render();
+});
+entryName.addEventListener("input",e=>{data.name=e.target.value;save();});
+stageFilter.addEventListener("change",()=>{missing=null;render();});
+search.addEventListener("input",render);
+document.getElementById("copyAllBtn").onclick=()=>{
+  if(!(data.name||"").trim()){alert("Please type your name at the top first.");entryName.focus();return;}
+  copyText(buildText(null));
+};
+render();
+</script>
+</body>
+</html>
