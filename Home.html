@@ -115,7 +115,6 @@
   .legend{max-width:1100px;margin:14px auto 0;color:var(--muted);font-size:.78rem;text-align:center}
   .legend span{display:inline-block;margin:0 8px}
   .swatch{display:inline-block;width:10px;height:10px;border-radius:2px;vertical-align:middle;margin-right:4px}
-  /* all-predictions matrix, per round */
   .round-block{max-width:100%;margin:0 auto 16px}
   .round-head{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin:18px 0 8px}
   .round-head .rh-title{background:var(--accent);color:#001219;padding:6px 12px;border-radius:8px;font-weight:700;font-size:.92rem}
@@ -323,9 +322,9 @@ function save(){localStorage.setItem(STORE,JSON.stringify(data));}
 
 let view={mode:"results"};
 let missingNote=null;
-let revealed={};                 // revealed[player]=true (player-tab gate, session)
-let matrixRevealed={};           // matrixRevealed[roundKey]=true (All-Predictions per-round reveal, session)
-let matrixErr={};                // matrixErr[roundKey]="..." inline error per round (session)
+let revealed={};
+let matrixRevealed={};
+let matrixErr={};
 
 const adminTabs=document.getElementById("adminTabs");
 const playerTabs=document.getElementById("playerTabs");
@@ -411,7 +410,6 @@ function unlockRound(player,round){
   if(pw===ADMIN_PASSWORD){data.locks[player][round.key]=false;save();render();}
   else{alert("Incorrect password.");}
 }
-// who has NOT locked a given round
 function playersNotLocked(round){
   return data.players.filter(p=>!(data.locks[p]&&data.locks[p][round.key]));
 }
@@ -525,6 +523,40 @@ function managePin(player){
   data.pins[player]=v;revealed[player]=true;save();render();
 }
 
+// Compute a match's display label + class (shared by render and the live single-row updater)
+function matchLabel(num,isResults,player){
+  const f=FIXTURES.find(x=>x[0]===num);
+  const knockout=isKO(num);
+  const homeName=(isResults?resolveTeam(f[3]):null)||f[3];
+  const awayName=(isResults?resolveTeam(f[4]):null)||f[4];
+  const rec=isResults?data.results[num]:(player?data.preds[player][num]:null);
+  let label="—",cls="result";
+  if(rec&&rec.h!==""&&rec.a!==""){
+    const h=+rec.h,a=+rec.a;
+    if(isResults){
+      if(h>a){label=homeName+" win";cls="result home";}
+      else if(a>h){label=awayName+" win";cls="result away";}
+      else{label="Draw"+(rec.pen?" · "+(rec.pen==="H"?homeName:awayName)+" (pens)":"");cls="result draw";}
+    }else{
+      const pts=scoreMatch(rec,data.results[num],knockout,num);
+      if(pts!==null){label=pts+" pts";cls="result pts";}
+      else if(h>a){label=homeName+" win";cls="result home";}
+      else if(a>h){label=awayName+" win";cls="result away";}
+      else{label="Draw"+(rec.prog?" · "+(rec.prog==="H"?homeName:awayName)+" thru":"");cls="result draw";}
+    }
+  }
+  return{label,cls};
+}
+
+// FIX: refresh just one row's result label as you type (no full re-render → keeps focus)
+function updateResultLabel(inputEl,num,isResults){
+  const row=inputEl.closest(".match");if(!row)return;
+  const labelEl=row.querySelector(".result");if(!labelEl)return;
+  const player=isResults?null:view.player;
+  const{label,cls}=matchLabel(num,isResults,player);
+  labelEl.className=cls;labelEl.textContent=label;
+}
+
 function render(){
   buildTabs();
   if(view.mode==="leaderboard"){renderLeaderboard();return;}
@@ -581,23 +613,7 @@ function render(){
       html+=`<div class="stage-row"><div class="stage-title${locked?" locked":""}">${round.label}${dbl}</div></div>`;
     }
     const groupTxt=group?"Group "+group+" · ":"";
-    let label="—",cls="result";
-    if(rec.h!==""&&rec.a!==""){
-      const h=+rec.h,a=+rec.a;
-      if(isResults){
-        if(h>a){label=homeName+" win";cls="result home";}
-        else if(a>h){label=awayName+" win";cls="result away";}
-        else{label="Draw"+(rec.pen?" · "+(rec.pen==="H"?homeName:awayName)+" (pens)":"");cls="result draw";}
-      }else{
-        const pts=scoreMatch(rec,data.results[num],knockout,num);
-        if(pts!==null){label=pts+" pts";cls="result pts";}
-        else{
-          if(h>a){label=homeName+" win";cls="result home";}
-          else if(a>h){label=awayName+" win";cls="result away";}
-          else{label="Draw"+(rec.prog?" · "+(rec.prog==="H"?homeName:awayName)+" thru":"");cls="result draw";}
-        }
-      }
-    }
+    const {label,cls}=matchLabel(num,isResults,player);
     const dis=locked?" disabled":"";
     let pickHtml="";
     if(knockout){
@@ -647,21 +663,18 @@ function renderGroups(){
   content.innerHTML=html;
 }
 
-// ---------- ALL PREDICTIONS, gated per round ----------
 function renderMatrix(){
   contextLabel.textContent="All Predictions — locked per round until everyone has submitted";
   const q=search.value.trim().toLowerCase();
   const filter=FILTERS.find(f=>f.val===stageFilter.value)||FILTERS[0];
   let html="";
-  // show only rounds that pass the stage filter (filter by any match in the round)
   ROUNDS.forEach(round=>{
     const roundMatches=FIXTURES.filter(f=>round.test(f[0])&&filter.test(f[0]));
     if(!roundMatches.length)return;
     const notLocked=playersNotLocked(round);
     const everyoneLocked=notLocked.length===0;
     const open=!!matrixRevealed[round.key];
-    const lockTxt=everyoneLocked?`<b>${data.players.length}/${data.players.length}</b> locked`
-      :`<b>${data.players.length-notLocked.length}/${data.players.length}</b> locked`;
+    const lockTxt=`<b>${data.players.length-notLocked.length}/${data.players.length}</b> locked`;
     let actions;
     if(open){
       actions=`<span class="lockstate">🔓 Revealed</span>
@@ -679,7 +692,6 @@ function renderMatrix(){
       html+=`<div class="err-inline"><b>Not everyone has locked "${round.label}" yet.</b><br>Waiting on: ${matrixErr[round.key]}</div>`;
     }
     if(open){
-      // build matrix for this round
       let head=`<tr><th class="gamecol">Game</th>`;
       data.players.forEach(p=>head+=`<th>${p}</th>`);head+=`</tr>`;
       let body="";
@@ -707,15 +719,11 @@ function renderMatrix(){
   html+=`<div class="hint">Each round stays hidden until <b>every player has locked</b> their predictions for it, then needs the admin password to reveal. <b>X–Y</b> = predicted score; <span style="color:var(--accent)">▸ Team</span> = pick to progress on a knockout draw.</div>`;
   content.innerHTML=html;
 }
-
 function matrixUnlock(roundKey){
   const round=ROUNDS.find(r=>r.key===roundKey);
-  matrixErr={}; // clear prior errors
+  matrixErr={};
   const notLocked=playersNotLocked(round);
-  if(notLocked.length){
-    matrixErr[roundKey]=notLocked.join(", ");
-    render();return;
-  }
+  if(notLocked.length){matrixErr[roundKey]=notLocked.join(", ");render();return;}
   const pw=prompt("All players have locked \""+round.label+"\".\nEnter the admin password to reveal everyone's predictions:");
   if(pw===null)return;
   if(pw===ADMIN_PASSWORD){matrixRevealed[roundKey]=true;render();}
@@ -825,7 +833,9 @@ content.addEventListener("input",e=>{
   const isResults=view.mode==="results";
   const store=isResults?(data.results[num]=data.results[num]||{h:"",a:"",pen:""})
                        :(data.preds[view.player][num]=data.preds[view.player][num]||{h:"",a:"",prog:""});
-  store[e.target.dataset.side]=e.target.value;save();
+  store[e.target.dataset.side]=e.target.value;
+  save();
+  updateResultLabel(e.target,+num,isResults); // live single-row label refresh (keeps focus)
 });
 content.addEventListener("change",e=>{
   if(e.target.dataset.slot){data.thirds[e.target.dataset.slot]=e.target.value;save();render();return;}
