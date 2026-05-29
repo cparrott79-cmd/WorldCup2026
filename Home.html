@@ -17,8 +17,10 @@
   .tab.active{background:var(--accent);color:#001219;border-color:var(--accent);font-weight:700}
   .tab.enter{background:transparent;border:1px dashed var(--gold);color:var(--gold)}
   .tab.enter.active,.tab.enter:hover{background:var(--gold);color:#001219;border-color:var(--gold)}
+  .tab.imp{background:transparent;border:1px dashed var(--win);color:var(--win)}
+  .tab.imp.active,.tab.imp:hover{background:var(--win);color:#001219;border-color:var(--win)}
   .controls{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;align-items:center;margin:12px 0}
-  select,input[type=text],input[type=password],button{background:var(--card);color:var(--text);border:1px solid #415a77;border-radius:8px;padding:8px 12px;font-size:.9rem}
+  select,input[type=text],input[type=password],button,textarea{background:var(--card);color:var(--text);border:1px solid #415a77;border-radius:8px;padding:8px 12px;font-size:.9rem;font-family:inherit}
   button{cursor:pointer;transition:.2s}
   button:hover{background:var(--accent);color:#001219;border-color:var(--accent)}
   button.danger{border-color:var(--danger);color:var(--danger)}
@@ -31,6 +33,19 @@
   .entry-name{max-width:560px;margin:0 auto 14px;background:var(--card);border:1px solid #415a77;border-radius:12px;padding:12px 16px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
   .entry-name label{font-size:.85rem;color:var(--muted)}
   .entry-name input{flex:1;min-width:160px}
+  .import-panel{max-width:760px;margin:0 auto 14px;background:var(--card);border:1px solid #415a77;border-radius:12px;padding:16px}
+  .import-panel h3{margin:0 0 6px;color:var(--accent);font-size:1rem}
+  .import-panel p{color:var(--muted);font-size:.82rem;margin:0 0 10px}
+  .import-panel textarea{width:100%;min-height:200px;resize:vertical}
+  .import-row{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:10px}
+  .import-row label{font-size:.82rem;color:var(--muted)}
+  .go{background:var(--gold);color:#001219;border-color:var(--gold);font-weight:700}
+  .go:hover{background:#ffdf85;border-color:#ffdf85;color:#001219}
+  .report{margin-top:12px;font-size:.84rem;border-radius:8px;padding:10px 12px}
+  .report.ok{background:#16302a;border:1px solid var(--win);color:#8ff0dd}
+  .report.warn{background:#3d2c1b;border:1px solid var(--draw);color:#ffe3a0}
+  .report.err{background:#3d1f1b;border:1px solid var(--danger);color:#ffb4a2}
+  .report b{color:#fff}
   .stage-row{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:16px 0 10px;flex-wrap:wrap}
   .stage-title{background:var(--accent);color:#001219;padding:6px 12px;border-radius:8px;font-weight:700;font-size:.92rem;margin:0}
   .stage-title .dbl{background:#001219;color:var(--gold);padding:1px 7px;border-radius:6px;font-size:.74rem;margin-left:8px}
@@ -50,7 +65,6 @@
   .score input{width:44px;text-align:center;font-size:1.05rem;padding:6px;background:#0d1b2a;border:1px solid #415a77;color:var(--text);border-radius:6px}
   .score input:focus{outline:2px solid var(--accent)}
   .score input:disabled,.prog:disabled{background:#16202e;color:var(--muted);cursor:not-allowed}
-  /* +/- stepper for the Results tab */
   .stepper{display:flex;align-items:center;gap:4px}
   .stepper button{width:28px;height:32px;padding:0;font-size:1.15rem;font-weight:700;line-height:1;background:#0d1b2a;border:1px solid #415a77;color:var(--accent);border-radius:6px;display:flex;align-items:center;justify-content:center}
   .stepper button:hover{background:var(--accent);color:#001219;border-color:var(--accent)}
@@ -108,26 +122,36 @@
   .legend{max-width:1100px;margin:14px auto 0;color:var(--muted);font-size:.78rem;text-align:center}
   .legend span{display:inline-block;margin:0 8px}
   .swatch{display:inline-block;width:10px;height:10px;border-radius:2px;vertical-align:middle;margin-right:4px}
-  .round-block{max-width:100%;margin:0 auto 16px}
-  .round-head{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin:18px 0 8px}
-  .round-head .rh-title{background:var(--accent);color:#001219;padding:6px 12px;border-radius:8px;font-weight:700;font-size:.92rem}
-  .round-head .rh-actions{display:flex;gap:8px;align-items:center}
+  /* ---- All Predictions: transposed grid (players down, games across) ---- */
+  .mx-toolbar{display:flex;gap:10px;align-items:center;justify-content:center;flex-wrap:wrap;margin:0 auto 12px;max-width:1100px}
+  .mx-toolbar .info{color:var(--muted);font-size:.8rem}
   .matrixwrap{overflow-x:auto;max-width:100%;border:1px solid #2a3a52;border-radius:10px}
-  table.matrix{border-collapse:separate;border-spacing:0;font-size:.8rem;width:max-content;min-width:100%}
-  table.matrix th,table.matrix td{padding:7px 9px;text-align:center;border-bottom:1px solid #2a3a52;white-space:nowrap}
-  table.matrix thead th{position:sticky;top:0;background:#15263b;color:var(--accent);z-index:3;font-size:.76rem}
-  table.matrix .gamecol{position:sticky;left:0;background:var(--card);text-align:left;z-index:2;min-width:172px;max-width:172px;box-shadow:1px 0 0 #2a3a52}
-  table.matrix thead th.gamecol{z-index:4;background:#15263b}
-  table.matrix .gamecol .g-teams{font-weight:600;font-size:.8rem;white-space:normal}
-  table.matrix .gamecol .g-meta{color:var(--muted);font-size:.68rem}
-  table.matrix td.cell{font-variant-numeric:tabular-nums}
+  table.matrix{border-collapse:separate;border-spacing:0;font-size:.82rem;width:max-content;min-width:100%}
+  table.matrix th,table.matrix td{border-bottom:1px solid #2a3a52;white-space:nowrap}
+  table.matrix tr.dayband th{position:sticky;top:0;z-index:5;background:#10202f;color:var(--accent);font-weight:700;text-align:left;padding:6px 10px;font-size:.8rem}
+  table.matrix tr.dayband th.namecorner{left:0;z-index:7;background:#10202f}
+  table.matrix thead tr.games th{position:sticky;z-index:4;background:#15263b;color:var(--text);vertical-align:top;
+    width:137px;min-width:137px;max-width:137px;padding:6px 6px;font-weight:600;font-size:.74rem;text-align:center}
+  table.matrix thead tr.games th.gh-final{border:1px solid var(--gold)}
+  table.matrix thead tr.games th .gh-hide{display:inline-flex;align-items:center;gap:4px;margin:0 0 5px;color:var(--muted);font-size:.66rem;cursor:pointer}
+  table.matrix thead tr.games th .gh-hide input{vertical-align:middle}
+  table.matrix thead tr.games th .gh-teams{font-weight:700;line-height:1.2}
+  table.matrix thead tr.games th .gh-v{color:var(--muted);font-weight:400;font-size:.68rem}
+  table.matrix thead tr.games th .gh-meta{color:var(--muted);font-weight:400;font-size:.66rem;margin-top:2px}
+  table.matrix tr.dayband th{top:0}
+  table.matrix thead tr.games th{top:31px}
+  table.matrix th.namecol,table.matrix td.namecol{position:sticky;left:0;z-index:3;background:var(--card);
+    width:100px;min-width:100px;max-width:100px;padding:7px 8px;text-align:left;font-weight:700;box-shadow:1px 0 0 #2a3a52}
+  table.matrix thead tr.games th.namecol{z-index:6;background:#15263b}
+  table.matrix td.cell{text-align:center;padding:6px 6px;font-variant-numeric:tabular-nums;width:137px;min-width:137px;max-width:137px}
+  table.matrix td.cell .sc{font-size:.95rem;font-weight:700}
+  table.matrix td.cell .rs{display:block;font-size:.66rem;margin-top:2px;overflow:hidden;text-overflow:ellipsis}
+  table.matrix td.cell .rs.home,table.matrix td.cell .rs.away{color:var(--win)}
+  table.matrix td.cell .rs.draw{color:var(--draw)}
   table.matrix td.cell.empty{color:#43526a}
-  table.matrix td.cell .thru{color:var(--accent);font-size:.66rem;display:block}
-  table.matrix tr:nth-child(even) td:not(.gamecol){background:rgba(255,255,255,.015)}
+  table.matrix tr:nth-child(even) td.cell{background:rgba(255,255,255,.015)}
   @media(max-width:640px){
     .match{grid-template-columns:28px 1fr auto 1fr}.result{grid-column:1/-1}.third-row label{min-width:80px}
-    table.matrix .gamecol{min-width:120px;max-width:120px}
-    table.matrix th,table.matrix td{padding:6px 7px}
   }
 </style>
 </head>
@@ -299,10 +323,12 @@ data.results=data.results||{};
 data.thirds=data.thirds||{};
 data.pins=data.pins||{};
 data.entry=data.entry||{name:"",preds:{}};
+data.hidden=data.hidden||{};
 data.players.forEach(p=>{data.preds[p]=data.preds[p]||{};});
 function save(){localStorage.setItem(STORE,JSON.stringify(data));}
 
 let view={mode:"results"};
+let importReport=null;
 
 const adminTabs=document.getElementById("adminTabs");
 const content=document.getElementById("content");
@@ -318,12 +344,13 @@ function buildTabs(){
   const mk=(mode,label,cls)=>{
     const t=document.createElement("div");
     t.className="tab"+(cls?(" "+cls):"")+(view.mode===mode?" active":"");
-    t.textContent=label;t.onclick=()=>{view={mode};render();};adminTabs.appendChild(t);
+    t.textContent=label;t.onclick=()=>{view={mode};importReport=null;render();};adminTabs.appendChild(t);
   };
   mk("results","🎯 Results");
   mk("groups","📊 Group Tables");
   mk("matrix","🗒 All Predictions");
   mk("leaderboard","🏆 Leaderboard");
+  mk("import","📥 Import predictions","imp");
   mk("entry","📝 Enter predictions","enter");
   clearBtn.style.display=view.mode==="results"?"":"none";
 }
@@ -397,7 +424,6 @@ function renderThirdPanel(){
     <div class="third-grid">${rows}</div></div>`;
 }
 
-// shared label builder. mode: "results" | "entry"
 function matchLabel(num,mode){
   const f=FIXTURES.find(x=>x[0]===num);
   const isResults=mode==="results";
@@ -430,6 +456,7 @@ function render(){
   if(view.mode==="leaderboard"){renderLeaderboard();return;}
   if(view.mode==="groups"){renderGroups();return;}
   if(view.mode==="matrix"){renderMatrix();return;}
+  if(view.mode==="import"){renderImport();return;}
   if(view.mode==="entry"){renderEntry();return;}
   renderResults();
 }
@@ -459,10 +486,7 @@ function renderResults(){
       html+=`<div class="stage-row"><div class="stage-title">${round.label}${dbl}</div></div>`;}
     const groupTxt=group?"Group "+group+" · ":"";
     const{label,cls}=matchLabel(num,"results");
-    // +/- steppers for the Results tab
-    const hVal=rec.h===""?0:+rec.h;
-    const aVal=rec.a===""?0:+rec.a;
-    const stepper=(side,val)=>`<div class="stepper">
+    const stepper=(side)=>`<div class="stepper">
         <button data-num="${num}" data-side="${side}" data-step="-1" title="Decrease">−</button>
         <span class="val" data-valfor="${num}-${side}">${rec[side]===""?0:rec[side]}</span>
         <button data-num="${num}" data-side="${side}" data-step="1" title="Increase">+</button>
@@ -477,11 +501,7 @@ function renderResults(){
     html+=`<div class="match${isFinal?" finalmatch":""}">
       <div class="num">#${num}</div>
       <div class="team home">${homeLabel}<span class="meta">${groupTxt}${date} · ${ko}${knockout?" · KO":""}${dblPill}</span></div>
-      <div class="score"><div class="scoreline">
-        ${stepper("h",hVal)}
-        <span>–</span>
-        ${stepper("a",aVal)}
-      </div>${pickHtml}</div>
+      <div class="score"><div class="scoreline">${stepper("h")}<span>–</span>${stepper("a")}</div>${pickHtml}</div>
       <div class="team away">${awayLabel}</div>
       <div class="${cls}">${label}</div>
     </div>`;
@@ -490,7 +510,85 @@ function renderResults(){
   content.innerHTML=html;
 }
 
-// ---------- ENTER PREDICTIONS (single sheet, per-round Export) ----------
+// ---------- IMPORT PREDICTIONS ----------
+function parsePredictions(text){
+  const lines=text.split(/\r?\n/);
+  let name="";const entries=[];const errors=[];
+  lines.forEach(raw=>{
+    const line=raw.trim();
+    if(!line)return;
+    const nm=line.match(/predictions\s*[—\-:]\s*(.+)$/i);
+    if(nm){name=nm[1].trim();return;}
+    if(/^\[.*\]$/.test(line))return;
+    if(/^WC2026/i.test(line))return;
+    const numMatch=line.match(/^#?\s*(\d+)[.)]?\s+(.*)$/);
+    if(!numMatch){if(/\d+\s*[-–:]\s*\d+/.test(line))errors.push(line);return;}
+    const num=+numMatch[1];const rest=numMatch[2];
+    const scoreMatch=rest.match(/(\d+)\s*[-–:]\s*(\d+)/);
+    if(!scoreMatch){errors.push(line);return;}
+    const h=scoreMatch[1], a=scoreMatch[2];
+    const winMatch=rest.match(/[>›→]\s*(.+)$/);
+    const winnerName=winMatch?winMatch[1].trim():"";
+    const f=FIXTURES.find(x=>x[0]===num);
+    if(!f){errors.push("Unknown match #: "+line);return;}
+    const entry={num,h:String(+h),a:String(+a),prog:""};
+    if(isKO(num)&&(+h===+a)&&winnerName){
+      const low=winnerName.toLowerCase();
+      if(f[3].toLowerCase()===low)entry.prog="H";
+      else if(f[4].toLowerCase()===low)entry.prog="A";
+      else if(f[3].toLowerCase().includes(low)||low.includes(f[3].toLowerCase()))entry.prog="H";
+      else if(f[4].toLowerCase().includes(low)||low.includes(f[4].toLowerCase()))entry.prog="A";
+    }
+    entries.push(entry);
+  });
+  return{name,entries,errors};
+}
+
+function renderImport(){
+  contextLabel.textContent="Import a player's WhatsApp predictions";
+  const playerOpts=data.players.map(p=>`<option value="${p}">${p}</option>`).join("");
+  let report="";
+  if(importReport)report=`<div class="report ${importReport.cls}">${importReport.msg}</div>`;
+  content.innerHTML=`<div class="import-panel">
+    <h3>📥 Paste predictions from WhatsApp</h3>
+    <p>Paste the text a player sent you. It auto-detects their name from the header (override below if needed). Only the games in the text are updated; everything else is left as-is, and matching games are overwritten.</p>
+    <textarea id="pasteBox" placeholder="WC2026 Predictions — Chris
+[FS1]
+1. Mexico 1-1 South Africa
+2. Korea Republic 1-2 Czechia
+..."></textarea>
+    <div class="import-row">
+      <label for="playerSel">Add to player:</label>
+      <select id="playerSel"><option value="">— auto-detect from text —</option>${playerOpts}</select>
+      <button class="go" id="doImport">📥 Import predictions</button>
+    </div>
+    ${report}
+  </div>`;
+  document.getElementById("doImport").onclick=doImport;
+}
+
+function doImport(){
+  const text=document.getElementById("pasteBox").value;
+  const chosen=document.getElementById("playerSel").value;
+  if(!text.trim()){importReport={cls:"err",msg:"Nothing pasted. Paste the WhatsApp text first."};render();return;}
+  const parsed=parsePredictions(text);
+  let target=chosen;
+  if(!target){const det=parsed.name.toLowerCase();target=data.players.find(p=>p.toLowerCase()===det)||"";}
+  if(!target){importReport={cls:"warn",msg:`<b>Couldn't match a player.</b> Detected name: "${parsed.name||"(none)"}" — pick the player from the dropdown and import again.`};render();return;}
+  if(!parsed.entries.length){importReport={cls:"err",msg:`<b>No predictions found.</b> Each line should look like "1. Mexico 1-1 South Africa".`};render();return;}
+  data.preds[target]=data.preds[target]||{};
+  parsed.entries.forEach(en=>{data.preds[target][en.num]={h:en.h,a:en.a,prog:en.prog};});
+  save();
+  let msg=`<b>Imported ${parsed.entries.length} prediction${parsed.entries.length===1?"":"s"} for ${target}.</b>`;
+  if(parsed.errors.length){
+    msg+=`<br>⚠️ ${parsed.errors.length} line${parsed.errors.length===1?"":"s"} couldn't be read and were skipped:<br>`+parsed.errors.map(e=>"• "+e).join("<br>");
+    importReport={cls:"warn",msg};
+  }else{importReport={cls:"ok",msg:msg+" No errors. 👍"};}
+  render();
+  const box=document.getElementById("pasteBox");if(box&&!parsed.errors.length)box.value="";
+}
+
+// ---------- ENTER PREDICTIONS ----------
 function missingForRoundEntry(round){
   const items=[];
   FIXTURES.forEach(f=>{
@@ -510,8 +608,7 @@ function exportRound(round){
   if(missing.length){entryMissing={round:round.key,items:missing};render();return;}
   entryMissing=null;
   const out={name:data.entry.name||"",round:round.key,roundLabel:round.label,predictions:{}};
-  FIXTURES.forEach(f=>{const num=f[0];if(!round.test(num))return;
-    out.predictions[num]=data.entry.preds[num]||{};});
+  FIXTURES.forEach(f=>{const num=f[0];if(!round.test(num))return;out.predictions[num]=data.entry.preds[num]||{};});
   const blob=new Blob([JSON.stringify(out,null,2)],{type:"application/json"});
   const a=document.createElement("a");a.href=URL.createObjectURL(blob);
   const who=(data.entry.name||"predictions").replace(/[^a-z0-9]+/gi,"-").toLowerCase();
@@ -600,29 +697,89 @@ function renderGroups(){
   content.innerHTML=html;
 }
 
+// ---------- ALL PREDICTIONS (transposed; hide above date; 100/137 widths) ----------
 function renderMatrix(){
-  contextLabel.textContent="All predictions — everyone, every game";
+  const hiddenCount=Object.values(data.hidden).filter(Boolean).length;
+  contextLabel.textContent="All predictions — players down, games across";
   const q=search.value.trim().toLowerCase();
   const filter=FILTERS.find(f=>f.val===stageFilter.value)||FILTERS[0];
-  let head=`<tr><th class="gamecol">Game</th>`;
-  data.players.forEach(p=>head+=`<th>${p}</th>`);head+=`</tr>`;
-  let body="",lastRound=null;const cols=data.players.length+1;
-  FIXTURES.forEach(f=>{
-    const[num,date,ko,homeCode,awayCode,fstage,group]=f;if(!filter.test(num))return;
-    const hN=resolveTeam(homeCode)||homeCode,aN=resolveTeam(awayCode)||awayCode;
-    if(q){const hay=(hN+" "+aN+" "+homeCode+" "+awayCode).toLowerCase();if(!hay.includes(q))return;}
-    const round=roundOf(num);
-    if(round.key!==lastRound){lastRound=round.key;
-      body+=`<tr><td class="gamecol" style="background:#10202f;color:var(--accent);font-weight:700" colspan="${cols}">${round.label}${num===FINAL_MATCH?" — ×2":""}</td></tr>`;}
-    let cells="";
-    data.players.forEach(p=>{const rec=data.preds[p][num];
-      if(!rec||rec.h===""||rec.a===""){cells+=`<td class="cell empty">–</td>`;}
-      else{let thru="";if(isKO(num)&&(+rec.h===+rec.a)&&rec.prog)thru=`<span class="thru">▸ ${rec.prog==="H"?hN:aN}</span>`;
-        cells+=`<td class="cell">${rec.h}–${rec.a}${thru}</td>`;}});
-    body+=`<tr><td class="gamecol"><div class="g-teams">${hN} v ${aN}</div><div class="g-meta">#${num} · ${date}${group?" · Grp "+group:""}</div></td>${cells}</tr>`;
+
+  const visible=FIXTURES.filter(f=>{
+    const[num,,,homeCode,awayCode]=f;
+    if(!filter.test(num))return false;
+    if(data.hidden[num])return false;
+    if(q){const hN=resolveTeam(homeCode)||homeCode,aN=resolveTeam(awayCode)||awayCode;
+      const hay=(hN+" "+aN+" "+homeCode+" "+awayCode).toLowerCase();if(!hay.includes(q))return false;}
+    return true;
   });
-  content.innerHTML=`<div class="matrixwrap"><table class="matrix"><thead>${head}</thead><tbody>${body}</tbody></table></div>
-    <div class="hint">Scroll sideways for all players. <b>X–Y</b> predicted score; <span style="color:var(--accent)">▸ Team</span> = pick to progress on a KO draw.</div>`;
+
+  let html=`<div class="mx-toolbar">
+    <button class="go" id="unhideAll">↺ Unhide all</button>
+    <span class="info">${hiddenCount} game${hiddenCount===1?"":"s"} hidden · tick a game's box to hide it</span>
+  </div>`;
+
+  if(!visible.length){
+    html+=`<div class="hint">No games to show (everything is hidden or filtered out). Use <b>Unhide all</b> or change the stage filter.</div>`;
+    content.innerHTML=html;
+    document.getElementById("unhideAll").onclick=()=>{data.hidden={};save();render();};
+    return;
+  }
+
+  // day band row
+  let lastDay=null, span=0, bandCells="";
+  function flushBand(){ if(span>0){bandCells+=`<th colspan="${span}">${lastDay}</th>`;} }
+  visible.forEach(f=>{const date=f[1];if(date!==lastDay){flushBand();lastDay=date;span=1;}else{span++;}});
+  flushBand();
+  const dayBands=`<tr class="dayband"><th class="namecorner namecol">Player</th>${bandCells}</tr>`;
+
+  // games header row — Hide label is now ABOVE the team names; "Hide" capitalised
+  let gameHdr=`<tr class="games"><th class="namecol">&nbsp;</th>`;
+  visible.forEach(f=>{
+    const[num,date,ko,homeCode,awayCode,fstage,group]=f;
+    const hN=resolveTeam(homeCode)||homeCode, aN=resolveTeam(awayCode)||awayCode;
+    const isFinal=num===FINAL_MATCH;
+    gameHdr+=`<th class="${isFinal?'gh-final':''}">
+      <label class="gh-hide"><input type="checkbox" data-hide="${num}"> Hide</label>
+      <div class="gh-teams">${hN}</div>
+      <div class="gh-v">v</div>
+      <div class="gh-teams">${aN}</div>
+      <div class="gh-meta">#${num} · ${ko}${isFinal?" · ×2":""}</div>
+    </th>`;
+  });
+  gameHdr+=`</tr>`;
+
+  // player rows
+  let bodyRows="";
+  data.players.forEach(p=>{
+    let cells="";
+    visible.forEach(f=>{
+      const[num,,,homeCode,awayCode]=f;
+      const hN=resolveTeam(homeCode)||homeCode, aN=resolveTeam(awayCode)||awayCode;
+      const rec=data.preds[p][num];
+      if(!rec||rec.h===""||rec.a===""){cells+=`<td class="cell empty">–</td>`;}
+      else{
+        const h=+rec.h,a=+rec.a;
+        let resName,resCls;
+        if(h>a){resName=hN;resCls="home";}
+        else if(a>h){resName=aN;resCls="away";}
+        else{
+          if(isKO(num)&&rec.prog){resName=(rec.prog==="H"?hN:aN)+" (pens)";resCls="draw";}
+          else{resName="Draw";resCls="draw";}
+        }
+        cells+=`<td class="cell"><span class="sc">${rec.h}–${rec.a}</span><span class="rs ${resCls}">${resName}</span></td>`;
+      }
+    });
+    bodyRows+=`<tr><td class="namecol">${p}</td>${cells}</tr>`;
+  });
+
+  html+=`<div class="matrixwrap"><table class="matrix">
+    <thead>${dayBands}${gameHdr}</thead>
+    <tbody>${bodyRows}</tbody>
+  </table></div>
+  <div class="hint">Players are fixed on the left; swipe sideways for more games. Each cell shows the predicted score and result. Tick a game's <b>Hide</b> box to remove it; <b>Unhide all</b> brings them back.</div>`;
+  content.innerHTML=html;
+
+  document.getElementById("unhideAll").onclick=()=>{data.hidden={};save();render();};
 }
 
 function computeStats(){
@@ -718,7 +875,6 @@ function renderLeaderboard(){
 content.addEventListener("input",e=>{
   const num=e.target.dataset.num;if(!num)return;
   if(!e.target.dataset.side)return;
-  // only the Enter-predictions sheet uses number inputs now
   if(view.mode==="entry"){
     const store=data.entry.preds[num]=data.entry.preds[num]||{h:"",a:"",prog:""};
     store[e.target.dataset.side]=e.target.value;save();
@@ -726,6 +882,11 @@ content.addEventListener("input",e=>{
   }
 });
 content.addEventListener("change",e=>{
+  if(e.target.dataset.hide!==undefined){
+    const n=e.target.dataset.hide;
+    if(e.target.checked)data.hidden[n]=true; else delete data.hidden[n];
+    save();render();return;
+  }
   if(e.target.dataset.slot){data.thirds[e.target.dataset.slot]=e.target.value;save();render();return;}
   if(e.target.dataset.field){
     const num=e.target.dataset.num;
@@ -734,17 +895,13 @@ content.addEventListener("change",e=>{
   }
 });
 content.addEventListener("click",e=>{
-  // +/- steppers on the Results tab
   const step=e.target.dataset.step;
   if(step!==undefined&&view.mode==="results"){
     const num=e.target.dataset.num, side=e.target.dataset.side;
     const store=data.results[num]=data.results[num]||{h:"",a:"",pen:""};
     let cur=store[side]===""?0:+store[side];
-    cur+=(+step);
-    if(cur<0)cur=0; if(cur>99)cur=99;
-    store[side]=String(cur);
-    save();
-    // update just this stepper's displayed value + the row's result label
+    cur+=(+step);if(cur<0)cur=0;if(cur>99)cur=99;
+    store[side]=String(cur);save();
     const row=e.target.closest(".match");
     const valEl=row.querySelector(`[data-valfor="${num}-${side}"]`);
     if(valEl)valEl.textContent=cur;
@@ -774,7 +931,7 @@ document.getElementById("importFile").onchange=e=>{
       if(!loaded.results)throw new Error("Not a valid backup file");
       data=loaded;data.players=data.players||DEFAULT_PLAYERS.slice();
       data.preds=data.preds||{};data.results=data.results||{};data.thirds=data.thirds||{};data.pins=data.pins||{};
-      data.entry=data.entry||{name:"",preds:{}};
+      data.entry=data.entry||{name:"",preds:{}};data.hidden=data.hidden||{};
       data.players.forEach(p=>{data.preds[p]=data.preds[p]||{};});
       save();view={mode:"leaderboard"};render();alert("Backup imported successfully ✅");
     }catch(err){alert("Could not import: "+err.message);}
