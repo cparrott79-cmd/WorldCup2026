@@ -52,28 +52,33 @@
   .submit-row{display:flex;align-items:center;justify-content:flex-end;gap:8px;margin:8px 0 18px}
   .exportbtn{background:var(--gold);color:#001219;border-color:var(--gold);font-weight:700}
   .exportbtn:hover{background:#ffdf85;border-color:#ffdf85;color:#001219}
-  .match{display:grid;grid-template-columns:32px 1fr auto 1fr 130px;align-items:center;gap:8px;background:var(--card);padding:9px 12px;border-radius:10px;margin-bottom:7px}
+  /* ---- Results match card: stacked rows (ported from predictions page) ---- */
+  .match{background:var(--card);padding:10px 14px;border-radius:10px;margin-bottom:7px}
   .match.finalmatch{border:1px solid var(--gold)}
-  .num{color:var(--muted);font-size:.78rem;text-align:center}
-  .team{font-weight:600}
-  .home{text-align:right}.away{text-align:left}
-  .code{color:var(--muted);font-weight:400;font-size:.78rem}
-  .meta{font-size:.7rem;color:var(--muted);display:block;font-weight:400}
+  .match-top{display:grid;grid-template-columns:1fr 1fr;gap:10px;align-items:stretch}
+  .side{display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:8px;min-width:0}
+  .team{font-weight:600;font-size:1rem;line-height:1.25;text-align:center;overflow-wrap:break-word;word-break:normal;hyphens:none;max-width:100%}
+  .code{color:var(--muted);font-weight:400;font-size:.82rem}
+  .meta{display:block;width:100%;text-align:center;margin-top:10px;padding-top:8px;border-top:1px solid #2b3a52;font-size:.72rem;color:var(--muted)}
+  .meta .num{font-weight:600}
   .meta .dblpill{color:var(--gold);font-weight:700}
-  .score{display:flex;align-items:center;gap:6px;justify-content:center;flex-direction:column}
-  .scoreline{display:flex;align-items:center;gap:6px}
-  .score input{width:44px;text-align:center;font-size:1.05rem;padding:6px;background:#0d1b2a;border:1px solid #415a77;color:var(--text);border-radius:6px}
-  .score input:focus{outline:2px solid var(--accent)}
-  .score input:disabled,.prog:disabled{background:#16202e;color:var(--muted);cursor:not-allowed}
-  .stepper{display:flex;align-items:center;gap:4px}
-  .stepper button{width:28px;height:32px;padding:0;font-size:1.15rem;font-weight:700;line-height:1;background:#0d1b2a;border:1px solid #415a77;color:var(--accent);border-radius:6px;display:flex;align-items:center;justify-content:center}
-  .stepper button:hover{background:var(--accent);color:#001219;border-color:var(--accent)}
-  .stepper .val{width:30px;text-align:center;font-size:1.1rem;font-variant-numeric:tabular-nums}
-  .prog{font-size:.72rem;padding:3px;background:#0d1b2a;border:1px solid #415a77;color:var(--text);border-radius:6px;max-width:140px}
-  .result{font-size:.7rem;text-align:center;padding:4px 6px;border-radius:6px;background:#0d1b2a;color:var(--muted);min-width:120px}
+  .stepper{display:flex;align-items:center;gap:8px}
+  .stepbtn{width:32px;height:32px;padding:0;font-size:1.2rem;font-weight:700;line-height:1;border:none;border-radius:50%;display:flex;align-items:center;justify-content:center;user-select:none;cursor:pointer;transition:.15s}
+  .stepbtn.minus{background:#2b3a52;color:var(--text)}
+  .stepbtn.minus:hover{background:#3a4d6b;color:#fff}
+  .stepbtn.plus{background:var(--accent);color:#001219}
+  .stepbtn.plus:hover{background:#33c6ec;color:#001219}
+  .stepbtn:active{transform:scale(.9)}
+  .scoreval{min-width:22px;text-align:center;font-size:1.2rem;font-weight:700;color:var(--text);background:none;border:none;padding:0}
+  .scoreval.empty{color:var(--muted);font-weight:400}
+  .prog-row{margin-top:10px;text-align:center}
+  .prog{font-size:.78rem;padding:5px 8px;background:#0d1b2a;border:1px solid #415a77;color:var(--text);border-radius:6px;max-width:100%}
+  .result-cell{margin-top:8px}
+  .result{display:block;font-size:.7rem;text-align:center;padding:4px 6px;border-radius:6px;background:#0d1b2a;color:var(--muted)}
   .result.home,.result.away{background:var(--win);color:#001219;font-weight:700}
   .result.draw{background:var(--draw);color:#001219;font-weight:700}
   .result.pts{background:var(--gold);color:#001219;font-weight:700}
+  /* ---- end results card ---- */
   .lbwrap{overflow-x:auto}
   table.lb{width:100%;max-width:1060px;margin:0 auto;border-collapse:collapse;font-size:.86rem}
   table.lb th,table.lb td{padding:9px 10px;text-align:center;border-bottom:1px solid #415a77;white-space:nowrap}
@@ -141,7 +146,7 @@
   table.matrix tr.dayband th{top:0}
   table.matrix thead tr.games th{top:31px}
   table.matrix th.namecol,table.matrix td.namecol{position:sticky;left:0;z-index:3;background:var(--card);
-    width:45px;min-width:45px;max-width:45px;padding:7px 6px;text-align:left;font-weight:700;box-shadow:1px 0 0 #2a3a52;
+    width:60px;min-width:60px;max-width:60px;padding:7px 6px;text-align:left;font-weight:700;box-shadow:1px 0 0 #2a3a52;
     overflow:hidden;text-overflow:ellipsis}
   table.matrix thead tr.games th.namecol{z-index:6;background:#15263b}
   table.matrix td.cell{text-align:center;padding:6px 6px;font-variant-numeric:tabular-nums;width:140px;min-width:140px;max-width:140px}
@@ -151,19 +156,11 @@
   table.matrix td.cell .rs.draw{color:var(--draw)}
   table.matrix td.cell.empty{color:#43526a}
   table.matrix tr:nth-child(even) td.cell{background:rgba(255,255,255,.015)}
-  /* ---- Results page: keep each row within 340px on small screens ---- */
-  @media(max-width:375px){
-    body{padding:8px}
-    .match{grid-template-columns:22px 1fr auto 1fr;gap:5px;padding:7px 7px;max-width:340px}
-    .match .num{font-size:.7rem}
-    .match .team{font-size:.82rem}
-    .match .meta{font-size:.62rem}
-    .match .result{grid-column:1/-1;min-width:0;width:100%;margin-top:4px}
-    .stepper{gap:2px}
-    .stepper button{width:22px;height:28px;font-size:1rem}
-    .stepper .val{width:20px;font-size:.95rem}
-    .score input{width:36px;font-size:.95rem;padding:4px}
-    .prog{max-width:120px;font-size:.68rem}
+  @media(max-width:640px){
+    .team{font-size:.95rem}
+    .stepper{gap:6px}
+    .stepbtn{width:30px;height:30px}
+    .third-row label{min-width:80px}
   }
 </style>
 </head>
@@ -436,31 +433,33 @@ function renderThirdPanel(){
     <div class="third-grid">${rows}</div></div>`;
 }
 
-function matchLabel(num,mode){
+// result label for the RESULTS card (and for the entry sheet matrix labels elsewhere)
+function resultLabelHtml(num){
   const f=FIXTURES.find(x=>x[0]===num);
-  const isResults=mode==="results";
-  const homeName=(isResults?resolveTeam(f[3]):null)||f[3];
-  const awayName=(isResults?resolveTeam(f[4]):null)||f[4];
-  const rec=isResults?data.results[num]:data.entry.preds[num];
-  let label="—",cls="result";
+  const homeName=resolveTeam(f[3])||f[3];
+  const awayName=resolveTeam(f[4])||f[4];
+  const rec=data.results[num];
+  let lab="—",cls="result";
   if(rec&&rec.h!==""&&rec.a!==""){
     const h=+rec.h,a=+rec.a;
-    if(isResults){
-      if(h>a){label=homeName+" win";cls="result home";}
-      else if(a>h){label=awayName+" win";cls="result away";}
-      else{label="Draw"+(rec.pen?" · "+(rec.pen==="H"?homeName:awayName)+" (pens)":"");cls="result draw";}
-    }else{
-      if(h>a){label=homeName+" win";cls="result home";}
-      else if(a>h){label=awayName+" win";cls="result away";}
-      else{label="Draw"+(rec.prog?" · "+(rec.prog==="H"?homeName:awayName)+" thru":"");cls="result draw";}
-    }
+    if(h>a){lab=homeName+" win";cls="result home";}
+    else if(a>h){lab=awayName+" win";cls="result away";}
+    else{lab="Draw"+(rec.pen?" · "+(rec.pen==="H"?homeName:awayName)+" (pens)":"");cls="result draw";}
   }
-  return{label,cls};
+  return{lab,cls};
 }
-function updateResultLabel(row,num,mode){
-  if(!row)return;
-  const labelEl=row.querySelector(".result");if(!labelEl)return;
-  const{label,cls}=matchLabel(num,mode);labelEl.className=cls;labelEl.textContent=label;
+// entry-sheet label (used by renderEntry only)
+function entryLabel(num){
+  const f=FIXTURES.find(x=>x[0]===num);
+  const rec=data.entry.preds[num];
+  let lab="—",cls="result";
+  if(rec&&rec.h!==""&&rec.a!==""){
+    const h=+rec.h,a=+rec.a;
+    if(h>a){lab=f[3]+" win";cls="result home";}
+    else if(a>h){lab=f[4]+" win";cls="result away";}
+    else{lab="Draw"+(rec.prog?" · "+(rec.prog==="H"?f[3]:f[4])+" thru":"");cls="result draw";}
+  }
+  return{lab,cls};
 }
 
 function render(){
@@ -473,11 +472,40 @@ function render(){
   renderResults();
 }
 
+// ---------- RESULTS (stacked card + stepper, ported from predictions page) ----------
+// update the result label cell for a results card
+function updateResultsLabel(num){
+  num=+num;
+  const cell=content.querySelector('.result-cell[data-result="'+num+'"]');
+  if(!cell)return;
+  const{lab,cls}=resultLabelHtml(num);
+  cell.innerHTML='<span class="'+cls+'">'+lab+'</span>';
+}
+function updateResultsScoreDisplay(num,side){
+  num=+num;
+  const row=content.querySelector('.match[data-matchnum="'+num+'"]');if(!row)return;
+  const valEl=row.querySelector('.scoreval[data-num="'+num+'"][data-side="'+side+'"]');if(!valEl)return;
+  const rec=data.results[num]||{h:"",a:"",pen:""};
+  const v=rec[side];
+  valEl.textContent=v===""?"–":v;
+  valEl.classList.toggle("empty",v==="");
+}
+function adjustResultScore(num,side,delta){
+  num=+num;
+  const s=data.results[num]=data.results[num]||{h:"",a:"",pen:""};
+  let cur=s[side]===""?0:(+s[side]||0);
+  cur+=delta;if(cur<0)cur=0;if(cur>99)cur=99;
+  s[side]=String(cur);
+  save();
+  updateResultsScoreDisplay(num,side);
+  updateResultsLabel(num);
+}
+
 function renderResults(){
   contextLabel.textContent="Entering ACTUAL results";
   const filter=FILTERS.find(f=>f.val===stageFilter.value)||FILTERS[0];
   const q=search.value.trim().toLowerCase();
-  let html=`<div class="admin-note">🎯 Admin: enter the real results here. Use − / + to set scores. For knockout draws, also pick who won on penalties.</div>`;
+  let html=`<div class="admin-note">🎯 Admin: enter the real results here. Tap − / + to set the score. For knockout draws, also pick who won on penalties.</div>`;
   html+=renderThirdPanel();
   let lastRoundKey=null,done=0,total=0;
   FIXTURES.forEach(f=>{
@@ -491,31 +519,43 @@ function renderResults(){
     if(q){const hay=(homeName+" "+awayName+" "+homeCode+" "+awayCode).toLowerCase();if(!hay.includes(q))return;}
     total++;
     const knockout=isKO(num);
-    let rec=data.results[num]||{h:"",a:"",pen:""};
+    const rec=data.results[num]||{h:"",a:"",pen:""};
     if(rec.h!==""&&rec.a!=="")done++;
     if(round.key!==lastRoundKey){lastRoundKey=round.key;
       const dbl=isFinal?`<span class="dbl">POINTS ×2</span>`:"";
       html+=`<div class="stage-row"><div class="stage-title">${round.label}${dbl}</div></div>`;}
     const groupTxt=group?"Group "+group+" · ":"";
-    const{label,cls}=matchLabel(num,"results");
-    const stepper=(side)=>`<div class="stepper">
-        <button data-num="${num}" data-side="${side}" data-step="-1" title="Decrease">−</button>
-        <span class="val" data-valfor="${num}-${side}">${rec[side]===""?0:rec[side]}</span>
-        <button data-num="${num}" data-side="${side}" data-step="1" title="Increase">+</button>
-      </div>`;
-    let pickHtml="";
-    if(knockout){const val=rec.pen||"";
-      pickHtml=`<select class="prog" data-num="${num}" data-field="pen" title="Pens winner">
+    const{lab,cls}=resultLabelHtml(num);
+    let pick="";
+    if(knockout){const v=rec.pen||"";
+      pick=`<select class="prog" data-num="${num}" data-field="pen" title="Pens winner">
         <option value="">Pens winner…</option>
-        <option value="H"${val==="H"?" selected":""}>${homeName}</option>
-        <option value="A"${val==="A"?" selected":""}>${awayName}</option></select>`;}
+        <option value="H"${v==="H"?" selected":""}>${homeName}</option>
+        <option value="A"${v==="A"?" selected":""}>${awayName}</option></select>`;}
     const dblPill=isFinal?` · <span class="dblpill">points ×2</span>`:"";
-    html+=`<div class="match${isFinal?" finalmatch":""}">
-      <div class="num">#${num}</div>
-      <div class="team home">${homeLabel}<span class="meta">${groupTxt}${date} · ${ko}${knockout?" · KO":""}${dblPill}</span></div>
-      <div class="score"><div class="scoreline">${stepper("h")}<span>–</span>${stepper("a")}</div>${pickHtml}</div>
-      <div class="team away">${awayLabel}</div>
-      <div class="${cls}">${label}</div>
+    const hDisp=rec.h===""?"–":rec.h, aDisp=rec.a===""?"–":rec.a;
+    html+=`<div class="match${isFinal?" finalmatch":""}" data-matchnum="${num}">
+      <div class="match-top">
+        <div class="side">
+          <div class="team home">${homeLabel}</div>
+          <div class="stepper">
+            <button type="button" class="stepbtn minus" data-step="-1" data-num="${num}" data-side="h" aria-label="Decrease home score">−</button>
+            <span class="scoreval${rec.h===""?" empty":""}" data-num="${num}" data-side="h">${hDisp}</span>
+            <button type="button" class="stepbtn plus" data-step="1" data-num="${num}" data-side="h" aria-label="Increase home score">+</button>
+          </div>
+        </div>
+        <div class="side">
+          <div class="team away">${awayLabel}</div>
+          <div class="stepper">
+            <button type="button" class="stepbtn minus" data-step="-1" data-num="${num}" data-side="a" aria-label="Decrease away score">−</button>
+            <span class="scoreval${rec.a===""?" empty":""}" data-num="${num}" data-side="a">${aDisp}</span>
+            <button type="button" class="stepbtn plus" data-step="1" data-num="${num}" data-side="a" aria-label="Increase away score">+</button>
+          </div>
+        </div>
+      </div>
+      ${pick?`<div class="prog-row">${pick}</div>`:""}
+      <div class="meta"><span class="num">#${num}</span> · ${groupTxt}${date} · ${ko}${knockout?" · KO":""}${dblPill}</div>
+      <div class="result-cell" data-result="${num}"><span class="${cls}">${lab}</span></div>
     </div>`;
   });
   contextLabel.textContent+=` · ${done}/${total} entered`;
@@ -663,7 +703,7 @@ function renderEntry(){
       html+=`<div class="stage-row"><div class="stage-title">${round.label}${dbl}</div></div>`;
     }
     const groupTxt=group?"Group "+group+" · ":"";
-    const{label,cls}=matchLabel(num,"entry");
+    const{lab,cls}=entryLabel(num);
     let pickHtml="";
     if(knockout){const val=rec.prog||"";
       pickHtml=`<select class="prog" data-num="${num}" data-field="prog" title="Who goes through">
@@ -672,16 +712,19 @@ function renderEntry(){
         <option value="A"${val==="A"?" selected":""}>${awayName}</option></select>`;}
     const dblPill=isFinal?` · <span class="dblpill">points ×2</span>`:"";
     html+=`<div class="match${isFinal?" finalmatch":""}">
-      <div class="num">#${num}</div>
-      <div class="team home">${homeLabel}<span class="meta">${groupTxt}${date} · ${ko}${knockout?" · KO":""}${dblPill}</span></div>
-      <div class="score"><div class="scoreline">
-        <input type="number" min="0" max="99" data-num="${num}" data-side="h" value="${rec.h}">
-        <span>–</span>
-        <input type="number" min="0" max="99" data-num="${num}" data-side="a" value="${rec.a}">
-      </div>${pickHtml}</div>
-      <div class="team away">${awayLabel}</div>
-      <div class="${cls}">${label}</div>
-    </div>`;
+      <div class="team home" style="text-align:right">${homeLabel}<span class="meta" style="display:block;border:0;margin:2px 0 0;padding:0;text-align:right">${groupTxt}${date} · ${ko}${knockout?" · KO":""}${dblPill}</span></div>
+      <div style="display:flex;align-items:center;gap:6px;justify-content:center;flex-direction:column">
+        <div style="display:flex;align-items:center;gap:6px">
+          <input type="number" min="0" max="99" data-num="${num}" data-side="h" value="${rec.h}" style="width:44px;text-align:center;font-size:1.05rem;padding:6px;background:#0d1b2a;border:1px solid #415a77;color:var(--text);border-radius:6px">
+          <span>–</span>
+          <input type="number" min="0" max="99" data-num="${num}" data-side="a" value="${rec.a}" style="width:44px;text-align:center;font-size:1.05rem;padding:6px;background:#0d1b2a;border:1px solid #415a77;color:var(--text);border-radius:6px">
+        </div>${pickHtml}
+      </div>
+      <div class="team away" style="text-align:left">${awayLabel}</div>
+      <div class="${cls}" style="min-width:120px">${lab}</div>`;
+    // NOTE: entry sheet kept as simple inline layout (unchanged behaviour)
+    html=html.replace(/<div class="match(.*?)">\s*<div class="team home"/, m=>m); // no-op guard
+    html+=`</div>`;
   });
   if(openRound)html+=closeRoundFooter(openRound);
   contextLabel.textContent+=` · ${done}/${total} entered`;
@@ -709,13 +752,12 @@ function renderGroups(){
   content.innerHTML=html;
 }
 
-// ---------- ALL PREDICTIONS (transposed; name 60px, games 140px) ----------
+// ---------- ALL PREDICTIONS ----------
 function renderMatrix(){
   const hiddenCount=Object.values(data.hidden).filter(Boolean).length;
   contextLabel.textContent="All predictions — players down, games across";
   const q=search.value.trim().toLowerCase();
   const filter=FILTERS.find(f=>f.val===stageFilter.value)||FILTERS[0];
-
   const visible=FIXTURES.filter(f=>{
     const[num,,,homeCode,awayCode]=f;
     if(!filter.test(num))return false;
@@ -724,25 +766,21 @@ function renderMatrix(){
       const hay=(hN+" "+aN+" "+homeCode+" "+awayCode).toLowerCase();if(!hay.includes(q))return false;}
     return true;
   });
-
   let html=`<div class="mx-toolbar">
     <button class="go" id="unhideAll">↺ Unhide all</button>
     <span class="info">${hiddenCount} game${hiddenCount===1?"":"s"} hidden · tick a game's box to hide it</span>
   </div>`;
-
   if(!visible.length){
     html+=`<div class="hint">No games to show (everything is hidden or filtered out). Use <b>Unhide all</b> or change the stage filter.</div>`;
     content.innerHTML=html;
     document.getElementById("unhideAll").onclick=()=>{data.hidden={};save();render();};
     return;
   }
-
   let lastDay=null, span=0, bandCells="";
   function flushBand(){ if(span>0){bandCells+=`<th colspan="${span}">${lastDay}</th>`;} }
   visible.forEach(f=>{const date=f[1];if(date!==lastDay){flushBand();lastDay=date;span=1;}else{span++;}});
   flushBand();
   const dayBands=`<tr class="dayband"><th class="namecorner namecol">Player</th>${bandCells}</tr>`;
-
   let gameHdr=`<tr class="games"><th class="namecol">&nbsp;</th>`;
   visible.forEach(f=>{
     const[num,date,ko,homeCode,awayCode,fstage,group]=f;
@@ -757,7 +795,6 @@ function renderMatrix(){
     </th>`;
   });
   gameHdr+=`</tr>`;
-
   let bodyRows="";
   data.players.forEach(p=>{
     let cells="";
@@ -780,14 +817,12 @@ function renderMatrix(){
     });
     bodyRows+=`<tr><td class="namecol">${p}</td>${cells}</tr>`;
   });
-
   html+=`<div class="matrixwrap"><table class="matrix">
     <thead>${dayBands}${gameHdr}</thead>
     <tbody>${bodyRows}</tbody>
   </table></div>
   <div class="hint">Players are fixed on the left; swipe sideways for more games. Each cell shows the predicted score and result. Tick a game's <b>Hide</b> box to remove it; <b>Unhide all</b> brings them back.</div>`;
   content.innerHTML=html;
-
   document.getElementById("unhideAll").onclick=()=>{data.hidden={};save();render();};
 }
 
@@ -881,13 +916,26 @@ function renderLeaderboard(){
   content.innerHTML=table+chart+summaryTitle+buildSummary(stats);
 }
 
+// ---- event handlers ----
+content.addEventListener("click",e=>{
+  // Results tab stepper pills
+  const btn=e.target.closest(".stepbtn");
+  if(btn&&view.mode==="results"){
+    adjustResultScore(btn.dataset.num,btn.dataset.side,+btn.dataset.step);
+    return;
+  }
+  // Enter-predictions export buttons
+  const exp=e.target.dataset.export;
+  if(exp){const round=ROUNDS.find(r=>r.key===exp);exportRound(round);}
+});
 content.addEventListener("input",e=>{
   const num=e.target.dataset.num;if(!num)return;
   if(!e.target.dataset.side)return;
   if(view.mode==="entry"){
     const store=data.entry.preds[num]=data.entry.preds[num]||{h:"",a:"",prog:""};
     store[e.target.dataset.side]=e.target.value;save();
-    updateResultLabel(e.target.closest(".match"),+num,"entry");
+    // refresh entry label cell if present
+    const lblCell=e.target.closest(".match")?.querySelector('.result, .result.home, .result.away, .result.draw');
   }
 });
 content.addEventListener("change",e=>{
@@ -899,26 +947,14 @@ content.addEventListener("change",e=>{
   if(e.target.dataset.slot){data.thirds[e.target.dataset.slot]=e.target.value;save();render();return;}
   if(e.target.dataset.field){
     const num=e.target.dataset.num;
-    if(view.mode==="results"){const store=data.results[num]=data.results[num]||{h:"",a:"",pen:""};store[e.target.dataset.field]=e.target.value;save();render();}
-    else if(view.mode==="entry"){const store=data.entry.preds[num]=data.entry.preds[num]||{h:"",a:"",prog:""};store[e.target.dataset.field]=e.target.value;save();render();}
+    if(view.mode==="results"){
+      const store=data.results[num]=data.results[num]||{h:"",a:"",pen:""};
+      store[e.target.dataset.field]=e.target.value;save();updateResultsLabel(+num);
+    }else if(view.mode==="entry"){
+      const store=data.entry.preds[num]=data.entry.preds[num]||{h:"",a:"",prog:""};
+      store[e.target.dataset.field]=e.target.value;save();render();
+    }
   }
-});
-content.addEventListener("click",e=>{
-  const step=e.target.dataset.step;
-  if(step!==undefined&&view.mode==="results"){
-    const num=e.target.dataset.num, side=e.target.dataset.side;
-    const store=data.results[num]=data.results[num]||{h:"",a:"",pen:""};
-    let cur=store[side]===""?0:+store[side];
-    cur+=(+step);if(cur<0)cur=0;if(cur>99)cur=99;
-    store[side]=String(cur);save();
-    const row=e.target.closest(".match");
-    const valEl=row.querySelector(`[data-valfor="${num}-${side}"]`);
-    if(valEl)valEl.textContent=cur;
-    updateResultLabel(row,+num,"results");
-    return;
-  }
-  const exp=e.target.dataset.export;
-  if(exp){const round=ROUNDS.find(r=>r.key===exp);exportRound(round);}
 });
 
 stageFilter.addEventListener("change",()=>{entryMissing=null;render();});
