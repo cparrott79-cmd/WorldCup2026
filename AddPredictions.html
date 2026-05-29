@@ -36,8 +36,29 @@
   .meta .dblpill{color:var(--gold);font-weight:700}
   .score{display:flex;align-items:center;gap:6px;justify-content:center;flex-direction:column}
   .scoreline{display:flex;align-items:center;gap:6px}
-  .score input{width:44px;text-align:center;font-size:1.05rem;padding:6px;background:#0d1b2a;border:1px solid #415a77;color:var(--text);border-radius:6px}
-  .score input:focus{outline:2px solid var(--accent)}
+  /* --- stepper styles --- */
+  .stepper{display:flex;align-items:center;gap:8px}
+  .stepbtn{
+    width:32px;height:32px;padding:0;
+    font-size:1.2rem;font-weight:700;line-height:1;
+    border:none;border-radius:50%;
+    display:flex;align-items:center;justify-content:center;
+    user-select:none;cursor:pointer;transition:.15s;
+  }
+  /* minus = muted/dark pill */
+  .stepbtn.minus{background:#2b3a52;color:var(--text);}
+  .stepbtn.minus:hover{background:#3a4d6b;color:#fff;}
+  /* plus = accent pill */
+  .stepbtn.plus{background:var(--accent);color:#001219;}
+  .stepbtn.plus:hover{background:#33c6ec;color:#001219;}
+  .stepbtn:active{transform:scale(.9)}
+  .scoreval{
+    min-width:22px;text-align:center;
+    font-size:1.2rem;font-weight:700;
+    color:var(--text);background:none;border:none;padding:0;
+  }
+  .scoreval.empty{color:var(--muted);font-weight:400}
+  /* ----------------------- */
   .prog{font-size:.72rem;padding:3px;background:#0d1b2a;border:1px solid #415a77;color:var(--text);border-radius:6px;max-width:130px}
   .result{font-size:.7rem;text-align:center;padding:4px 6px;border-radius:6px;background:#0d1b2a;color:var(--muted);min-width:110px}
   .result.home,.result.away{background:var(--win);color:#001219;font-weight:700}
@@ -235,11 +256,33 @@ function label(num){
   }
   return{lab,cls};
 }
-function updateLabel(inputEl,num){
-  const row=inputEl.closest(".match");if(!row)return;
+function updateLabel(num){
+  const row=content.querySelector('.match[data-matchnum="'+num+'"]');if(!row)return;
   const el=row.querySelector(".result");if(!el)return;
   const{lab,cls}=label(num);el.className=cls;el.textContent=lab;
 }
+
+// --- stepper helpers ---
+// Adjust a score by delta. Empty starts at 0 then applies delta (clamped 0–99).
+function adjustScore(num,side,delta){
+  const s=data.preds[num]=data.preds[num]||{h:"",a:"",prog:""};
+  let cur=s[side]===""?0:(+s[side]||0);
+  cur+=delta;
+  if(cur<0)cur=0;if(cur>99)cur=99;
+  s[side]=String(cur);
+  save();
+  updateScoreDisplay(num,side);
+  updateLabel(num);
+}
+function updateScoreDisplay(num,side){
+  const row=content.querySelector('.match[data-matchnum="'+num+'"]');if(!row)return;
+  const valEl=row.querySelector('.scoreval[data-num="'+num+'"][data-side="'+side+'"]');if(!valEl)return;
+  const rec=data.preds[num]||{h:"",a:"",prog:""};
+  const v=rec[side];
+  valEl.textContent=v===""?"–":v;
+  valEl.classList.toggle("empty",v==="");
+}
+// ------------------------
 
 function missingForRound(round){
   const items=[];
@@ -320,13 +363,22 @@ function render(){
         <option value="H"${v==="H"?" selected":""}>${home}</option>
         <option value="A"${v==="A"?" selected":""}>${away}</option></select>`;}
     const dblPill=isFinal?` · <span class="dblpill">points ×2</span>`:"";
-    html+=`<div class="match${isFinal?" finalmatch":""}">
+    const hDisp=rec.h===""?"–":rec.h, aDisp=rec.a===""?"–":rec.a;
+    html+=`<div class="match${isFinal?" finalmatch":""}" data-matchnum="${num}">
       <div class="num">#${num}</div>
       <div class="team home">${homeLabel}<span class="meta">${groupTxt}${date} · ${ko}${isKO(num)?" · KO":""}${dblPill}</span></div>
       <div class="score"><div class="scoreline">
-        <input type="number" min="0" max="99" data-num="${num}" data-side="h" value="${rec.h}">
+        <span class="stepper">
+          <button type="button" class="stepbtn minus" data-step="-1" data-num="${num}" data-side="h" aria-label="Decrease home score">−</button>
+          <span class="scoreval${rec.h===""?" empty":""}" data-num="${num}" data-side="h">${hDisp}</span>
+          <button type="button" class="stepbtn plus" data-step="1" data-num="${num}" data-side="h" aria-label="Increase home score">+</button>
+        </span>
         <span>–</span>
-        <input type="number" min="0" max="99" data-num="${num}" data-side="a" value="${rec.a}">
+        <span class="stepper">
+          <button type="button" class="stepbtn minus" data-step="-1" data-num="${num}" data-side="a" aria-label="Decrease away score">−</button>
+          <span class="scoreval${rec.a===""?" empty":""}" data-num="${num}" data-side="a">${aDisp}</span>
+          <button type="button" class="stepbtn plus" data-step="1" data-num="${num}" data-side="a" aria-label="Increase away score">+</button>
+        </span>
       </div>${pick}</div>
       <div class="team away">${awayLabel}</div>
       <div class="${cls}">${lab}</div>
@@ -337,22 +389,23 @@ function render(){
   content.innerHTML=html;
 }
 
-content.addEventListener("input",e=>{
-  const num=e.target.dataset.num;if(!num||!e.target.dataset.side)return;
-  const s=data.preds[num]=data.preds[num]||{h:"",a:"",prog:""};
-  s[e.target.dataset.side]=e.target.value;save();updateLabel(e.target,+num);
-});
-content.addEventListener("change",e=>{
-  if(e.target.dataset.field){const num=e.target.dataset.num;
-    const s=data.preds[num]=data.preds[num]||{h:"",a:"",prog:""};
-    s[e.target.dataset.field]=e.target.value;save();render();}
-});
+// stepper buttons (+ / −) and copy buttons
 content.addEventListener("click",e=>{
+  const btn=e.target.closest(".stepbtn");
+  if(btn){
+    adjustScore(btn.dataset.num,btn.dataset.side,+btn.dataset.step);
+    return;
+  }
   const ck=e.target.dataset.copy;if(!ck)return;
   const round=ROUNDS.find(r=>r.key===ck);
   if(!(data.name||"").trim()){alert("Please choose your name at the top first.");entryName.focus();return;}
   const m=missingForRound(round);missing=m.length?{round:ck,items:m}:null;
   copyText(buildText(ck));render();
+});
+content.addEventListener("change",e=>{
+  if(e.target.dataset.field){const num=e.target.dataset.num;
+    const s=data.preds[num]=data.preds[num]||{h:"",a:"",prog:""};
+    s[e.target.dataset.field]=e.target.value;save();render();}
 });
 entryName.addEventListener("change",e=>{data.name=e.target.value;save();});
 stageFilter.addEventListener("change",()=>{missing=null;render();});
