@@ -52,7 +52,7 @@
   .submit-row{display:flex;align-items:center;justify-content:flex-end;gap:8px;margin:8px 0 18px}
   .exportbtn{background:var(--gold);color:#001219;border-color:var(--gold);font-weight:700}
   .exportbtn:hover{background:#ffdf85;border-color:#ffdf85;color:#001219}
-  /* ---- Results match card: stacked rows (ported from predictions page) ---- */
+  /* ---- Results match card: stacked rows ---- */
   .match{background:var(--card);padding:10px 14px;border-radius:10px;margin-bottom:7px}
   .match.finalmatch{border:1px solid var(--gold)}
   .match-top{display:grid;grid-template-columns:1fr 1fr;gap:10px;align-items:stretch}
@@ -131,7 +131,7 @@
   .mx-toolbar{display:flex;gap:10px;align-items:center;justify-content:center;flex-wrap:wrap;margin:0 auto 12px;max-width:1100px}
   .mx-toolbar .info{color:var(--muted);font-size:.8rem}
   .matrixwrap{overflow-x:auto;max-width:100%;border:1px solid #2a3a52;border-radius:10px}
-  table.matrix{border-collapse:separate;border-spacing:0;font-size:.82rem;width:max-content;min-width:100%}
+  table.matrix{border-collapse:separate;border-spacing:0;font-size:.82rem;width:max-content;min-width:100%;table-layout:fixed}
   table.matrix th,table.matrix td{border-bottom:1px solid #2a3a52;white-space:nowrap}
   table.matrix tr.dayband th{position:sticky;top:0;z-index:5;background:#10202f;color:var(--accent);font-weight:700;text-align:left;padding:6px 10px;font-size:.8rem}
   table.matrix tr.dayband th.namecorner{left:0;z-index:7;background:#10202f}
@@ -145,10 +145,14 @@
   table.matrix thead tr.games th .gh-meta{color:var(--muted);font-weight:400;font-size:.66rem;margin-top:2px}
   table.matrix tr.dayband th{top:0}
   table.matrix thead tr.games th{top:31px}
-  /* Player column: shrink-wrap to the longest name; that width applies to every row */
+  /* Player column: fixed 78px (fits the longest name e.g. "Grandad") */
   table.matrix th.namecol,table.matrix td.namecol{position:sticky;left:0;z-index:3;background:var(--card);
-    width:1px;white-space:nowrap;padding:7px 6px 7px 6px;text-align:left;font-weight:700;box-shadow:1px 0 0 #2a3a52}
+    width:60px;min-width:60px;max-width:60px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+    padding:7px 6px;text-align:left;font-weight:700;box-shadow:1px 0 0 #2a3a52}
   table.matrix thead tr.games th.namecol{z-index:6;background:#15263b}
+  /* day-band "Player" corner cell — force same 78px width & tighter padding */
+  table.matrix tr.dayband th.namecol{width:60px;min-width:60px;max-width:60px;padding:6px 6px;
+    overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   table.matrix td.cell{text-align:center;padding:6px 6px;font-variant-numeric:tabular-nums;width:140px;min-width:140px;max-width:140px}
   table.matrix td.cell .sc{font-size:.95rem;font-weight:700}
   table.matrix td.cell .rs{display:block;font-size:.66rem;margin-top:2px;overflow:hidden;text-overflow:ellipsis}
@@ -685,10 +689,9 @@ function renderEntry(){
     const[num,date,ko,homeCode,awayCode,fstage,group]=f;
     if(!filter.test(num))return;
     const round=roundOf(num);const isFinal=num===FINAL_MATCH;
-    const homeName=(isCode(homeCode)?homeCode:homeCode),awayName=(isCode(awayCode)?awayCode:awayCode);
     const homeLabel=isCode(homeCode)?`<span class="code">${homeCode}</span>`:homeCode;
     const awayLabel=isCode(awayCode)?`<span class="code">${awayCode}</span>`:awayCode;
-    if(q){const hay=(homeName+" "+awayName).toLowerCase();if(!hay.includes(q))return;}
+    if(q){const hay=(homeCode+" "+awayCode).toLowerCase();if(!hay.includes(q))return;}
     total++;
     const knockout=isKO(num);
     let rec=data.entry.preds[num]||{h:"",a:"",prog:""};
@@ -705,8 +708,8 @@ function renderEntry(){
     if(knockout){const val=rec.prog||"";
       pickHtml=`<select class="prog" data-num="${num}" data-field="prog" title="Who goes through">
         <option value="">Who goes through…</option>
-        <option value="H"${val==="H"?" selected":""}>${homeName}</option>
-        <option value="A"${val==="A"?" selected":""}>${awayName}</option></select>`;}
+        <option value="H"${val==="H"?" selected":""}>${homeCode}</option>
+        <option value="A"${val==="A"?" selected":""}>${awayCode}</option></select>`;}
     const dblPill=isFinal?` · <span class="dblpill">points ×2</span>`:"";
     const hDisp=rec.h===""?"–":rec.h, aDisp=rec.a===""?"–":rec.a;
     html+=`<div class="match${isFinal?" finalmatch":""}" data-matchnum="${num}" data-entry="1">
@@ -739,7 +742,6 @@ function renderEntry(){
   const nm=document.getElementById("entryName");
   if(nm)nm.addEventListener("input",e=>{data.entry.name=e.target.value;save();});
 }
-// entry steppers
 function updateEntryLabel(num){
   num=+num;
   const cell=content.querySelector('.result-cell[data-result="'+num+'"]');
