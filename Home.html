@@ -20,8 +20,9 @@
   .tab.addbtn:hover{background:var(--accent);color:#001219}
   .tab .rm{color:var(--danger);font-weight:700;font-size:.95rem;line-height:1;opacity:.7}
   .tab .rm:hover{opacity:1}
+  .tab .pinmark{font-size:.7rem;opacity:.7}
   .controls{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;align-items:center;margin:12px 0}
-  select,input[type=text],button{background:var(--card);color:var(--text);border:1px solid #415a77;border-radius:8px;padding:8px 12px;font-size:.9rem}
+  select,input[type=text],input[type=password],button{background:var(--card);color:var(--text);border:1px solid #415a77;border-radius:8px;padding:8px 12px;font-size:.9rem}
   button{cursor:pointer;transition:.2s}
   button:hover{background:var(--accent);color:#001219;border-color:var(--accent)}
   button.danger{border-color:var(--danger);color:var(--danger)}
@@ -29,6 +30,14 @@
   .addbox{display:flex;gap:8px;justify-content:center;align-items:center;margin:0 0 14px}
   .addbox input{min-width:220px}
   .addbox .go{background:var(--accent);color:#001219;border-color:var(--accent);font-weight:700}
+  .gate{max-width:420px;margin:40px auto;background:var(--card);border:1px solid #415a77;border-radius:14px;padding:24px;text-align:center}
+  .gate h3{margin:0 0 6px;color:var(--accent)}
+  .gate p{color:var(--muted);font-size:.85rem;margin:0 0 16px}
+  .gate input{width:160px;text-align:center;font-size:1.2rem;letter-spacing:3px;margin-bottom:12px}
+  .gate .err{color:var(--danger);font-size:.82rem;min-height:18px;margin-top:8px}
+  .gate .setpin{margin-top:16px;border-top:1px solid #2a3a52;padding-top:12px;color:var(--muted);font-size:.8rem}
+  .player-toolbar{display:flex;gap:8px;justify-content:flex-end;align-items:center;margin-bottom:8px;flex-wrap:wrap}
+  .player-toolbar .relock{border-color:var(--lock);color:var(--lock)}
   .stage-row{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:16px 0 10px;flex-wrap:wrap}
   .stage-title{background:var(--accent);color:#001219;padding:6px 12px;border-radius:8px;font-weight:700;font-size:.92rem;margin:0}
   .stage-title.locked{background:var(--lock);color:#001219}
@@ -106,7 +115,25 @@
   .legend{max-width:1100px;margin:14px auto 0;color:var(--muted);font-size:.78rem;text-align:center}
   .legend span{display:inline-block;margin:0 8px}
   .swatch{display:inline-block;width:10px;height:10px;border-radius:2px;vertical-align:middle;margin-right:4px}
-  @media(max-width:640px){.match{grid-template-columns:28px 1fr auto 1fr}.result{grid-column:1/-1}.third-row label{min-width:80px}}
+  /* all-predictions matrix */
+  .matrixwrap{overflow-x:auto;max-width:100%;margin:0 auto;border:1px solid #2a3a52;border-radius:10px}
+  table.matrix{border-collapse:separate;border-spacing:0;font-size:.8rem;width:max-content;min-width:100%}
+  table.matrix th,table.matrix td{padding:7px 9px;text-align:center;border-bottom:1px solid #2a3a52;white-space:nowrap}
+  table.matrix thead th{position:sticky;top:0;background:#15263b;color:var(--accent);z-index:3;font-size:.76rem}
+  table.matrix .gamecol{position:sticky;left:0;background:var(--card);text-align:left;z-index:2;min-width:172px;max-width:172px;box-shadow:1px 0 0 #2a3a52}
+  table.matrix thead th.gamecol{z-index:4;background:#15263b}
+  table.matrix .gamecol .g-teams{font-weight:600;font-size:.8rem;white-space:normal}
+  table.matrix .gamecol .g-meta{color:var(--muted);font-size:.68rem}
+  table.matrix .stagehdr td{background:#10202f;color:var(--accent);font-weight:700;text-align:left;position:sticky;left:0}
+  table.matrix td.cell{font-variant-numeric:tabular-nums}
+  table.matrix td.cell.empty{color:#43526a}
+  table.matrix td.cell .thru{color:var(--accent);font-size:.66rem;display:block}
+  table.matrix tr:nth-child(even) td:not(.gamecol){background:rgba(255,255,255,.015)}
+  @media(max-width:640px){
+    .match{grid-template-columns:28px 1fr auto 1fr}.result{grid-column:1/-1}.third-row label{min-width:80px}
+    table.matrix .gamecol{min-width:120px;max-width:120px}
+    table.matrix th,table.matrix td{padding:6px 7px}
+  }
 </style>
 </head>
 <body>
@@ -138,7 +165,7 @@
 
 <script>
 const ADMIN_PASSWORD="4dm1n";
-const FINAL_MATCH=104; // points doubled for this match
+const FINAL_MATCH=104;
 const DEFAULT_PLAYERS=["Chris","Alfie","Owen","Josh","Naomi","Mama","Grandad","Marie","Smithy"];
 const FIXTURES=[
 [1,"Thu 11 Jun 2026","20:00","Mexico","South Africa","First Stage","A"],
@@ -249,7 +276,6 @@ const FIXTURES=[
 const FIRST_KO=73;
 const isKO=n=>n>=FIRST_KO;
 const THIRD_SLOTS=["3ABCDF","3CDFGH","3CEFHI","3EHIJK","3AEHIJ","3BEFIJ","3EFGIJ","3DEIJL"];
-
 const ROUNDS=[
   {key:"fs1",label:"First Stage (1–24)",test:n=>n>=1&&n<=24},
   {key:"fs2",label:"First Stage (25–48)",test:n=>n>=25&&n<=48},
@@ -283,11 +309,14 @@ data.preds=data.preds||{};
 data.results=data.results||{};
 data.thirds=data.thirds||{};
 data.locks=data.locks||{};
+data.pins=data.pins||{}; // pins[player]="1234"
 data.players.forEach(p=>{data.preds[p]=data.preds[p]||{};data.locks[p]=data.locks[p]||{};});
 function save(){localStorage.setItem(STORE,JSON.stringify(data));}
 
 let view={mode:"results"};
 let missingNote=null;
+let revealed={};       // revealed[player]=true once PIN entered (session only)
+let matrixUnlocked=false; // All-Predictions tab admin gate (session only)
 
 const adminTabs=document.getElementById("adminTabs");
 const playerTabs=document.getElementById("playerTabs");
@@ -310,11 +339,14 @@ function buildTabs(){
   };
   mk("results","🎯 Results");
   mk("groups","📊 Group Tables");
+  mk("matrix","🗒 All Predictions");
   mk("leaderboard","🏆 Leaderboard");
   data.players.forEach(p=>{
     const b=document.createElement("div");
     b.className="tab"+(view.mode==="player"&&view.player===p?" active":"");
-    const nameSpan=document.createElement("span");nameSpan.textContent=p;
+    const nameSpan=document.createElement("span");
+    nameSpan.textContent=p;
+    nameSpan.innerHTML=p+(data.pins[p]?` <span class="pinmark">🔒</span>`:"");
     nameSpan.onclick=()=>{view={mode:"player",player:p};missingNote=null;render();};
     b.appendChild(nameSpan);
     const rm=document.createElement("span");rm.className="rm";rm.textContent="×";rm.title="Remove "+p;
@@ -325,7 +357,6 @@ function buildTabs(){
   add.className="tab addbtn";add.textContent="+ Player";
   add.onclick=()=>{addBox.style.display="flex";newPlayerName.value="";newPlayerName.focus();};
   playerTabs.appendChild(add);
-  // clear-results button only on Results tab
   clearBtn.style.display=view.mode==="results"?"":"none";
 }
 
@@ -338,11 +369,11 @@ function addPlayer(rawName){
 }
 function removePlayer(name){
   if(!confirm("Remove player \""+name+"\" and all their predictions? This cannot be undone (unless you re-import a backup).")) return;
-  data.players=data.players.filter(p=>p!==name);delete data.preds[name];delete data.locks[name];save();
+  data.players=data.players.filter(p=>p!==name);delete data.preds[name];delete data.locks[name];delete data.pins[name];delete revealed[name];save();
   if(view.mode==="player"&&view.player===name)view={mode:"leaderboard"};render();
 }
 function clearAllResults(){
-  if(!confirm("Clear ALL entered results (scores, pens winners, and 3rd-place assignments)? Player predictions and locks are kept. This cannot be undone unless you re-import a backup.")) return;
+  if(!confirm("Clear ALL entered results (scores, pens winners, and 3rd-place assignments)? Player predictions, PINs and locks are kept. This cannot be undone unless you re-import a backup.")) return;
   data.results={};data.thirds={};save();render();alert("All results cleared ✅");
 }
 
@@ -383,7 +414,7 @@ function scoreMatch(pred,res,ko,num){
   const homeOK=ph===rh,awayOK=pa===ra;
   if(resultOK)pts+=2;if(homeOK)pts+=2;if(awayOK)pts+=2;
   if(resultOK&&homeOK&&awayOK)pts+=2;
-  if(num===FINAL_MATCH)pts*=2; // Final: points doubled
+  if(num===FINAL_MATCH)pts*=2;
   return pts;
 }
 
@@ -402,7 +433,6 @@ function computeGroups(){
     arr.sort((a,b)=>b.Pts-a.Pts||b.GD-a.GD||b.GF-a.GF||a.team.localeCompare(b.team));out[g]=arr;});
   return out;
 }
-
 function resolveCode(code){
   if(!code)return null;
   let m=code.match(/^([12])([A-L])$/);
@@ -438,41 +468,91 @@ function renderThirdPanel(){
     <div class="third-grid">${rows}</div></div>`;
 }
 
+// ---------- PER-PLAYER GATE ----------
+function renderGate(player){
+  contextLabel.textContent="Locked — enter PIN to view "+player+"'s predictions";
+  const hasPin=!!data.pins[player];
+  content.innerHTML=`<div class="gate">
+    <h3>🔒 ${player}'s predictions</h3>
+    <p>${hasPin?"Enter the 4-digit PIN to view and edit these predictions.":"No PIN set yet. Set one below to keep these predictions private."}</p>
+    ${hasPin?`<div><input type="password" id="pinInput" inputmode="numeric" maxlength="8" placeholder="PIN" autocomplete="off"></div>
+      <div><button class="go" id="pinGo">Unlock</button></div>
+      <div class="err" id="pinErr"></div>`:""}
+    <div class="setpin">
+      <div style="margin-bottom:6px">${hasPin?"Change PIN (admin or current PIN required on unlock):":"Set a PIN for "+player+":"}</div>
+      <input type="text" id="newPin" inputmode="numeric" maxlength="8" placeholder="New PIN" autocomplete="off" style="width:120px">
+      <button id="savePin">${hasPin?"Change PIN":"Set PIN"}</button>
+    </div>
+  </div>`;
+  const go=document.getElementById("pinGo");
+  if(go){
+    const attempt=()=>{
+      const v=document.getElementById("pinInput").value.trim();
+      if(v===data.pins[player]||v===ADMIN_PASSWORD){revealed[player]=true;render();}
+      else{document.getElementById("pinErr").textContent="Incorrect PIN.";}
+    };
+    go.onclick=attempt;
+    document.getElementById("pinInput").addEventListener("keydown",e=>{if(e.key==="Enter")attempt();});
+    document.getElementById("pinInput").focus();
+  }
+  document.getElementById("savePin").onclick=()=>{
+    const np=document.getElementById("newPin").value.trim();
+    if(np.length<3){alert("Please choose a PIN of at least 3 characters.");return;}
+    if(hasPin){
+      // require existing PIN or admin to change
+      const cur=prompt("Enter the CURRENT PIN (or admin password) to change it:");
+      if(cur===null)return;
+      if(cur!==data.pins[player]&&cur!==ADMIN_PASSWORD){alert("Incorrect current PIN.");return;}
+    }
+    data.pins[player]=np;save();
+    alert("PIN saved for "+player+". Keep it safe — there's no recovery except the admin password ("+ADMIN_PASSWORD+").");
+    revealed[player]=true;render();
+  };
+}
+
 function render(){
   buildTabs();
   if(view.mode==="leaderboard"){renderLeaderboard();return;}
   if(view.mode==="groups"){renderGroups();return;}
+  if(view.mode==="matrix"){renderMatrix();return;}
   if(view.mode==="player"&&!data.players.includes(view.player)){view={mode:"leaderboard"};renderLeaderboard();return;}
   const isResults=view.mode==="results";
   const player=isResults?null:view.player;
+  // per-player gate: if a PIN exists and not yet revealed this session, show the gate
+  if(!isResults&&data.pins[player]&&!revealed[player]){renderGate(player);return;}
+  // if no PIN set, still offer to set one but allow viewing (renderGate handles "no pin" case only when you want privacy)
   contextLabel.textContent=isResults?"Entering ACTUAL results":"Predictions for: "+player;
   const filter=FILTERS.find(f=>f.val===stageFilter.value)||FILTERS[0];
   const q=search.value.trim().toLowerCase();
   let html="";
+  if(!isResults){
+    // small toolbar: set/change pin + re-lock
+    const pinLabel=data.pins[player]?"🔒 Change PIN":"🔓 Set PIN (private)";
+    html+=`<div class="player-toolbar">
+      <button id="managePin">${pinLabel}</button>
+      ${data.pins[player]?`<button class="relock" id="relockBtn">Hide / re-lock</button>`:""}
+    </div>`;
+  }
   if(isResults){
     html+=`<div class="admin-note">🎯 Admin: enter the real results here. For knockout draws, also pick who won on penalties.</div>`;
     html+=renderThirdPanel();
   }
-  let lastRoundKey=null,done=0,total=0;
-  let openRound=null; // track the round currently being rendered, to close it with a submit row
+  let lastRoundKey=null,done=0,total=0,openRound=null;
   function closeRoundFooter(round){
     if(!round||isResults)return "";
     const locked=data.locks[player]&&data.locks[player][round.key];
     if(locked){
       return `<div class="submit-row">
         <span class="lockbadge">🔒 "${round.label}" locked</span>
-        <button class="unlockbtn" data-unlock="${round.key}">🔓 Unlock (admin)</button>
-      </div>`;
+        <button class="unlockbtn" data-unlock="${round.key}">🔓 Unlock (admin)</button></div>`;
     }
     let note="";
     if(missingNote&&missingNote.round===round.key){
       note=`<div class="missing-note"><b>Can't lock "${round.label}" yet — these predictions are missing:</b><br>${missingNote.items.join("<br>")}</div>`;
     }
     return `${note}<div class="submit-row">
-      <button class="submitbtn" data-submit="${round.key}">✅ Submit &amp; lock "${round.label}"</button>
-    </div>`;
+      <button class="submitbtn" data-submit="${round.key}">✅ Submit &amp; lock "${round.label}"</button></div>`;
   }
-
   FIXTURES.forEach(f=>{
     const[num,date,ko,homeCode,awayCode,fstage,group]=f;
     if(!filter.test(num))return;
@@ -490,15 +570,11 @@ function render(){
     const knockout=isKO(num);
     let rec=isResults?(data.results[num]||{h:"",a:"",pen:""}):(data.preds[player][num]||{h:"",a:"",prog:""});
     if(rec.h!==""&&rec.a!=="")done++;
-
     if(round.key!==lastRoundKey){
-      // close the previous round's footer (player tabs)
       if(openRound)html+=closeRoundFooter(openRound);
       lastRoundKey=round.key;openRound=round;
       const dbl=isFinal?`<span class="dbl">POINTS ×2</span>`:"";
-      html+=`<div class="stage-row">
-        <div class="stage-title${locked?" locked":""}">${round.label}${dbl}</div>
-      </div>`;
+      html+=`<div class="stage-row"><div class="stage-title${locked?" locked":""}">${round.label}${dbl}</div></div>`;
     }
     const groupTxt=group?"Group "+group+" · ":"";
     let label="—",cls="result";
@@ -541,10 +617,32 @@ function render(){
       <div class="${cls}">${label}</div>
     </div>`;
   });
-  // close the final visible round's footer
   if(openRound)html+=closeRoundFooter(openRound);
   contextLabel.textContent+=` · ${done}/${total} entered`;
   content.innerHTML=html;
+  // wire toolbar buttons
+  const mp=document.getElementById("managePin");
+  if(mp)mp.onclick=()=>managePin(player);
+  const rl=document.getElementById("relockBtn");
+  if(rl)rl.onclick=()=>{revealed[player]=false;render();};
+}
+
+function managePin(player){
+  const hasPin=!!data.pins[player];
+  if(hasPin){
+    const cur=prompt("Enter the CURRENT PIN (or admin password) to change it:");
+    if(cur===null)return;
+    if(cur!==data.pins[player]&&cur!==ADMIN_PASSWORD){alert("Incorrect.");return;}
+  }
+  const np=prompt((hasPin?"Enter a NEW PIN for ":"Set a PIN for ")+player+" (at least 3 characters). Leave blank & OK to remove the PIN:");
+  if(np===null)return;
+  const v=np.trim();
+  if(v===""){
+    if(hasPin&&confirm("Remove the PIN for "+player+"? Their predictions will no longer be private.")){delete data.pins[player];save();render();}
+    return;
+  }
+  if(v.length<3){alert("PIN must be at least 3 characters.");return;}
+  data.pins[player]=v;revealed[player]=true;save();render();
 }
 
 function renderGroups(){
@@ -564,6 +662,66 @@ function renderGroups(){
     <span><span class="swatch" style="background:var(--third)"></span>3rd — assign to Round of 32 in the Results tab</span>
   </div><div class="hint">Ranking: Points → Goal Difference → Goals For → alphabetical. Updates as you enter results.</div>`;
   content.innerHTML=html;
+}
+
+// ---------- ALL PREDICTIONS MATRIX (admin-gated) ----------
+function renderMatrix(){
+  if(!matrixUnlocked){
+    contextLabel.textContent="All Predictions — admin only";
+    content.innerHTML=`<div class="gate">
+      <h3>🗒 All Predictions</h3>
+      <p>This overview shows every player's picks. Enter the admin password to view.</p>
+      <div><input type="password" id="mxPin" placeholder="Admin password" autocomplete="off"></div>
+      <div><button class="go" id="mxGo">Unlock</button></div>
+      <div class="err" id="mxErr"></div>
+    </div>`;
+    const go=()=>{const v=document.getElementById("mxPin").value;
+      if(v===ADMIN_PASSWORD){matrixUnlocked=true;render();}else{document.getElementById("mxErr").textContent="Incorrect password.";}};
+    document.getElementById("mxGo").onclick=go;
+    document.getElementById("mxPin").addEventListener("keydown",e=>{if(e.key==="Enter")go();});
+    document.getElementById("mxPin").focus();
+    return;
+  }
+  contextLabel.textContent="All Predictions — every player, every game";
+  const filter=FILTERS.find(f=>f.val===stageFilter.value)||FILTERS[0];
+  const q=search.value.trim().toLowerCase();
+  // header
+  let head=`<tr><th class="gamecol">Game</th>`;
+  data.players.forEach(p=>head+=`<th>${p}</th>`);
+  head+=`</tr>`;
+  // rows
+  let body="",lastRound=null;
+  const cols=data.players.length+1;
+  FIXTURES.forEach(f=>{
+    const[num,date,ko,homeCode,awayCode,fstage,group]=f;
+    if(!filter.test(num))return;
+    const hN=resolveTeam(homeCode)||homeCode, aN=resolveTeam(awayCode)||awayCode;
+    if(q){const hay=(hN+" "+aN+" "+homeCode+" "+awayCode).toLowerCase();if(!hay.includes(q))return;}
+    const round=roundOf(num);
+    if(round.key!==lastRound){
+      lastRound=round.key;
+      body+=`<tr class="stagehdr"><td colspan="${cols}">${round.label}${num===FINAL_MATCH?" — points ×2":""}</td></tr>`;
+    }
+    let cells="";
+    data.players.forEach(p=>{
+      const rec=data.preds[p][num];
+      if(!rec||rec.h===""||rec.a===""){cells+=`<td class="cell empty">–</td>`;}
+      else{
+        let thru="";
+        if(isKO(num)&&(+rec.h===+rec.a)&&rec.prog){
+          thru=`<span class="thru">▸ ${rec.prog==="H"?hN:aN}</span>`;
+        }
+        cells+=`<td class="cell">${rec.h}–${rec.a}${thru}</td>`;
+      }
+    });
+    body+=`<tr>
+      <td class="gamecol">
+        <div class="g-teams">${hN} v ${aN}</div>
+        <div class="g-meta">#${num} · ${date}${group?" · Grp "+group:""}</div>
+      </td>${cells}</tr>`;
+  });
+  content.innerHTML=`<div class="matrixwrap"><table class="matrix"><thead>${head}</thead><tbody>${body}</tbody></table></div>
+    <div class="hint">Scroll sideways to see all players; the game column and header stay fixed. Use the stage filter / search to narrow it down. <b>X–Y</b> = predicted score; <span style="color:var(--accent)">▸ Team</span> = who they picked to go through on a knockout draw.</div>`;
 }
 
 function computeStats(){
@@ -711,8 +869,9 @@ document.getElementById("importFile").onchange=e=>{
       const loaded=JSON.parse(r.result);
       if(!loaded.preds||!loaded.results)throw new Error("Not a valid backup file");
       data=loaded;data.players=data.players||DEFAULT_PLAYERS.slice();
-      data.preds=data.preds||{};data.results=data.results||{};data.thirds=data.thirds||{};data.locks=data.locks||{};
+      data.preds=data.preds||{};data.results=data.results||{};data.thirds=data.thirds||{};data.locks=data.locks||{};data.pins=data.pins||{};
       data.players.forEach(p=>{data.preds[p]=data.preds[p]||{};data.locks[p]=data.locks[p]||{};});
+      revealed={};matrixUnlocked=false;
       save();view={mode:"leaderboard"};render();alert("Backup imported successfully ✅");
     }catch(err){alert("Could not import: "+err.message);}
   };
