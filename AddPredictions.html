@@ -27,21 +27,19 @@
   .copyall{background:var(--win);color:#001219;border-color:var(--win);font-weight:700}
   .copyall:hover{background:#34c2b0;border-color:#34c2b0;color:#001219}
 
-  /* --- match card: full-width, stacked rows --- */
+  /* --- match card: stacked rows --- */
   .match{background:var(--card);padding:10px 14px;border-radius:10px;margin-bottom:7px}
   .match.finalmatch{border:1px solid var(--gold)}
-  /* top row: home name | score | away name */
-  .match-top{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:12px}
-  .num{color:var(--muted);font-size:.78rem;font-weight:600}
-  .team{font-weight:600;font-size:1rem;line-height:1.2;min-width:0;overflow-wrap:break-word}
-  .home{text-align:right}.away{text-align:left}
+  /* top row: two equal columns (home | away), columns stretched to equal height */
+  .match-top{display:grid;grid-template-columns:1fr 1fr;gap:10px;align-items:stretch}
+  /* each side: name on top, stepper pinned to the BOTTOM so names grow upward */
+  .side{display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:8px;min-width:0}
+  .team{font-weight:600;font-size:1rem;line-height:1.25;text-align:center;overflow-wrap:break-word;word-break:normal;hyphens:none;max-width:100%}
   .code{color:var(--muted);font-weight:400;font-size:.82rem}
   /* meta line: full width under the top row */
-  .meta{display:block;width:100%;text-align:center;margin-top:8px;padding-top:7px;border-top:1px solid #2b3a52;font-size:.72rem;color:var(--muted)}
+  .meta{display:block;width:100%;text-align:center;margin-top:10px;padding-top:8px;border-top:1px solid #2b3a52;font-size:.72rem;color:var(--muted)}
+  .meta .num{font-weight:600}
   .meta .dblpill{color:var(--gold);font-weight:700}
-  /* score block */
-  .score{display:flex;align-items:center;gap:6px;justify-content:center;flex-direction:column}
-  .scoreline{display:flex;align-items:center;gap:8px}
   /* --- stepper styles --- */
   .stepper{display:flex;align-items:center;gap:8px}
   .stepbtn{
@@ -65,8 +63,10 @@
   }
   .scoreval.empty{color:var(--muted);font-weight:400}
   /* ----------------------- */
-  .prog{font-size:.72rem;padding:4px;background:#0d1b2a;border:1px solid #415a77;color:var(--text);border-radius:6px;max-width:160px}
-  .result{font-size:.7rem;text-align:center;padding:4px 6px;border-radius:6px;background:#0d1b2a;color:var(--muted);margin-top:8px}
+  .prog-row{margin-top:10px;text-align:center}
+  .prog{font-size:.78rem;padding:5px 8px;background:#0d1b2a;border:1px solid #415a77;color:var(--text);border-radius:6px;max-width:100%}
+  .result-cell{margin-top:8px}
+  .result{display:block;font-size:.7rem;text-align:center;padding:4px 6px;border-radius:6px;background:#0d1b2a;color:var(--muted)}
   .result.home,.result.away{background:var(--win);color:#001219;font-weight:700}
   .result.draw{background:var(--draw);color:#001219;font-weight:700}
   .missing-note{background:#3d1f1b;border:1px solid var(--danger);color:#ffb4a2;padding:10px 14px;border-radius:8px;max-width:920px;margin:0 auto 12px;font-size:.82rem}
@@ -75,9 +75,8 @@
   .toast.show{opacity:1}
   .hint{max-width:760px;margin:8px auto;color:var(--muted);font-size:.8rem;text-align:center}
   @media(max-width:640px){
-    .match-top{grid-template-columns:1fr auto 1fr;gap:6px}
-    .team{font-size:.92rem}
-    .scoreline{gap:5px}
+    .team{font-size:.95rem}
+    .stepper{gap:6px}
     .stepbtn{width:30px;height:30px}
   }
 </style>
@@ -257,6 +256,7 @@ FILTERS.forEach(f=>{const o=document.createElement("option");o.value=f.val;o.tex
 
 function isCode(s){return /^([12][A-L]|3[A-L]+|W\d+|RU\d+)$/.test(s);}
 function label(num){
+  num=+num;
   const rec=data.preds[num];const f=FIXTURES.find(x=>x[0]===num);
   let lab="—",cls="result";
   if(rec&&rec.h!==""&&rec.a!==""){
@@ -267,15 +267,19 @@ function label(num){
   }
   return{lab,cls};
 }
+// Rebuild the result cell's contents from scratch on every change.
 function updateLabel(num){
-  const row=content.querySelector('.match[data-matchnum="'+num+'"]');if(!row)return;
-  const el=row.querySelector(".result");if(!el)return;
-  const{lab,cls}=label(num);el.className=cls;el.textContent=lab;
+  num=+num;
+  const cell=content.querySelector('.result-cell[data-result="'+num+'"]');
+  if(!cell)return;
+  const{lab,cls}=label(num);
+  cell.innerHTML='<span class="'+cls+'">'+lab+'</span>';
 }
 
 // --- stepper helpers ---
 // Adjust a score by delta. Empty starts at 0 then applies delta (clamped 0–99).
 function adjustScore(num,side,delta){
+  num=+num; // ensure numeric so FIXTURES lookups and result update work on EVERY click
   const s=data.preds[num]=data.preds[num]||{h:"",a:"",prog:""};
   let cur=s[side]===""?0:(+s[side]||0);
   cur+=delta;
@@ -283,9 +287,10 @@ function adjustScore(num,side,delta){
   s[side]=String(cur);
   save();
   updateScoreDisplay(num,side);
-  updateLabel(num);
+  updateLabel(num); // auto-update the game result on EVERY + / - click
 }
 function updateScoreDisplay(num,side){
+  num=+num;
   const row=content.querySelector('.match[data-matchnum="'+num+'"]');if(!row)return;
   const valEl=row.querySelector('.scoreval[data-num="'+num+'"][data-side="'+side+'"]');if(!valEl)return;
   const rec=data.preds[num]||{h:"",a:"",prog:""};
@@ -377,24 +382,26 @@ function render(){
     const hDisp=rec.h===""?"–":rec.h, aDisp=rec.a===""?"–":rec.a;
     html+=`<div class="match${isFinal?" finalmatch":""}" data-matchnum="${num}">
       <div class="match-top">
-        <div class="team home">${homeLabel}</div>
-        <div class="score"><div class="scoreline">
-          <span class="stepper">
+        <div class="side">
+          <div class="team home">${homeLabel}</div>
+          <div class="stepper">
             <button type="button" class="stepbtn minus" data-step="-1" data-num="${num}" data-side="h" aria-label="Decrease home score">−</button>
             <span class="scoreval${rec.h===""?" empty":""}" data-num="${num}" data-side="h">${hDisp}</span>
             <button type="button" class="stepbtn plus" data-step="1" data-num="${num}" data-side="h" aria-label="Increase home score">+</button>
-          </span>
-          <span>–</span>
-          <span class="stepper">
+          </div>
+        </div>
+        <div class="side">
+          <div class="team away">${awayLabel}</div>
+          <div class="stepper">
             <button type="button" class="stepbtn minus" data-step="-1" data-num="${num}" data-side="a" aria-label="Decrease away score">−</button>
             <span class="scoreval${rec.a===""?" empty":""}" data-num="${num}" data-side="a">${aDisp}</span>
             <button type="button" class="stepbtn plus" data-step="1" data-num="${num}" data-side="a" aria-label="Increase away score">+</button>
-          </span>
-        </div>${pick}</div>
-        <div class="team away">${awayLabel}</div>
+          </div>
+        </div>
       </div>
+      ${pick?`<div class="prog-row">${pick}</div>`:""}
       <div class="meta"><span class="num">#${num}</span> · ${groupTxt}${date} · ${ko}${isKO(num)?" · KO":""}${dblPill}</div>
-      <div class="${cls}">${lab}</div>
+      <div class="result-cell" data-result="${num}"><span class="${cls}">${lab}</span></div>
     </div>`;
   });
   if(openRound)html+=footer(openRound);
@@ -416,9 +423,9 @@ content.addEventListener("click",e=>{
   copyText(buildText(ck));render();
 });
 content.addEventListener("change",e=>{
-  if(e.target.dataset.field){const num=e.target.dataset.num;
+  if(e.target.dataset.field){const num=+e.target.dataset.num;
     const s=data.preds[num]=data.preds[num]||{h:"",a:"",prog:""};
-    s[e.target.dataset.field]=e.target.value;save();render();}
+    s[e.target.dataset.field]=e.target.value;save();updateLabel(num);} // auto-update result for KO progression too
 });
 entryName.addEventListener("change",e=>{data.name=e.target.value;save();});
 stageFilter.addEventListener("change",()=>{missing=null;render();});
