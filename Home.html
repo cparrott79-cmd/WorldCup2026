@@ -50,6 +50,11 @@
   .score input{width:44px;text-align:center;font-size:1.05rem;padding:6px;background:#0d1b2a;border:1px solid #415a77;color:var(--text);border-radius:6px}
   .score input:focus{outline:2px solid var(--accent)}
   .score input:disabled,.prog:disabled{background:#16202e;color:var(--muted);cursor:not-allowed}
+  /* +/- stepper for the Results tab */
+  .stepper{display:flex;align-items:center;gap:4px}
+  .stepper button{width:28px;height:32px;padding:0;font-size:1.15rem;font-weight:700;line-height:1;background:#0d1b2a;border:1px solid #415a77;color:var(--accent);border-radius:6px;display:flex;align-items:center;justify-content:center}
+  .stepper button:hover{background:var(--accent);color:#001219;border-color:var(--accent)}
+  .stepper .val{width:30px;text-align:center;font-size:1.1rem;font-variant-numeric:tabular-nums}
   .prog{font-size:.72rem;padding:3px;background:#0d1b2a;border:1px solid #415a77;color:var(--text);border-radius:6px;max-width:140px}
   .result{font-size:.7rem;text-align:center;padding:4px 6px;border-radius:6px;background:#0d1b2a;color:var(--muted);min-width:120px}
   .result.home,.result.away{background:var(--win);color:#001219;font-weight:700}
@@ -106,12 +111,7 @@
   .round-block{max-width:100%;margin:0 auto 16px}
   .round-head{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin:18px 0 8px}
   .round-head .rh-title{background:var(--accent);color:#001219;padding:6px 12px;border-radius:8px;font-weight:700;font-size:.92rem}
-  .round-head .rh-title.open{background:var(--win)}
   .round-head .rh-actions{display:flex;gap:8px;align-items:center}
-  .lockstate{font-size:.78rem;color:var(--muted)}
-  .lockstate b{color:var(--text)}
-  .err-inline{background:#3d1f1b;border:1px solid var(--danger);color:#ffb4a2;padding:8px 12px;border-radius:8px;font-size:.8rem;margin:0 0 10px}
-  .err-inline b{color:#fff}
   .matrixwrap{overflow-x:auto;max-width:100%;border:1px solid #2a3a52;border-radius:10px}
   table.matrix{border-collapse:separate;border-spacing:0;font-size:.8rem;width:max-content;min-width:100%}
   table.matrix th,table.matrix td{padding:7px 9px;text-align:center;border-bottom:1px solid #2a3a52;white-space:nowrap}
@@ -154,7 +154,7 @@
 <script>
 const ADMIN_PASSWORD="4dm1n";
 const FINAL_MATCH=104;
-const ENTRY_KEY="__entry"; // single prediction-entry sheet
+const ENTRY_KEY="__entry";
 const DEFAULT_PLAYERS=["Chris","Alfie","Owen","Josh","Naomi","Mama","Grandad","Marie","Smithy"];
 const FIXTURES=[
 [1,"Thu 11 Jun 2026","20:00","Mexico","South Africa","First Stage","A"],
@@ -297,15 +297,12 @@ data.players=data.players||DEFAULT_PLAYERS.slice();
 data.preds=data.preds||{};
 data.results=data.results||{};
 data.thirds=data.thirds||{};
-data.locks=data.locks||{};
 data.pins=data.pins||{};
-data.entry=data.entry||{name:"",preds:{}}; // the single entry sheet
-data.players.forEach(p=>{data.preds[p]=data.preds[p]||{};data.locks[p]=data.locks[p]||{};});
+data.entry=data.entry||{name:"",preds:{}};
+data.players.forEach(p=>{data.preds[p]=data.preds[p]||{};});
 function save(){localStorage.setItem(STORE,JSON.stringify(data));}
 
 let view={mode:"results"};
-let matrixRevealed={};
-let matrixErr={};
 
 const adminTabs=document.getElementById("adminTabs");
 const content=document.getElementById("content");
@@ -385,7 +382,6 @@ function isCode(s){return /^([12][A-L]|3[A-L]+|W\d+|RU\d+)$/.test(s);}
 function resolveTeam(c){return isCode(c)?resolveCode(c):c;}
 function displayTeam(c){const r=resolveTeam(c);if(r&&r!==c)return{name:r,code:c};if(isCode(c))return{name:null,code:c};return{name:c,code:null};}
 function thirdPlacedTeams(){const groups=computeGroups(),out={};Object.keys(groups).forEach(g=>{if(groups[g][2])out[g]=groups[g][2].team;});return out;}
-function playersNotLocked(round){return data.players.filter(p=>!(data.locks[p]&&data.locks[p][round.key]));}
 
 function renderThirdPanel(){
   const thirds=thirdPlacedTeams();let rows="";
@@ -423,8 +419,8 @@ function matchLabel(num,mode){
   }
   return{label,cls};
 }
-function updateResultLabel(inputEl,num,mode){
-  const row=inputEl.closest(".match");if(!row)return;
+function updateResultLabel(row,num,mode){
+  if(!row)return;
   const labelEl=row.querySelector(".result");if(!labelEl)return;
   const{label,cls}=matchLabel(num,mode);labelEl.className=cls;labelEl.textContent=label;
 }
@@ -442,7 +438,7 @@ function renderResults(){
   contextLabel.textContent="Entering ACTUAL results";
   const filter=FILTERS.find(f=>f.val===stageFilter.value)||FILTERS[0];
   const q=search.value.trim().toLowerCase();
-  let html=`<div class="admin-note">🎯 Admin: enter the real results here. For knockout draws, also pick who won on penalties.</div>`;
+  let html=`<div class="admin-note">🎯 Admin: enter the real results here. Use − / + to set scores. For knockout draws, also pick who won on penalties.</div>`;
   html+=renderThirdPanel();
   let lastRoundKey=null,done=0,total=0;
   FIXTURES.forEach(f=>{
@@ -463,6 +459,14 @@ function renderResults(){
       html+=`<div class="stage-row"><div class="stage-title">${round.label}${dbl}</div></div>`;}
     const groupTxt=group?"Group "+group+" · ":"";
     const{label,cls}=matchLabel(num,"results");
+    // +/- steppers for the Results tab
+    const hVal=rec.h===""?0:+rec.h;
+    const aVal=rec.a===""?0:+rec.a;
+    const stepper=(side,val)=>`<div class="stepper">
+        <button data-num="${num}" data-side="${side}" data-step="-1" title="Decrease">−</button>
+        <span class="val" data-valfor="${num}-${side}">${rec[side]===""?0:rec[side]}</span>
+        <button data-num="${num}" data-side="${side}" data-step="1" title="Increase">+</button>
+      </div>`;
     let pickHtml="";
     if(knockout){const val=rec.pen||"";
       pickHtml=`<select class="prog" data-num="${num}" data-field="pen" title="Pens winner">
@@ -474,9 +478,9 @@ function renderResults(){
       <div class="num">#${num}</div>
       <div class="team home">${homeLabel}<span class="meta">${groupTxt}${date} · ${ko}${knockout?" · KO":""}${dblPill}</span></div>
       <div class="score"><div class="scoreline">
-        <input type="number" min="0" max="99" data-num="${num}" data-side="h" value="${rec.h}">
+        ${stepper("h",hVal)}
         <span>–</span>
-        <input type="number" min="0" max="99" data-num="${num}" data-side="a" value="${rec.a}">
+        ${stepper("a",aVal)}
       </div>${pickHtml}</div>
       <div class="team away">${awayLabel}</div>
       <div class="${cls}">${label}</div>
@@ -505,7 +509,6 @@ function exportRound(round){
   const missing=missingForRoundEntry(round);
   if(missing.length){entryMissing={round:round.key,items:missing};render();return;}
   entryMissing=null;
-  // export just this round's predictions (placeholder behaviour — to be refined)
   const out={name:data.entry.name||"",round:round.key,roundLabel:round.label,predictions:{}};
   FIXTURES.forEach(f=>{const num=f[0];if(!round.test(num))return;
     out.predictions[num]=data.entry.preds[num]||{};});
@@ -598,58 +601,28 @@ function renderGroups(){
 }
 
 function renderMatrix(){
-  contextLabel.textContent="All Predictions — locked per round until everyone has submitted";
+  contextLabel.textContent="All predictions — everyone, every game";
   const q=search.value.trim().toLowerCase();
   const filter=FILTERS.find(f=>f.val===stageFilter.value)||FILTERS[0];
-  let html="";
-  ROUNDS.forEach(round=>{
-    const roundMatches=FIXTURES.filter(f=>round.test(f[0])&&filter.test(f[0]));
-    if(!roundMatches.length)return;
-    const notLocked=playersNotLocked(round);
-    const open=!!matrixRevealed[round.key];
-    const lockTxt=`<b>${data.players.length-notLocked.length}/${data.players.length}</b> locked`;
-    let actions;
-    if(open){actions=`<span class="lockstate">🔓 Revealed</span><button class="exportbtn" data-mxhide="${round.key}">Hide again</button>`;}
-    else{actions=`<span class="lockstate">${lockTxt}</span><button class="exportbtn" data-mxunlock="${round.key}">🔓 Unlock round</button>`;}
-    html+=`<div class="round-block"><div class="round-head">
-        <div class="rh-title${open?" open":""}">${round.label}${round.key==="fin"?" — points ×2":""}</div>
-        <div class="rh-actions">${actions}</div></div>`;
-    if(matrixErr[round.key]){
-      html+=`<div class="err-inline"><b>Not everyone has locked "${round.label}" yet.</b><br>Waiting on: ${matrixErr[round.key]}</div>`;}
-    if(open){
-      let head=`<tr><th class="gamecol">Game</th>`;
-      data.players.forEach(p=>head+=`<th>${p}</th>`);head+=`</tr>`;
-      let body="";
-      roundMatches.forEach(f=>{
-        const[num,date,ko,homeCode,awayCode,fstage,group]=f;
-        const hN=resolveTeam(homeCode)||homeCode,aN=resolveTeam(awayCode)||awayCode;
-        if(q){const hay=(hN+" "+aN+" "+homeCode+" "+awayCode).toLowerCase();if(!hay.includes(q))return;}
-        let cells="";
-        data.players.forEach(p=>{
-          const rec=data.preds[p][num];
-          if(!rec||rec.h===""||rec.a===""){cells+=`<td class="cell empty">–</td>`;}
-          else{let thru="";
-            if(isKO(num)&&(+rec.h===+rec.a)&&rec.prog)thru=`<span class="thru">▸ ${rec.prog==="H"?hN:aN}</span>`;
-            cells+=`<td class="cell">${rec.h}–${rec.a}${thru}</td>`;}
-        });
-        body+=`<tr><td class="gamecol"><div class="g-teams">${hN} v ${aN}</div>
-          <div class="g-meta">#${num} · ${date}${group?" · Grp "+group:""}</div></td>${cells}</tr>`;
-      });
-      html+=`<div class="matrixwrap"><table class="matrix"><thead>${head}</thead><tbody>${body}</tbody></table></div>`;
-    }
-    html+=`</div>`;
+  let head=`<tr><th class="gamecol">Game</th>`;
+  data.players.forEach(p=>head+=`<th>${p}</th>`);head+=`</tr>`;
+  let body="",lastRound=null;const cols=data.players.length+1;
+  FIXTURES.forEach(f=>{
+    const[num,date,ko,homeCode,awayCode,fstage,group]=f;if(!filter.test(num))return;
+    const hN=resolveTeam(homeCode)||homeCode,aN=resolveTeam(awayCode)||awayCode;
+    if(q){const hay=(hN+" "+aN+" "+homeCode+" "+awayCode).toLowerCase();if(!hay.includes(q))return;}
+    const round=roundOf(num);
+    if(round.key!==lastRound){lastRound=round.key;
+      body+=`<tr><td class="gamecol" style="background:#10202f;color:var(--accent);font-weight:700" colspan="${cols}">${round.label}${num===FINAL_MATCH?" — ×2":""}</td></tr>`;}
+    let cells="";
+    data.players.forEach(p=>{const rec=data.preds[p][num];
+      if(!rec||rec.h===""||rec.a===""){cells+=`<td class="cell empty">–</td>`;}
+      else{let thru="";if(isKO(num)&&(+rec.h===+rec.a)&&rec.prog)thru=`<span class="thru">▸ ${rec.prog==="H"?hN:aN}</span>`;
+        cells+=`<td class="cell">${rec.h}–${rec.a}${thru}</td>`;}});
+    body+=`<tr><td class="gamecol"><div class="g-teams">${hN} v ${aN}</div><div class="g-meta">#${num} · ${date}${group?" · Grp "+group:""}</div></td>${cells}</tr>`;
   });
-  html+=`<div class="hint">Each round stays hidden until <b>every player has locked</b> their predictions for it, then needs the admin password to reveal.</div>`;
-  content.innerHTML=html;
-}
-function matrixUnlock(roundKey){
-  const round=ROUNDS.find(r=>r.key===roundKey);
-  matrixErr={};
-  const notLocked=playersNotLocked(round);
-  if(notLocked.length){matrixErr[roundKey]=notLocked.join(", ");render();return;}
-  const pw=prompt("All players have locked \""+round.label+"\".\nEnter the admin password to reveal everyone's predictions:");
-  if(pw===null)return;
-  if(pw===ADMIN_PASSWORD){matrixRevealed[roundKey]=true;render();}else{alert("Incorrect password.");}
+  content.innerHTML=`<div class="matrixwrap"><table class="matrix"><thead>${head}</thead><tbody>${body}</tbody></table></div>
+    <div class="hint">Scroll sideways for all players. <b>X–Y</b> predicted score; <span style="color:var(--accent)">▸ Team</span> = pick to progress on a KO draw.</div>`;
 }
 
 function computeStats(){
@@ -745,12 +718,11 @@ function renderLeaderboard(){
 content.addEventListener("input",e=>{
   const num=e.target.dataset.num;if(!num)return;
   if(!e.target.dataset.side)return;
-  if(view.mode==="results"){
-    const store=data.results[num]=data.results[num]||{h:"",a:"",pen:""};
-    store[e.target.dataset.side]=e.target.value;save();updateResultLabel(e.target,+num,"results");
-  }else if(view.mode==="entry"){
+  // only the Enter-predictions sheet uses number inputs now
+  if(view.mode==="entry"){
     const store=data.entry.preds[num]=data.entry.preds[num]||{h:"",a:"",prog:""};
-    store[e.target.dataset.side]=e.target.value;save();updateResultLabel(e.target,+num,"entry");
+    store[e.target.dataset.side]=e.target.value;save();
+    updateResultLabel(e.target.closest(".match"),+num,"entry");
   }
 });
 content.addEventListener("change",e=>{
@@ -762,11 +734,25 @@ content.addEventListener("change",e=>{
   }
 });
 content.addEventListener("click",e=>{
+  // +/- steppers on the Results tab
+  const step=e.target.dataset.step;
+  if(step!==undefined&&view.mode==="results"){
+    const num=e.target.dataset.num, side=e.target.dataset.side;
+    const store=data.results[num]=data.results[num]||{h:"",a:"",pen:""};
+    let cur=store[side]===""?0:+store[side];
+    cur+=(+step);
+    if(cur<0)cur=0; if(cur>99)cur=99;
+    store[side]=String(cur);
+    save();
+    // update just this stepper's displayed value + the row's result label
+    const row=e.target.closest(".match");
+    const valEl=row.querySelector(`[data-valfor="${num}-${side}"]`);
+    if(valEl)valEl.textContent=cur;
+    updateResultLabel(row,+num,"results");
+    return;
+  }
   const exp=e.target.dataset.export;
-  const mxU=e.target.dataset.mxunlock, mxH=e.target.dataset.mxhide;
   if(exp){const round=ROUNDS.find(r=>r.key===exp);exportRound(round);}
-  if(mxU){matrixUnlock(mxU);}
-  if(mxH){delete matrixRevealed[mxH];render();}
 });
 
 stageFilter.addEventListener("change",()=>{entryMissing=null;render();});
@@ -787,10 +773,9 @@ document.getElementById("importFile").onchange=e=>{
       const loaded=JSON.parse(r.result);
       if(!loaded.results)throw new Error("Not a valid backup file");
       data=loaded;data.players=data.players||DEFAULT_PLAYERS.slice();
-      data.preds=data.preds||{};data.results=data.results||{};data.thirds=data.thirds||{};data.locks=data.locks||{};data.pins=data.pins||{};
+      data.preds=data.preds||{};data.results=data.results||{};data.thirds=data.thirds||{};data.pins=data.pins||{};
       data.entry=data.entry||{name:"",preds:{}};
-      data.players.forEach(p=>{data.preds[p]=data.preds[p]||{};data.locks[p]=data.locks[p]||{};});
-      matrixRevealed={};matrixErr={};
+      data.players.forEach(p=>{data.preds[p]=data.preds[p]||{};});
       save();view={mode:"leaderboard"};render();alert("Backup imported successfully ✅");
     }catch(err){alert("Could not import: "+err.message);}
   };
