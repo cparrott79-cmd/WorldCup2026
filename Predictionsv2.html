@@ -128,7 +128,16 @@
   table.lb tr.leader td{background:rgba(255,209,102,.10)}
   table.lb tr.leader td.rank{color:var(--gold);font-size:1.05rem}
   table.lb tr.leader td.name{color:var(--gold);font-weight:800}
-  table.lb tr.top3-cut td{border-bottom:2px dotted var(--accent)}
+  /* prize box above the leaderboard */
+  .prize-box{max-width:1060px;margin:0 auto 12px;background:#15263b;border:1px solid var(--gold);border-radius:10px;padding:10px 14px;text-align:center}
+  .prize-box .prize-pot{font-size:.92rem}
+  .prize-box .prize-pot b{color:var(--gold)}
+  .prize-box .prize-sub{color:var(--muted);font-weight:400;font-size:.8rem}
+  .prize-box .prize-breakdown{margin-top:6px;font-size:.86rem;color:var(--text)}
+  .prize-box .prize-breakdown b{color:var(--gold)}
+  /* dotted lines bracketing 3rd & 4th places */
+  table.lb tr.cut-top td{border-top:2px dotted var(--accent)}
+  table.lb tr.cut-bottom td{border-bottom:2px dotted var(--accent)}
   table.lb tr.last td{background:rgba(231,111,81,.10)}
   table.lb tr.last td.rank,table.lb tr.last td.name{color:var(--danger)}
   table.lb tr.you-row td{background:rgba(0,180,216,.08)}
@@ -438,18 +447,30 @@ function fmtUpdated(ms){if(ms==null)return "No results entered yet";const d=new 
 function renderLeaderboard(){
   $("lbUpdated").innerHTML="🏆 <b>"+fmtUpdated(resultsUpdatedAt)+"</b>";
   const stats=computeStats();const anyScored=stats.some(s=>s.total>0);const n=stats.length;
+  // £5 entry — pot grows with the number of players
+  const pot = n*5;
+  const prizeBlock=`<div class="prize-box">
+    <div class="prize-pot">💷 <b>£5 entry</b> · Total pot <b>£${pot}</b> <span class="prize-sub">(£5 × ${n} player${n===1?"":"s"})</span></div>
+    <div class="prize-breakdown">🥇 1st = <b>£60</b> · 🥈 2nd = <b>£10</b> · 🥉 3rd &amp; 4th = <b>£5 each</b></div>
+  </div>`;
+
   let header=`<tr><th>#</th><th style="text-align:left">Players (${n})</th><th class="total">Total</th>`;BUCKETS.forEach(x=>header+=`<th>${x.label}</th>`);header+=`<th>Perfect</th></tr>`;
   let rows="",displayRank=0,prevTotal=null;
   stats.forEach((t,i)=>{
     let pos;if(anyScored&&t.total===prevTotal){pos=displayRank;}else{pos=i+1;displayRank=pos;prevTotal=t.total;}
-    const classes=[];if(me&&t.player===me)classes.push("you-row");if(anyScored&&i===0)classes.push("leader");if(anyScored&&n>1&&i===n-1)classes.push("last");if(n>3&&i===2)classes.push("top3-cut");
+    const classes=[];
+    if(me&&t.player===me)classes.push("you-row");
+    if(anyScored&&i===0)classes.push("leader");
+    if(anyScored&&n>1&&i===n-1)classes.push("last");
+    if(n>2&&i===2)classes.push("cut-top");     // dotted line ABOVE 3rd place
+    if(n>3&&i===3)classes.push("cut-bottom");  // dotted line UNDER 4th place
     const medal=(anyScored&&i===0)?"🥇 ":(anyScored&&n>1&&i===n-1?"🥄 ":"");
     let cells="";BUCKETS.forEach(x=>cells+=`<td>${t.b[x.key]||0}</td>`);
     rows+=`<tr class="${classes.join(' ')}"><td class="rank">${pos}</td><td class="name">${medal}${t.player}${(me&&t.player===me)?' (you)':''}</td><td class="total">${t.total}</td>${cells}<td>${t.perfect}</td></tr>`;
   });
-  content.innerHTML=`<div class="lbwrap"><table class="lb">${header}${rows}</table></div><div class="hint">Total beside the name; stage breakdown across (Final column doubled). <b>Perfect</b> = exact scoreline (Final perfect = 16). 🥇 leader · 🥄 last · dotted line marks the top 3.</div>`;
-}
 
+  content.innerHTML=`${prizeBlock}<div class="lbwrap"><table class="lb">${header}${rows}</table></div><div class="hint">Total beside the name; stage breakdown across (Final column doubled). <b>Perfect</b> = exact scoreline (Final perfect = 16). 🥇 leader · 🥄 last · dotted lines bracket the prize places (3rd &amp; 4th).</div>`;
+}
 function setNavActive(){$("navLb").classList.toggle("active",mode==="lb");$("navAll").classList.toggle("active",mode==="all");$("navMy").classList.toggle("active",mode==="my");}
 function render(){
   myControls.style.display=mode==="my"?"":"none";allControls.style.display=mode==="all"?"":"none";lbControls.style.display=mode==="lb"?"":"none";
