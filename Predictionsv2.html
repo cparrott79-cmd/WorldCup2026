@@ -17,6 +17,8 @@
   button:hover{background:var(--accent);color:#001219;border-color:var(--accent)}
   .allpredbtn{background:var(--win);color:#001219;border-color:var(--win);font-weight:700}
   .allpredbtn:hover{background:#34c2b0;border-color:#34c2b0;color:#001219}
+  .lbbtn{background:var(--gold);color:#001219;border-color:var(--gold);font-weight:700}
+  .lbbtn:hover{background:#ffdf85;border-color:#ffdf85;color:#001219}
   .scorebtn{background:transparent;border:1px solid var(--accent);color:var(--accent);font-weight:700}
   .scorebtn:hover{background:var(--accent);color:#001219;border-color:var(--accent)}
   .backbtn{background:var(--gold);color:#001219;border-color:var(--gold);font-weight:700}
@@ -73,7 +75,7 @@
   .toast.show{opacity:1}.toast.err{background:var(--danger)}
   .hint{max-width:1060px;margin:8px auto;color:var(--muted);font-size:.8rem;text-align:center}
 
-  /* All-predictions grid (matches Homev2 styling) */
+  /* All-predictions grid */
   .matrixwrap{overflow-x:auto;max-width:100%;border:1px solid #2a3a52;border-radius:10px}
   table.matrix{border-collapse:separate;border-spacing:0;font-size:.82rem;width:max-content;min-width:100%}
   table.matrix th,table.matrix td{border-bottom:1px solid #2a3a52;white-space:nowrap}
@@ -98,6 +100,20 @@
   table.matrix tr.you-row td.cell{background:rgba(0,180,216,.06)}
   table.matrix tr:nth-child(even) td.cell{background:rgba(255,255,255,.015)}
   .ap-note{max-width:1060px;margin:0 auto 10px;background:#26303f;border:1px solid #415a77;color:var(--muted);padding:8px 12px;border-radius:8px;font-size:.8rem;text-align:center}
+
+  /* Leaderboard */
+  .lb-updated{color:var(--muted);font-size:.78rem}
+  .lb-updated b{color:var(--accent)}
+  .lbwrap{overflow-x:auto}
+  table.lb{width:100%;max-width:1060px;margin:0 auto;border-collapse:collapse;font-size:.86rem}
+  table.lb th,table.lb td{padding:9px 10px;text-align:center;border-bottom:1px solid #415a77;white-space:nowrap}
+  table.lb th{color:var(--accent);font-size:.78rem}
+  table.lb td.name{text-align:left;font-weight:600}
+  table.lb td.total,table.lb th.total{font-weight:700;color:var(--gold);background:#15263b}
+  table.lb td.rank{color:var(--muted);width:36px}
+  table.lb tr:first-child td.rank{color:var(--gold);font-size:1.05rem}
+  table.lb tr.you-row td{background:rgba(0,180,216,.08)}
+  table.lb tr.you-row td.name{color:var(--accent)}
 
   /* scoring modal */
   .modal-overlay{position:fixed;inset:0;background:rgba(3,8,15,.72);display:none;align-items:flex-start;justify-content:center;z-index:100;padding:12px;overflow-y:auto}
@@ -147,21 +163,29 @@
     <button class="logoutbtn" id="logoutBtn">Log out</button>
   </div>
 
-  <!-- MY PREDICTIONS view controls -->
+  <!-- MY PREDICTIONS controls -->
   <div class="controls" id="myControls">
     <span id="contextLabel" style="color:var(--muted)"></span>
     <select id="stageFilter"></select>
     <input type="text" id="search" placeholder="🔍 Search team…">
     <button class="allpredbtn" id="allPredBtn">👥 All Predictions</button>
+    <button class="lbbtn" id="leaderboardBtn">🏆 Leaderboard</button>
     <button class="scorebtn" id="scoringBtn">📖 Scoring Format</button>
   </div>
 
-  <!-- ALL PREDICTIONS view controls -->
+  <!-- ALL PREDICTIONS controls -->
   <div class="controls" id="allControls" style="display:none">
     <button class="backbtn" id="backBtn">← Back to my predictions</button>
     <select id="allStageFilter"></select>
     <input type="text" id="allSearch" placeholder="🔍 Search team…">
     <button id="allReloadBtn">↻ Reload</button>
+  </div>
+
+  <!-- LEADERBOARD controls -->
+  <div class="controls" id="lbControls" style="display:none">
+    <button class="backbtn" id="lbBackBtn">← Back to my predictions</button>
+    <span id="lbUpdated" class="lb-updated"></span>
+    <button id="lbReloadBtn">↻ Reload</button>
   </div>
 
   <div id="content"></div>
@@ -223,19 +247,28 @@ const ROUNDS=[
 ];
 const roundOf=n=>ROUNDS.find(r=>r.test(n));
 const FILTERS=[{val:"",label:"All stages",test:()=>true}].concat(ROUNDS.map(r=>({val:r.key,label:r.label,test:r.test})));
+const BUCKETS=[
+  {key:"g1",label:"G1–24",test:n=>n>=1&&n<=24},{key:"g2",label:"G25–48",test:n=>n>=25&&n<=48},
+  {key:"g3",label:"G49–72",test:n=>n>=49&&n<=72},{key:"r32",label:"R32",test:n=>n>=73&&n<=88},
+  {key:"r16",label:"R16",test:n=>n>=89&&n<=96},{key:"qf",label:"QF",test:n=>n>=97&&n<=100},
+  {key:"sf",label:"SF",test:n=>n>=101&&n<=102},{key:"tp",label:"3rd",test:n=>n===103},
+  {key:"fin",label:"Final ×2",test:n=>n===104}
+];
 function isCode(s){return /^([12][A-L]|3[A-L]+|W\d+|RU\d+)$/.test(s);}
 
 let FIXTURES=[],FX={},GROUP_LOCK={};
 let preds={};                 // my predictions
-let allPreds={};              // everyone's predictions (loaded for All view)
+let allPreds={};              // everyone's predictions
 let allPlayers=[];
+let results={};               // match_num -> {h,a,pen}
+let resultsUpdatedAt=null;    // latest results.updated_at
 let me=null,myPin=null,missing=null,mode="my";
 
 const $=id=>document.getElementById(id);
 const gate=$("gate"),app=$("app"),content=$("content"),toast=$("toast");
 const stageFilter=$("stageFilter"),search=$("search"),contextLabel=$("contextLabel");
 const allStageFilter=$("allStageFilter"),allSearch=$("allSearch");
-const myControls=$("myControls"),allControls=$("allControls"),myHint=$("myHint");
+const myControls=$("myControls"),allControls=$("allControls"),lbControls=$("lbControls"),myHint=$("myHint");
 
 FILTERS.forEach(f=>{const o=document.createElement("option");o.value=f.val;o.textContent=f.label;stageFilter.appendChild(o);
   const o2=document.createElement("option");o2.value=f.val;o2.textContent=f.label;allStageFilter.appendChild(o2);});
@@ -249,6 +282,7 @@ function lockTimeFor(num){const f=FX[num];if(!f)return null;return GROUP_LOCK[f.
 function isLocked(num){const t=lockTimeFor(num);return t?Date.now()>=t.getTime():false;}
 function fmtDeadline(d){if(!d)return"";return days[d.getDay()]+" "+p2(d.getDate())+" "+mons[d.getMonth()]+" "+d.getFullYear()+", "+p2(d.getHours())+":"+p2(d.getMinutes());}
 
+// ===== loads =====
 async function loadFixtures(){
   const {data,error}=await SB.from("fixtures").select("*").order("match_num");if(error)throw error;
   FIXTURES=data;FX={};data.forEach(f=>FX[f.match_num]=f);
@@ -263,17 +297,38 @@ async function loadAllPreds(){
   const {data,error}=await SB.from("predictions").select("*");if(error)throw error;
   allPreds={};data.forEach(r=>{allPreds[r.player]=allPreds[r.player]||{};allPreds[r.player][r.match_num]={h:String(r.home),a:String(r.away),prog:r.prog||""};});
   const set=new Set(Object.keys(allPreds));set.add(me);
-  // also include any players with no preds yet
   const {data:pl}=await SB.from("player_names").select("name");(pl||[]).forEach(p=>set.add(p.name));
-  allPlayers=[...set].sort((a,b)=>a===me?-1:b===me?1:a.localeCompare(b)); // me first
+  allPlayers=[...set].sort((a,b)=>a===me?-1:b===me?1:a.localeCompare(b));
+}
+async function loadResults(){
+  const {data,error}=await SB.from("results").select("*");if(error)throw error;
+  results={};resultsUpdatedAt=null;
+  (data||[]).forEach(r=>{results[r.match_num]={h:r.home==null?"":String(r.home),a:r.away==null?"":String(r.away),pen:r.pen||""};
+    if(r.updated_at){const t=new Date(r.updated_at).getTime();if(resultsUpdatedAt==null||t>resultsUpdatedAt)resultsUpdatedAt=t;}});
 }
 
+// ===== save =====
 async function savePrediction(num){
   const r=preds[num];if(!r||r.h===""||r.a==="")return;
   const {error}=await SB.rpc("submit_prediction",{p_player:me,p_pin:myPin,p_match:num,p_home:+r.h,p_away:+r.a,p_prog:r.prog||""});
   if(error){toastMsg("🔒 "+error.message,true);await loadMyPreds();renderMy();}
 }
 
+// ===== scoring (unchanged logic) =====
+function scoreMatch(pred,res,ko,num){
+  if(!pred||!res)return null;
+  if(pred.h===""||pred.a===""||res.h===""||res.a==="")return null;
+  const ph=+pred.h,pa=+pred.a,rh=+res.h,ra=+res.a;let pts=0,resultOK;
+  if(ko){let ap=rh>ra?"H":ra>rh?"A":(res.pen||"");let pp=ph>pa?"H":pa>ph?"A":(pred.prog||"");resultOK=pp!==""&&pp===ap;}
+  else{const pr=ph>pa?"H":pa>ph?"A":"D";const rr=rh>ra?"H":ra>rh?"A":"D";resultOK=pr===rr;}
+  const homeOK=ph===rh,awayOK=pa===ra;
+  if(resultOK)pts+=2;if(homeOK)pts+=2;if(awayOK)pts+=2;
+  if(resultOK&&homeOK&&awayOK)pts+=2;
+  if(num===FINAL_MATCH)pts*=2;
+  return pts;
+}
+
+// ===== my-view helpers =====
 function label(num){const f=FX[num];const rec=preds[num];let lab="—",cls="result";
   if(rec&&rec.h!==""&&rec.a!==""){const h=+rec.h,a=+rec.a;
     if(h>a){lab=f.home_code+" win";cls="result home";}else if(a>h){lab=f.away_code+" win";cls="result away";}
@@ -283,12 +338,11 @@ function updateScoreDisplay(num,side){const row=content.querySelector('.match[da
 function adjustScore(num,side,delta){num=+num;if(isLocked(num))return;const s=preds[num]=preds[num]||{h:"",a:"",prog:""};let cur=s[side]===""?0:(+s[side]||0);cur+=delta;if(cur<0)cur=0;if(cur>99)cur=99;s[side]=String(cur);updateScoreDisplay(num,side);updateLabel(num);savePrediction(num);}
 
 function missingForRound(round){const items=[];FIXTURES.forEach(f=>{const num=f.match_num;if(!round.test(num))return;const rec=preds[num]||{h:"",a:"",prog:""};const p=[];if(rec.h==="")p.push("home score");if(rec.a==="")p.push("away score");if(isKO(num)&&rec.h!==""&&rec.a!==""&&(+rec.h===+rec.a)&&!rec.prog)p.push("who goes through (draw)");if(p.length)items.push("Match "+num+": "+p.join(", "));});return items;}
-
 function buildText(roundKey){let lines=["WC2026 Predictions — "+me];ROUNDS.forEach(round=>{if(roundKey&&round.key!==roundKey)return;const ms=FIXTURES.filter(f=>round.test(f.match_num));if(!ms.some(f=>{const r=preds[f.match_num];return r&&r.h!==""&&r.a!=="";}))return;lines.push("["+round.tag+"]");ms.forEach(f=>{const num=f.match_num,r=preds[num];if(!r||r.h===""||r.a==="")return;let line=num+". "+f.home_code+" "+r.h+"-"+r.a+" "+f.away_code;if(isKO(num)&&(+r.h===+r.a)&&r.prog)line+=" > "+(r.prog==="H"?f.home_code:f.away_code);lines.push(line);});});return lines.join("\n");}
 function copyText(text){if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(text).then(()=>toastMsg("✅ Copied! Now paste into WhatsApp"),()=>fallbackCopy(text));}else fallbackCopy(text);}
 function fallbackCopy(text){const ta=document.createElement("textarea");ta.value=text;ta.style.position="fixed";ta.style.opacity="0";document.body.appendChild(ta);ta.focus();ta.select();try{document.execCommand("copy");toastMsg("✅ Copied! Now paste into WhatsApp");}catch(e){alert(text);}document.body.removeChild(ta);}
 
-// ====== MY PREDICTIONS view ======
+// ===== MY PREDICTIONS view =====
 function renderMy(){
   const filter=FILTERS.find(f=>f.val===stageFilter.value)||FILTERS[0];const q=search.value.trim().toLowerCase();
   let html="",lastKey=null,openRound=null,done=0,total=0;
@@ -327,44 +381,56 @@ function renderMy(){
   contextLabel.textContent=`${done}/${total} predicted`;content.innerHTML=html;
 }
 
-// ====== ALL PREDICTIONS view (masked per round until locked) ======
+// ===== ALL PREDICTIONS view (masked per round until locked) =====
 function renderAll(){
   const filter=FILTERS.find(f=>f.val===allStageFilter.value)||FILTERS[0];const q=allSearch.value.trim().toLowerCase();
-  const visible=FIXTURES.filter(f=>{if(!filter.test(f.match_num))return false;if(q){const h=f.home_code,a=f.away_code;if(!((h+" "+a).toLowerCase().includes(q)))return false;}return true;});
+  const visible=FIXTURES.filter(f=>{if(!filter.test(f.match_num))return false;if(q){if(!((f.home_code+" "+f.away_code).toLowerCase().includes(q)))return false;}return true;});
   let gameHdr=`<tr class="games"><th class="namecol">Player</th>`;
   visible.forEach(f=>{const isFinal=f.match_num===FINAL_MATCH,ko=new Date(f.kickoff),locked=isLocked(f.match_num);
-    gameHdr+=`<th class="${isFinal?'gh-final':''}${locked?'':' gh-locked'}">
-      <div class="gh-teams">${f.home_code}</div><div class="gh-v">v</div><div class="gh-teams">${f.away_code}</div>
-      <div class="gh-meta">#${f.match_num} · ${timeStr(ko)}${isFinal?" · ×2":""}</div>
-      ${locked?"":`<div class="gh-lock">🔒 hidden</div>`}
-    </th>`;});
+    gameHdr+=`<th class="${isFinal?'gh-final':''}${locked?'':' gh-locked'}"><div class="gh-teams">${f.home_code}</div><div class="gh-v">v</div><div class="gh-teams">${f.away_code}</div><div class="gh-meta">#${f.match_num} · ${timeStr(ko)}${isFinal?" · ×2":""}</div>${locked?"":`<div class="gh-lock">🔒 hidden</div>`}</th>`;});
   gameHdr+=`</tr>`;
   let body="";
-  allPlayers.forEach(p=>{
-    const isYou=p===me;let cells="";
-    visible.forEach(f=>{
-      const num=f.match_num,locked=isLocked(num);const rec=(allPreds[p]||{})[num];
-      // Mask OTHER players' picks until the round is locked. Your own always shown.
-      if(!isYou && !locked){cells+=`<td class="cell masked"><span class="sc">🔒</span></td>`;return;}
+  allPlayers.forEach(p=>{const isYou=p===me;let cells="";
+    visible.forEach(f=>{const num=f.match_num,locked=isLocked(num);const rec=(allPreds[p]||{})[num];
+      if(!isYou&&!locked){cells+=`<td class="cell masked"><span class="sc">🔒</span></td>`;return;}
       if(!rec||rec.h===""||rec.a===""){cells+=`<td class="cell empty">–</td>`;return;}
-      const h=+rec.h,a=+rec.a;let rn,rc;
-      if(h>a){rn=f.home_code;rc="home";}else if(a>h){rn=f.away_code;rc="away";}
-      else{if(isKO(num)&&rec.prog){rn=(rec.prog==="H"?f.home_code:f.away_code)+" (thru)";rc="draw";}else{rn="Draw";rc="draw";}}
-      cells+=`<td class="cell"><span class="sc">${rec.h}–${rec.a}</span><span class="rs ${rc}">${rn}</span></td>`;
-    });
-    body+=`<tr class="${isYou?'you-row':''}"><td class="namecol${isYou?' you':''}">${p}${isYou?' (you)':''}</td>${cells}</tr>`;
-  });
+      const h=+rec.h,a=+rec.a;let rn,rc;if(h>a){rn=f.home_code;rc="home";}else if(a>h){rn=f.away_code;rc="away";}else{if(isKO(num)&&rec.prog){rn=(rec.prog==="H"?f.home_code:f.away_code)+" (thru)";rc="draw";}else{rn="Draw";rc="draw";}}
+      cells+=`<td class="cell"><span class="sc">${rec.h}–${rec.a}</span><span class="rs ${rc}">${rn}</span></td>`;});
+    body+=`<tr class="${isYou?'you-row':''}"><td class="namecol${isYou?' you':''}">${p}${isYou?' (you)':''}</td>${cells}</tr>`;});
   content.innerHTML=`<div class="ap-note">🔒 Other players' predictions are hidden for each round until that round locks (1 hour before its first kick-off). Your own row is always visible.</div>
     <div class="matrixwrap"><table class="matrix"><thead>${gameHdr}</thead><tbody>${body}</tbody></table></div>
     <div class="hint">Players down the left (you first); swipe sideways for more games.</div>`;
 }
 
-function render(){
-  if(mode==="all"){myControls.style.display="none";allControls.style.display="";myHint.style.display="none";renderAll();}
-  else{myControls.style.display="";allControls.style.display="none";myHint.style.display="";renderMy();}
+// ===== LEADERBOARD view =====
+function computeStats(){
+  return allPlayers.map(p=>{const b={};BUCKETS.forEach(x=>b[x.key]=0);let total=0,perfect=0;
+    FIXTURES.forEach(f=>{const num=f.match_num;const pred=(allPreds[p]||{})[num],res=results[num];const s=scoreMatch(pred,res,isKO(num),num);
+      if(s!==null){total+=s;const bk=BUCKETS.find(x=>x.test(num));if(bk)b[bk.key]+=s;const maxFor=num===FINAL_MATCH?16:8;if(s===maxFor)perfect++;}});
+    return{player:p,total,perfect,b};}).sort((a,b)=>b.total-a.total||a.player.localeCompare(b.player));
+}
+function fmtUpdated(ms){if(ms==null)return "No results entered yet";const d=new Date(ms);return "Last updated "+days[d.getDay()]+" "+p2(d.getDate())+" "+mons[d.getMonth()]+" "+d.getFullYear()+", "+p2(d.getHours())+":"+p2(d.getMinutes());}
+function renderLeaderboard(){
+  $("lbUpdated").innerHTML="🏆 <b>"+fmtUpdated(resultsUpdatedAt)+"</b>";
+  const stats=computeStats();
+  let header=`<tr><th>#</th><th style="text-align:left">Player</th><th class="total">Total</th>`;BUCKETS.forEach(x=>header+=`<th>${x.label}</th>`);header+=`<th>Perfect</th></tr>`;
+  let rows="",rank=0,prev=null;stats.forEach((t,i)=>{if(t.total!==prev){rank=i+1;prev=t.total;}let cells="";BUCKETS.forEach(x=>cells+=`<td>${t.b[x.key]||0}</td>`);
+    const you=t.player===me?" you-row":"";rows+=`<tr class="${you}"><td class="rank">${rank}</td><td class="name">${t.player}${t.player===me?' (you)':''}</td><td class="total">${t.total}</td>${cells}<td>${t.perfect}</td></tr>`;});
+  content.innerHTML=`<div class="lbwrap"><table class="lb">${header}${rows}</table></div><div class="hint">Total beside the name; stage breakdown across (Final column doubled). <b>Perfect</b> = exact scoreline (Final perfect = 16).</div>`;
 }
 
-// ---- events ----
+// ===== router =====
+function render(){
+  myControls.style.display=mode==="my"?"":"none";
+  allControls.style.display=mode==="all"?"":"none";
+  lbControls.style.display=mode==="lb"?"":"none";
+  myHint.style.display=mode==="my"?"":"none";
+  if(mode==="all")return renderAll();
+  if(mode==="lb")return renderLeaderboard();
+  renderMy();
+}
+
+// ===== events =====
 content.addEventListener("click",e=>{
   if(mode!=="my")return;
   const btn=e.target.closest(".stepbtn");
@@ -381,6 +447,10 @@ $("allPredBtn").onclick=async()=>{mode="all";await loadAllPreds();render();};
 $("backBtn").onclick=()=>{mode="my";render();};
 $("allReloadBtn").onclick=async()=>{await loadAllPreds();renderAll();toastMsg("↻ Reloaded");};
 
+$("leaderboardBtn").onclick=async()=>{mode="lb";await Promise.all([loadAllPreds(),loadResults()]);render();};
+$("lbBackBtn").onclick=()=>{mode="my";render();};
+$("lbReloadBtn").onclick=async()=>{await Promise.all([loadAllPreds(),loadResults()]);renderLeaderboard();toastMsg("↻ Reloaded");};
+
 // scoring modal
 const sm=$("scoringModal");
 $("scoringBtn").onclick=()=>{sm.classList.add("show");document.body.style.overflow="hidden";};
@@ -388,13 +458,21 @@ $("scoringClose").onclick=()=>{sm.classList.remove("show");document.body.style.o
 sm.addEventListener("click",e=>{if(e.target===sm){sm.classList.remove("show");document.body.style.overflow="";}});
 document.addEventListener("keydown",e=>{if(e.key==="Escape"&&sm.classList.contains("show")){sm.classList.remove("show");document.body.style.overflow="";}});
 
-// ---- login ----
+// ===== login =====
 async function populateNames(){const {data,error}=await SB.from("player_names").select("name").order("name");if(error){$("gateErr").textContent="Could not load players: "+error.message;return;}const sel=$("gateName");data.forEach(p=>{const o=document.createElement("option");o.value=p.name;o.textContent=p.name;sel.appendChild(o);});}
 async function doLogin(){const name=$("gateName").value,pin=$("gatePin").value.trim();$("gateErr").textContent="";if(!name||!pin){$("gateErr").textContent="Pick your name and enter your PIN.";return;}const {data,error}=await SB.rpc("verify_pin",{p_player:name,p_pin:pin});if(error){$("gateErr").textContent="Login error: "+error.message;return;}if(!data){$("gateErr").textContent="Wrong name or PIN.";return;}me=name;myPin=pin;sessionStorage.setItem("wc_name",name);sessionStorage.setItem("wc_pin",pin);await startApp();}
 $("gateBtn").onclick=doLogin;$("gatePin").addEventListener("keydown",e=>{if(e.key==="Enter")doLogin();});
 $("logoutBtn").onclick=()=>{sessionStorage.removeItem("wc_name");sessionStorage.removeItem("wc_pin");location.reload();};
 
-async function startApp(){gate.style.display="none";app.style.display="";$("whoName").textContent=me;await loadMyPreds();mode="my";render();setInterval(()=>{if(mode==="my"&&!search.value.trim())renderMy();else if(mode==="all"&&!allSearch.value.trim())renderAll();},60000);}
+async function startApp(){
+  gate.style.display="none";app.style.display="";$("whoName").textContent=me;
+  await loadMyPreds();mode="my";render();
+  setInterval(()=>{
+    if(mode==="my"&&!search.value.trim())renderMy();
+    else if(mode==="all"&&!allSearch.value.trim())renderAll();
+    else if(mode==="lb"){loadResults().then(()=>renderLeaderboard());}
+  },60000);
+}
 async function init(){try{await loadFixtures();const sName=sessionStorage.getItem("wc_name"),sPin=sessionStorage.getItem("wc_pin");if(sName&&sPin){const {data}=await SB.rpc("verify_pin",{p_player:sName,p_pin:sPin});if(data){me=sName;myPin=sPin;await startApp();return;}}gate.style.display="";await populateNames();}catch(err){document.body.insertAdjacentHTML("beforeend",`<div class="hint" style="color:#ffb4a2">⚠️ Could not connect: ${err.message}</div>`);}}
 init();
 </script>
