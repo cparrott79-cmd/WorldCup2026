@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>WC2026 — Your Predictions</title>
+<title>WC2026 — Predictions &amp; Leaderboard</title>
 <style>
   :root{--bg:#0d1b2a;--card:#1b263b;--accent:#00b4d8;--win:#2a9d8f;--draw:#e9c46a;--text:#e0e1dd;--muted:#8d99ae;--gold:#ffd166;--danger:#e76f51;--lock:#6b7a8f;}
   *{box-sizing:border-box}
@@ -15,28 +15,35 @@
   select,input[type=text],input[type=password],button{background:var(--card);color:var(--text);border:1px solid #415a77;border-radius:8px;padding:8px 12px;font-size:.9rem}
   button{cursor:pointer;transition:.2s}
   button:hover{background:var(--accent);color:#001219;border-color:var(--accent)}
-  .allpredbtn{background:var(--win);color:#001219;border-color:var(--win);font-weight:700}
-  .allpredbtn:hover{background:#34c2b0;border-color:#34c2b0;color:#001219}
-  .lbbtn{background:var(--gold);color:#001219;border-color:var(--gold);font-weight:700}
-  .lbbtn:hover{background:#ffdf85;border-color:#ffdf85;color:#001219}
+  .navbtn{background:var(--card);border:1px solid #415a77}
+  .navbtn.active{background:var(--accent);color:#001219;border-color:var(--accent);font-weight:700}
+  .mybtn{background:var(--win);color:#001219;border-color:var(--win);font-weight:700}
+  .mybtn:hover{background:#34c2b0;border-color:#34c2b0;color:#001219}
+  .mybtn.active{background:#34c2b0;border-color:#34c2b0;color:#001219}
   .scorebtn{background:transparent;border:1px solid var(--accent);color:var(--accent);font-weight:700}
   .scorebtn:hover{background:var(--accent);color:#001219;border-color:var(--accent)}
-  .backbtn{background:var(--gold);color:#001219;border-color:var(--gold);font-weight:700}
-  .backbtn:hover{background:#ffdf85;border-color:#ffdf85;color:#001219}
+  .loginbtn{background:var(--gold);color:#001219;border-color:var(--gold);font-weight:700}
+  .loginbtn:hover{background:#ffdf85;border-color:#ffdf85;color:#001219}
   .logoutbtn{background:transparent;border:1px solid var(--muted);color:var(--muted)}
   .logoutbtn:hover{background:var(--danger);color:#001219;border-color:var(--danger)}
 
-  .gate{max-width:420px;margin:36px auto;background:var(--card);border:1px solid #415a77;border-radius:14px;padding:24px;text-align:center}
+  /* login modal */
+  .gate-overlay{position:fixed;inset:0;background:rgba(3,8,15,.72);display:none;align-items:center;justify-content:center;z-index:120;padding:14px}
+  .gate-overlay.show{display:flex}
+  .gate{max-width:420px;width:100%;background:var(--card);border:1px solid #415a77;border-radius:14px;padding:24px;text-align:center}
   .gate h3{margin:0 0 6px;color:var(--accent)}
   .gate p{color:var(--muted);font-size:.85rem;margin:0 0 16px}
   .gate select,.gate input{width:100%;text-align:center;font-size:1.05rem;margin-bottom:12px}
   .gate input{letter-spacing:3px}
-  .gate button{width:100%;background:var(--gold);color:#001219;border-color:var(--gold);font-weight:700}
-  .gate button:hover{background:#ffdf85;border-color:#ffdf85;color:#001219}
+  .gate .row{display:flex;gap:8px}
+  .gate .row button{flex:1}
+  .gate .loginbtn{background:var(--gold);color:#001219;border-color:var(--gold);font-weight:700}
+  .gate .cancelbtn{background:transparent;border:1px solid var(--muted);color:var(--muted)}
   .gate .err{color:var(--danger);font-size:.82rem;min-height:18px;margin-top:8px}
 
-  .entry-name{max-width:560px;margin:0 auto 14px;background:var(--card);border:1px solid #415a77;border-radius:12px;padding:12px 16px;display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap}
-  .entry-name .who{font-size:.9rem}.entry-name .who b{color:var(--accent)}
+  .userbar{max-width:560px;margin:0 auto 14px;background:var(--card);border:1px solid #415a77;border-radius:12px;padding:10px 16px;display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+  .userbar .who{font-size:.9rem}.userbar .who b{color:var(--accent)}
+
   .stage-row{margin:16px 0 10px}
   .stage-title{background:var(--accent);color:#001219;padding:6px 12px;border-radius:8px;font-weight:700;font-size:.92rem;margin:0;display:inline-block}
   .stage-title.locked{background:var(--lock);color:#0d1b2a}
@@ -144,55 +151,61 @@
 </head>
 <body>
 <header>
-  <h1>⚽ World Cup 2026 — Your Predictions</h1>
-  <div class="sub">Log in with your name &amp; PIN, fill in your scores — they save automatically. Each stage locks 1 hour before its first match kicks off.</div>
+  <h1>⚽ World Cup 2026 — Predictions &amp; Leaderboard</h1>
+  <div class="sub">Browse the leaderboard and predictions freely. Log in only when you want to enter or change your own scores.</div>
 </header>
 
-<div id="gate" class="gate" style="display:none">
-  <h3>🔑 Log in</h3>
-  <p>Pick your name and enter your PIN. Your predictions save automatically to the shared game.</p>
-  <select id="gateName"><option value="">— select your name —</option></select>
-  <input type="password" id="gatePin" inputmode="numeric" maxlength="8" placeholder="PIN">
-  <button id="gateBtn">Log in</button>
-  <div class="err" id="gateErr"></div>
+<div class="userbar">
+  <div class="who" id="whoBar">Not logged in</div>
+  <div>
+    <button class="loginbtn" id="loginBtn">🔑 Log in</button>
+    <button class="logoutbtn" id="logoutBtn" style="display:none">Log out</button>
+  </div>
 </div>
 
-<div id="app" style="display:none">
-  <div class="entry-name">
-    <div class="who">Logged in as <b id="whoName"></b></div>
-    <button class="logoutbtn" id="logoutBtn">Log out</button>
-  </div>
-
-  <!-- MY PREDICTIONS controls -->
-  <div class="controls" id="myControls">
-    <span id="contextLabel" style="color:var(--muted)"></span>
-    <select id="stageFilter"></select>
-    <input type="text" id="search" placeholder="🔍 Search team…">
-    <button class="allpredbtn" id="allPredBtn">👥 All Predictions</button>
-    <button class="lbbtn" id="leaderboardBtn">🏆 Leaderboard</button>
-    <button class="scorebtn" id="scoringBtn">📖 Scoring Format</button>
-  </div>
-
-  <!-- ALL PREDICTIONS controls -->
-  <div class="controls" id="allControls" style="display:none">
-    <button class="backbtn" id="backBtn">← Back to my predictions</button>
-    <select id="allStageFilter"></select>
-    <input type="text" id="allSearch" placeholder="🔍 Search team…">
-    <button id="allReloadBtn">↻ Reload</button>
-  </div>
-
-  <!-- LEADERBOARD controls -->
-  <div class="controls" id="lbControls" style="display:none">
-    <button class="backbtn" id="lbBackBtn">← Back to my predictions</button>
-    <span id="lbUpdated" class="lb-updated"></span>
-    <button id="lbReloadBtn">↻ Reload</button>
-  </div>
-
-  <div id="content"></div>
-  <div class="hint" id="myHint">Your predictions are saved to the shared game automatically. Once a stage locks (1 hour before its first match), those predictions can't be changed.</div>
+<!-- top navigation -->
+<div class="controls" id="nav">
+  <button class="navbtn" id="navLb">🏆 Leaderboard</button>
+  <button class="navbtn" id="navAll">👥 All Predictions</button>
+  <button class="mybtn" id="navMy">📝 My Predictions</button>
+  <button class="scorebtn" id="scoringBtn">📖 Scoring Format</button>
 </div>
+
+<!-- per-view controls -->
+<div class="controls" id="myControls" style="display:none">
+  <span id="contextLabel" style="color:var(--muted)"></span>
+  <select id="stageFilter"></select>
+  <input type="text" id="search" placeholder="🔍 Search team…">
+</div>
+<div class="controls" id="allControls" style="display:none">
+  <select id="allStageFilter"></select>
+  <input type="text" id="allSearch" placeholder="🔍 Search team…">
+  <button id="allReloadBtn">↻ Reload</button>
+</div>
+<div class="controls" id="lbControls" style="display:none">
+  <span id="lbUpdated" class="lb-updated"></span>
+  <button id="lbReloadBtn">↻ Reload</button>
+</div>
+
+<div id="content"></div>
+<div class="hint" id="myHint" style="display:none">Your predictions save automatically. Once a stage locks (1 hour before its first match), those predictions can't be changed.</div>
 
 <div class="toast" id="toast"></div>
+
+<!-- Login modal -->
+<div class="gate-overlay" id="gateOverlay">
+  <div class="gate">
+    <h3>🔑 Log in to enter predictions</h3>
+    <p>Pick your name and enter your PIN. Browsing the leaderboard and others' predictions doesn't need a login.</p>
+    <select id="gateName"><option value="">— select your name —</option></select>
+    <input type="password" id="gatePin" inputmode="numeric" maxlength="8" placeholder="PIN">
+    <div class="row">
+      <button class="cancelbtn" id="gateCancel">Cancel</button>
+      <button class="loginbtn" id="gateBtn">Log in</button>
+    </div>
+    <div class="err" id="gateErr"></div>
+  </div>
+</div>
 
 <!-- Scoring modal -->
 <div class="modal-overlay" id="scoringModal" role="dialog" aria-modal="true" aria-labelledby="scoringTitle">
@@ -261,14 +274,15 @@ let preds={};                 // my predictions
 let allPreds={};              // everyone's predictions
 let allPlayers=[];
 let results={};               // match_num -> {h,a,pen}
-let resultsUpdatedAt=null;    // latest results.updated_at
-let me=null,myPin=null,missing=null,mode="my";
+let resultsUpdatedAt=null;
+let me=null,myPin=null,missing=null,mode="lb";
 
 const $=id=>document.getElementById(id);
-const gate=$("gate"),app=$("app"),content=$("content"),toast=$("toast");
+const content=$("content"),toast=$("toast");
 const stageFilter=$("stageFilter"),search=$("search"),contextLabel=$("contextLabel");
 const allStageFilter=$("allStageFilter"),allSearch=$("allSearch");
 const myControls=$("myControls"),allControls=$("allControls"),lbControls=$("lbControls"),myHint=$("myHint");
+const gateOverlay=$("gateOverlay");
 
 FILTERS.forEach(f=>{const o=document.createElement("option");o.value=f.val;o.textContent=f.label;stageFilter.appendChild(o);
   const o2=document.createElement("option");o2.value=f.val;o2.textContent=f.label;allStageFilter.appendChild(o2);});
@@ -290,15 +304,16 @@ async function loadFixtures(){
   GROUP_LOCK={};Object.keys(earliest).forEach(g=>GROUP_LOCK[g]=new Date(earliest[g]-60*60*1000));
 }
 async function loadMyPreds(){
+  preds={};if(!me)return;
   const {data,error}=await SB.from("predictions").select("*").eq("player",me);if(error)throw error;
-  preds={};data.forEach(r=>preds[r.match_num]={h:String(r.home),a:String(r.away),prog:r.prog||""});
+  data.forEach(r=>preds[r.match_num]={h:String(r.home),a:String(r.away),prog:r.prog||""});
 }
 async function loadAllPreds(){
   const {data,error}=await SB.from("predictions").select("*");if(error)throw error;
   allPreds={};data.forEach(r=>{allPreds[r.player]=allPreds[r.player]||{};allPreds[r.player][r.match_num]={h:String(r.home),a:String(r.away),prog:r.prog||""};});
-  const set=new Set(Object.keys(allPreds));set.add(me);
+  const set=new Set(Object.keys(allPreds));if(me)set.add(me);
   const {data:pl}=await SB.from("player_names").select("name");(pl||[]).forEach(p=>set.add(p.name));
-  allPlayers=[...set].sort((a,b)=>a===me?-1:b===me?1:a.localeCompare(b));
+  allPlayers=[...set].sort((a,b)=>(me&&a===me)?-1:(me&&b===me)?1:a.localeCompare(b));
 }
 async function loadResults(){
   const {data,error}=await SB.from("results").select("*");if(error)throw error;
@@ -314,7 +329,7 @@ async function savePrediction(num){
   if(error){toastMsg("🔒 "+error.message,true);await loadMyPreds();renderMy();}
 }
 
-// ===== scoring (unchanged logic) =====
+// ===== scoring =====
 function scoreMatch(pred,res,ko,num){
   if(!pred||!res)return null;
   if(pred.h===""||pred.a===""||res.h===""||res.a==="")return null;
@@ -344,6 +359,7 @@ function fallbackCopy(text){const ta=document.createElement("textarea");ta.value
 
 // ===== MY PREDICTIONS view =====
 function renderMy(){
+  if(!me){content.innerHTML=`<div class="hint">Please log in to enter your predictions.</div>`;return;}
   const filter=FILTERS.find(f=>f.val===stageFilter.value)||FILTERS[0];const q=search.value.trim().toLowerCase();
   let html="",lastKey=null,openRound=null,done=0,total=0;
   function footer(round){if(!round)return"";const f=FIXTURES.find(x=>round.test(x.match_num));const locked=f?isLocked(f.match_num):false;let note="";
@@ -381,7 +397,7 @@ function renderMy(){
   contextLabel.textContent=`${done}/${total} predicted`;content.innerHTML=html;
 }
 
-// ===== ALL PREDICTIONS view (masked per round until locked) =====
+// ===== ALL PREDICTIONS view =====
 function renderAll(){
   const filter=FILTERS.find(f=>f.val===allStageFilter.value)||FILTERS[0];const q=allSearch.value.trim().toLowerCase();
   const visible=FIXTURES.filter(f=>{if(!filter.test(f.match_num))return false;if(q){if(!((f.home_code+" "+f.away_code).toLowerCase().includes(q)))return false;}return true;});
@@ -390,16 +406,17 @@ function renderAll(){
     gameHdr+=`<th class="${isFinal?'gh-final':''}${locked?'':' gh-locked'}"><div class="gh-teams">${f.home_code}</div><div class="gh-v">v</div><div class="gh-teams">${f.away_code}</div><div class="gh-meta">#${f.match_num} · ${timeStr(ko)}${isFinal?" · ×2":""}</div>${locked?"":`<div class="gh-lock">🔒 hidden</div>`}</th>`;});
   gameHdr+=`</tr>`;
   let body="";
-  allPlayers.forEach(p=>{const isYou=p===me;let cells="";
+  allPlayers.forEach(p=>{const isYou=me&&p===me;let cells="";
     visible.forEach(f=>{const num=f.match_num,locked=isLocked(num);const rec=(allPreds[p]||{})[num];
       if(!isYou&&!locked){cells+=`<td class="cell masked"><span class="sc">🔒</span></td>`;return;}
       if(!rec||rec.h===""||rec.a===""){cells+=`<td class="cell empty">–</td>`;return;}
       const h=+rec.h,a=+rec.a;let rn,rc;if(h>a){rn=f.home_code;rc="home";}else if(a>h){rn=f.away_code;rc="away";}else{if(isKO(num)&&rec.prog){rn=(rec.prog==="H"?f.home_code:f.away_code)+" (thru)";rc="draw";}else{rn="Draw";rc="draw";}}
       cells+=`<td class="cell"><span class="sc">${rec.h}–${rec.a}</span><span class="rs ${rc}">${rn}</span></td>`;});
     body+=`<tr class="${isYou?'you-row':''}"><td class="namecol${isYou?' you':''}">${p}${isYou?' (you)':''}</td>${cells}</tr>`;});
-  content.innerHTML=`<div class="ap-note">🔒 Other players' predictions are hidden for each round until that round locks (1 hour before its first kick-off). Your own row is always visible.</div>
+  const note=me?`🔒 Other players' predictions are hidden for each round until that round locks. Your own row is always visible.`:`🔒 Predictions are hidden for each round until that round locks (1 hour before its first kick-off). Log in to always see your own picks.`;
+  content.innerHTML=`<div class="ap-note">${note}</div>
     <div class="matrixwrap"><table class="matrix"><thead>${gameHdr}</thead><tbody>${body}</tbody></table></div>
-    <div class="hint">Players down the left (you first); swipe sideways for more games.</div>`;
+    <div class="hint">Players down the left${me?" (you first)":""}; swipe sideways for more games.</div>`;
 }
 
 // ===== LEADERBOARD view =====
@@ -415,22 +432,46 @@ function renderLeaderboard(){
   const stats=computeStats();
   let header=`<tr><th>#</th><th style="text-align:left">Player</th><th class="total">Total</th>`;BUCKETS.forEach(x=>header+=`<th>${x.label}</th>`);header+=`<th>Perfect</th></tr>`;
   let rows="",rank=0,prev=null;stats.forEach((t,i)=>{if(t.total!==prev){rank=i+1;prev=t.total;}let cells="";BUCKETS.forEach(x=>cells+=`<td>${t.b[x.key]||0}</td>`);
-    const you=t.player===me?" you-row":"";rows+=`<tr class="${you}"><td class="rank">${rank}</td><td class="name">${t.player}${t.player===me?' (you)':''}</td><td class="total">${t.total}</td>${cells}<td>${t.perfect}</td></tr>`;});
+    const you=(me&&t.player===me)?" you-row":"";rows+=`<tr class="${you}"><td class="rank">${rank}</td><td class="name">${t.player}${(me&&t.player===me)?' (you)':''}</td><td class="total">${t.total}</td>${cells}<td>${t.perfect}</td></tr>`;});
   content.innerHTML=`<div class="lbwrap"><table class="lb">${header}${rows}</table></div><div class="hint">Total beside the name; stage breakdown across (Final column doubled). <b>Perfect</b> = exact scoreline (Final perfect = 16).</div>`;
 }
 
 // ===== router =====
+function setNavActive(){
+  $("navLb").classList.toggle("active",mode==="lb");
+  $("navAll").classList.toggle("active",mode==="all");
+  $("navMy").classList.toggle("active",mode==="my");
+}
 function render(){
   myControls.style.display=mode==="my"?"":"none";
   allControls.style.display=mode==="all"?"":"none";
   lbControls.style.display=mode==="lb"?"":"none";
-  myHint.style.display=mode==="my"?"":"none";
+  myHint.style.display=(mode==="my"&&me)?"":"none";
+  setNavActive();
   if(mode==="all")return renderAll();
   if(mode==="lb")return renderLeaderboard();
   renderMy();
 }
 
-// ===== events =====
+// ===== view switchers (load fresh data each time) =====
+async function showLeaderboard(){mode="lb";await Promise.all([loadAllPreds(),loadResults()]);render();}
+async function showAll(){mode="all";await loadAllPreds();render();}
+async function showMy(){
+  if(!me){openGate();return;}        // not logged in → prompt login
+  mode="my";await loadMyPreds();render();
+}
+
+$("navLb").onclick=showLeaderboard;
+$("navAll").onclick=showAll;
+$("navMy").onclick=showMy;
+$("allReloadBtn").onclick=async()=>{await loadAllPreds();renderAll();toastMsg("↻ Reloaded");};
+$("lbReloadBtn").onclick=async()=>{await Promise.all([loadAllPreds(),loadResults()]);renderLeaderboard();toastMsg("↻ Reloaded");};
+
+stageFilter.addEventListener("change",()=>{missing=null;renderMy();});
+search.addEventListener("input",renderMy);
+allStageFilter.addEventListener("change",renderAll);
+allSearch.addEventListener("input",renderAll);
+
 content.addEventListener("click",e=>{
   if(mode!=="my")return;
   const btn=e.target.closest(".stepbtn");
@@ -438,18 +479,6 @@ content.addEventListener("click",e=>{
   const ck=e.target.dataset.copy;if(!ck)return;const round=ROUNDS.find(r=>r.key===ck);const m=missingForRound(round);missing=m.length?{round:ck,items:m}:null;copyText(buildText(ck));renderMy();
 });
 content.addEventListener("change",e=>{if(mode!=="my")return;if(e.target.dataset.field){const num=+e.target.dataset.num;if(isLocked(num)){renderMy();return;}const s=preds[num]=preds[num]||{h:"",a:"",prog:""};s[e.target.dataset.field]=e.target.value;updateLabel(num);savePrediction(num);}});
-stageFilter.addEventListener("change",()=>{missing=null;renderMy();});
-search.addEventListener("input",renderMy);
-allStageFilter.addEventListener("change",renderAll);
-allSearch.addEventListener("input",renderAll);
-
-$("allPredBtn").onclick=async()=>{mode="all";await loadAllPreds();render();};
-$("backBtn").onclick=()=>{mode="my";render();};
-$("allReloadBtn").onclick=async()=>{await loadAllPreds();renderAll();toastMsg("↻ Reloaded");};
-
-$("leaderboardBtn").onclick=async()=>{mode="lb";await Promise.all([loadAllPreds(),loadResults()]);render();};
-$("lbBackBtn").onclick=()=>{mode="my";render();};
-$("lbReloadBtn").onclick=async()=>{await Promise.all([loadAllPreds(),loadResults()]);renderLeaderboard();toastMsg("↻ Reloaded");};
 
 // scoring modal
 const sm=$("scoringModal");
@@ -458,22 +487,39 @@ $("scoringClose").onclick=()=>{sm.classList.remove("show");document.body.style.o
 sm.addEventListener("click",e=>{if(e.target===sm){sm.classList.remove("show");document.body.style.overflow="";}});
 document.addEventListener("keydown",e=>{if(e.key==="Escape"&&sm.classList.contains("show")){sm.classList.remove("show");document.body.style.overflow="";}});
 
-// ===== login =====
-async function populateNames(){const {data,error}=await SB.from("player_names").select("name").order("name");if(error){$("gateErr").textContent="Could not load players: "+error.message;return;}const sel=$("gateName");data.forEach(p=>{const o=document.createElement("option");o.value=p.name;o.textContent=p.name;sel.appendChild(o);});}
-async function doLogin(){const name=$("gateName").value,pin=$("gatePin").value.trim();$("gateErr").textContent="";if(!name||!pin){$("gateErr").textContent="Pick your name and enter your PIN.";return;}const {data,error}=await SB.rpc("verify_pin",{p_player:name,p_pin:pin});if(error){$("gateErr").textContent="Login error: "+error.message;return;}if(!data){$("gateErr").textContent="Wrong name or PIN.";return;}me=name;myPin=pin;sessionStorage.setItem("wc_name",name);sessionStorage.setItem("wc_pin",pin);await startApp();}
+// ===== login modal =====
+async function populateNames(){const sel=$("gateName");if(sel.options.length>1)return;const {data,error}=await SB.from("player_names").select("name").order("name");if(error){$("gateErr").textContent="Could not load players: "+error.message;return;}data.forEach(p=>{const o=document.createElement("option");o.value=p.name;o.textContent=p.name;sel.appendChild(o);});}
+function openGate(){populateNames();$("gateErr").textContent="";gateOverlay.classList.add("show");document.body.style.overflow="hidden";setTimeout(()=>$("gateName").focus(),50);}
+function closeGate(){gateOverlay.classList.remove("show");document.body.style.overflow="";}
+async function doLogin(){const name=$("gateName").value,pin=$("gatePin").value.trim();$("gateErr").textContent="";if(!name||!pin){$("gateErr").textContent="Pick your name and enter your PIN.";return;}const {data,error}=await SB.rpc("verify_pin",{p_player:name,p_pin:pin});if(error){$("gateErr").textContent="Login error: "+error.message;return;}if(!data){$("gateErr").textContent="Wrong name or PIN.";return;}
+  me=name;myPin=pin;sessionStorage.setItem("wc_name",name);sessionStorage.setItem("wc_pin",pin);closeGate();updateUserBar();
+  mode="my";await loadMyPreds();render();}
 $("gateBtn").onclick=doLogin;$("gatePin").addEventListener("keydown",e=>{if(e.key==="Enter")doLogin();});
-$("logoutBtn").onclick=()=>{sessionStorage.removeItem("wc_name");sessionStorage.removeItem("wc_pin");location.reload();};
+$("gateCancel").onclick=closeGate;
+gateOverlay.addEventListener("click",e=>{if(e.target===gateOverlay)closeGate();});
+$("loginBtn").onclick=openGate;
+$("logoutBtn").onclick=()=>{sessionStorage.removeItem("wc_name");sessionStorage.removeItem("wc_pin");me=null;myPin=null;preds={};updateUserBar();showLeaderboard();};
 
-async function startApp(){
-  gate.style.display="none";app.style.display="";$("whoName").textContent=me;
-  await loadMyPreds();mode="my";render();
-  setInterval(()=>{
-    if(mode==="my"&&!search.value.trim())renderMy();
-    else if(mode==="all"&&!allSearch.value.trim())renderAll();
-    else if(mode==="lb"){loadResults().then(()=>renderLeaderboard());}
-  },60000);
+function updateUserBar(){
+  if(me){$("whoBar").innerHTML="Logged in as <b>"+me+"</b>";$("loginBtn").style.display="none";$("logoutBtn").style.display="";}
+  else{$("whoBar").textContent="Not logged in";$("loginBtn").style.display="";$("logoutBtn").style.display="none";}
 }
-async function init(){try{await loadFixtures();const sName=sessionStorage.getItem("wc_name"),sPin=sessionStorage.getItem("wc_pin");if(sName&&sPin){const {data}=await SB.rpc("verify_pin",{p_player:sName,p_pin:sPin});if(data){me=sName;myPin=sPin;await startApp();return;}}gate.style.display="";await populateNames();}catch(err){document.body.insertAdjacentHTML("beforeend",`<div class="hint" style="color:#ffb4a2">⚠️ Could not connect: ${err.message}</div>`);}}
+
+// ===== init =====
+async function init(){
+  try{
+    await loadFixtures();
+    const sName=sessionStorage.getItem("wc_name"),sPin=sessionStorage.getItem("wc_pin");
+    if(sName&&sPin){const {data}=await SB.rpc("verify_pin",{p_player:sName,p_pin:sPin});if(data){me=sName;myPin=sPin;await loadMyPreds();}}
+    updateUserBar();
+    await showLeaderboard();   // public default landing
+    setInterval(()=>{
+      if(mode==="my"&&me&&!search.value.trim())renderMy();
+      else if(mode==="all"&&!allSearch.value.trim())renderAll();
+      else if(mode==="lb"){Promise.all([loadAllPreds(),loadResults()]).then(renderLeaderboard);}
+    },60000);
+  }catch(err){content.innerHTML=`<div class="hint" style="color:#ffb4a2">⚠️ Could not connect: ${err.message}</div>`;}
+}
 init();
 </script>
 </body>
