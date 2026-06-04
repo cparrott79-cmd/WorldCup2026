@@ -77,21 +77,27 @@
   table.gt td.pts{font-weight:700;color:var(--gold)}
   .legend{max-width:1100px;margin:14px auto 0;color:var(--muted);font-size:.78rem;text-align:center}
   .legend .swatch{display:inline-block;width:10px;height:10px;border-radius:2px;vertical-align:middle;margin-right:4px}
+  /* Manage Players */
+  .mp-wrap{max-width:760px;margin:0 auto}
+  .mp-card{background:var(--card);border:1px solid #415a77;border-radius:12px;padding:14px 16px;margin-bottom:14px}
+  .mp-card h3{margin:0 0 10px;color:var(--accent);font-size:.98rem}
+  .mp-row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:10px}
+  .mp-row label{font-size:.8rem;color:var(--muted);min-width:64px}
+  .mp-row input[type=text],.mp-row input[type=password],.mp-row select{flex:1;min-width:120px}
+  .mp-row .chk{display:inline-flex;align-items:center;gap:6px;font-size:.82rem;color:var(--text)}
+  .mp-row button{background:var(--gold);color:#001219;border-color:var(--gold);font-weight:700}
+  .mp-row button:hover{background:#ffdf85;border-color:#ffdf85;color:#001219}
+  .mp-msg{font-size:.82rem;min-height:18px;margin-top:4px}
+  .mp-msg.ok{color:#8ff0dd}.mp-msg.err{color:#ffb4a2}
+  table.mp-list{width:100%;border-collapse:collapse;font-size:.85rem;margin-top:6px}
+  table.mp-list th,table.mp-list td{padding:7px 8px;border-bottom:1px solid #2a3a52;text-align:left}
+  table.mp-list th{color:var(--accent);font-size:.76rem}
+  table.mp-list .adminyes{color:var(--gold);font-weight:700}
+  table.mp-list button{padding:5px 10px;font-size:.78rem}
   /* ===== Share PINs styles — commented out (kept for future use) =====
   .share-note{background:#3d2c1b;border:1px solid var(--draw);color:var(--draw);padding:8px 12px;border-radius:8px;max-width:920px;margin:0 auto 12px;font-size:.82rem;text-align:center}
   .share-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px;max-width:1000px;margin:0 auto}
   .share-card{background:var(--card);border:1px solid #415a77;border-radius:12px;padding:12px 14px}
-  .share-card h4{margin:0 0 2px;color:var(--accent);font-size:1rem}
-  .share-card .pin{color:var(--gold);font-weight:700;font-size:.9rem;margin-bottom:10px}
-  .share-card .pin .pinval{letter-spacing:2px}
-  .share-card .actions{display:flex;gap:8px;flex-wrap:wrap}
-  .share-card a.btnlink,.share-card button.copybtn{display:inline-flex;align-items:center;gap:6px;text-decoration:none;font-size:.82rem;font-weight:600;padding:7px 12px;border-radius:8px;border:1px solid #415a77;background:var(--card);color:var(--text);cursor:pointer}
-  .share-card a.wa{background:#1f5f4d;border-color:#27795f;color:#bdf3e1}
-  .share-card a.wa:hover{background:#27795f;color:#fff}
-  .share-card a.sms{background:#243a55;border-color:#345982;color:#cfe2ff}
-  .share-card a.sms:hover{background:#345982;color:#fff}
-  .share-card button.copybtn:hover{background:#24344c;border-color:var(--accent)}
-  .share-card .nophone{color:var(--muted);font-size:.74rem;margin-top:6px}
   ===== end Share PINs styles ===== */
   .hint{max-width:1060px;margin:8px auto;color:var(--muted);font-size:.8rem;text-align:center}
   .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:var(--win);color:#001219;font-weight:700;padding:10px 18px;border-radius:10px;opacity:0;transition:opacity .25s;pointer-events:none;z-index:50;max-width:90vw;text-align:center}
@@ -102,7 +108,7 @@
 <body>
 <header>
   <h1>⚽ World Cup 2026 — Admin</h1>
-  <div class="sub">Enter results and assign 3rd-placed teams.</div>
+  <div class="sub">Enter results, assign 3rd-placed teams, and manage players.</div>
 </header>
 
 <div id="gate" class="gate" style="display:none">
@@ -129,24 +135,13 @@
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-// ====== CONFIG ======
-const SUPABASE_URL = "https://nsfwtflpjsdbtbhimvmw.supabase.co";
-const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5zZnd0ZmxwanNkYnRiaGltdm13Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA1NjY5ODUsImV4cCI6MjA5NjE0Mjk4NX0.gjajKj1IYgb1WdWlC5cm8nipdS9Qlz2iNKnLdCY1NiA";
+const SUPABASE_URL = "https://YOUR-PROJECT.supabase.co";
+const SUPABASE_ANON_KEY = "YOUR-ANON-PUBLIC-KEY";
 const SB = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 /* ===== Share PINs config — commented out (kept for future use) =====
 const PREDICTIONS_URL = "https://cparrott79-cmd.github.io/WorldCup2026/Predictionsv2.html";
-const SHARE_LIST = [
-  { name:"Chris",   pin:"1234", phone:"" },
-  { name:"Alfie",   pin:"1111", phone:"" },
-  { name:"Owen",    pin:"2222", phone:"" },
-  { name:"Josh",    pin:"3333", phone:"" },
-  { name:"Naomi",   pin:"4444", phone:"" },
-  { name:"Mama",    pin:"5555", phone:"" },
-  { name:"Grandad", pin:"6666", phone:"" },
-  { name:"Marie",   pin:"7777", phone:"" },
-  { name:"Smithy",  pin:"8888", phone:"" }
-];
+const SHARE_LIST = [ { name:"Chris", pin:"1234", phone:"" } ];
 ===== end Share PINs config ===== */
 
 const FINAL_MATCH=104;
@@ -168,6 +163,7 @@ const FILTERS=[{val:"",label:"All stages",test:()=>true}].concat(ROUNDS.map(r=>(
 function isCode(s){return /^([12][A-L]|3[A-L]+|W\d+|RU\d+)$/.test(s);}
 
 let FIXTURES=[],FX={},results={},thirds={},me=null,myPin=null,view="results";
+let playerList=[];
 
 const $=id=>document.getElementById(id);
 const content=$("content"),toast=$("toast");
@@ -223,7 +219,7 @@ function adjustResult(num,side,delta){num=+num;const s=results[num]=results[num]
 
 function buildTabs(){
   const t=$("tabs");t.innerHTML="";
-  [["results","🎯 Results"],["groups","📊 Group Tables"]]
+  [["results","🎯 Results"],["groups","📊 Group Tables"],["players","👤 Manage Players"]]
   .forEach(([mode,label])=>{const el=document.createElement("div");el.className="tab"+(view===mode?" active":"");el.textContent=label;el.onclick=()=>{view=mode;render();};t.appendChild(el);});
   resControls.style.display=view==="results"?"":"none";
 }
@@ -277,49 +273,92 @@ function renderGroups(){
   content.innerHTML=html;
 }
 
-/* ===== Share PINs view — commented out (kept for future use) =====
-function shareMessage(name,pin){
-  return "Hi "+name+"! Here's your World Cup 2026 predictions login 👇\n"+
-         "🔗 "+PREDICTIONS_URL+"\n"+
-         "👤 Name: "+name+"\n"+
-         "🔑 PIN: "+pin+"\n"+
-         "Pick your name, enter your PIN, then tap \"My Predictions\" to fill in your scores — they save automatically!";
+// ===== Manage Players view =====
+async function loadPlayerList(){
+  const {data,error}=await SB.from("player_names").select("name,is_admin").order("name");
+  playerList = error ? [] : (data||[]);
 }
-function renderShare(){
-  let cards="";
-  SHARE_LIST.forEach(p=>{
-    const msg=shareMessage(p.name,p.pin);
-    const enc=encodeURIComponent(msg);
-    const phone=(p.phone||"").replace(/[^\d+]/g,"");
-    const waNum=phone.replace(/^\+/,"");
-    const waHref = phone ? "https://wa.me/"+waNum+"?text="+enc : "https://wa.me/?text="+enc;
-    const smsHref = phone ? "sms:"+phone+"?&body="+enc : "sms:?&body="+enc;
-    cards+=`<div class="share-card">
-      <h4>${p.name}</h4>
-      <div class="pin">🔑 PIN: <span class="pinval">${p.pin}</span></div>
-      <div class="actions">
-        <button class="copybtn" data-copy="${encodeURIComponent(msg)}">📋 Copy message</button>
-        <a class="btnlink wa" href="${waHref}" target="_blank" rel="noopener">🟢 WhatsApp</a>
-        <a class="btnlink sms" href="${smsHref}">💬 SMS</a>
-      </div>
-      ${phone?"":`<div class="nophone">No phone set — WhatsApp/SMS will open blank to pick a contact.</div>`}
-    </div>`;
-  });
-  content.innerHTML=`<div class="share-note">⚠️ Send each person only their own PIN, privately.</div>
-    <div class="share-grid">${cards}</div>`;
-}
-===== end Share PINs view ===== */
+function mpMsg(id,kind,text){const el=$(id);if(!el)return;el.className="mp-msg "+kind;el.textContent=text;}
 
-function render(){buildTabs();if(view==="groups")return renderGroups();renderResults();}
+async function renderPlayers(){
+  await loadPlayerList();
+  let listRows="";
+  playerList.forEach(p=>{
+    listRows+=`<tr>
+      <td>${p.name}</td>
+      <td class="${p.is_admin?'adminyes':''}">${p.is_admin?'Admin':'Player'}</td>
+      <td>
+        <button data-mp="resetpin" data-name="${p.name}">Reset PIN</button>
+        <button data-mp="toggleadmin" data-name="${p.name}" data-now="${p.is_admin?1:0}">${p.is_admin?'Revoke admin':'Make admin'}</button>
+      </td>
+    </tr>`;
+  });
+  content.innerHTML=`<div class="mp-wrap">
+    <div class="mp-card">
+      <h3>➕ Add a new player</h3>
+      <div class="mp-row">
+        <label for="mpName">Name</label>
+        <input type="text" id="mpName" maxlength="24" placeholder="e.g. Uncle Rob">
+      </div>
+      <div class="mp-row">
+        <label for="mpPin">PIN</label>
+        <input type="password" id="mpPin" inputmode="numeric" maxlength="8" placeholder="e.g. 1357">
+        <label class="chk"><input type="checkbox" id="mpAdmin"> Admin</label>
+        <button id="mpAddBtn">Add player</button>
+      </div>
+      <div class="mp-msg" id="mpAddMsg"></div>
+    </div>
+
+    <div class="mp-card">
+      <h3>👥 Existing players (${playerList.length})</h3>
+      <table class="mp-list">
+        <tr><th>Name</th><th>Role</th><th>Actions</th></tr>
+        ${listRows}
+      </table>
+      <div class="mp-msg" id="mpListMsg"></div>
+    </div>
+  </div>`;
+  $("mpAddBtn").onclick=addPlayer;
+}
+
+async function addPlayer(){
+  const name=$("mpName").value.trim();
+  const pin=$("mpPin").value.trim();
+  const isAdmin=$("mpAdmin").checked;
+  if(!name||!pin){mpMsg("mpAddMsg","err","Enter a name and a PIN.");return;}
+  const {error}=await SB.rpc("admin_add_player",{p_admin:me,p_admin_pin:myPin,p_name:name,p_pin:pin,p_is_admin:isAdmin});
+  if(error){mpMsg("mpAddMsg","err","⚠️ "+error.message);return;}
+  mpMsg("mpAddMsg","ok",`✅ Added ${name}${isAdmin?" (admin)":""}.`);
+  $("mpName").value="";$("mpPin").value="";$("mpAdmin").checked=false;
+  await renderPlayers();
+}
+async function resetPin(name){
+  const newPin=prompt(`New PIN for ${name}:`);
+  if(newPin===null)return;
+  if(!newPin.trim()){mpMsg("mpListMsg","err","PIN can't be blank.");return;}
+  const {error}=await SB.rpc("admin_reset_pin",{p_admin:me,p_admin_pin:myPin,p_name:name,p_new_pin:newPin.trim()});
+  if(error){mpMsg("mpListMsg","err","⚠️ "+error.message);return;}
+  mpMsg("mpListMsg","ok",`✅ PIN reset for ${name}.`);
+}
+async function toggleAdmin(name,nowAdmin){
+  const make=!nowAdmin;
+  if(!confirm(`${make?"Grant":"Revoke"} admin for ${name}?`))return;
+  const {error}=await SB.rpc("admin_set_admin",{p_admin:me,p_admin_pin:myPin,p_name:name,p_is_admin:make});
+  if(error){mpMsg("mpListMsg","err","⚠️ "+error.message);return;}
+  mpMsg("mpListMsg","ok",`✅ ${name} is now ${make?"an admin":"a player"}.`);
+  await renderPlayers();
+}
+
+function render(){buildTabs();if(view==="groups")return renderGroups();if(view==="players")return renderPlayers();renderResults();}
 
 content.addEventListener("click",e=>{
-  /* ===== Share PINs copy handler — commented out (kept for future use) =====
-  const cp=e.target.closest("[data-copy]");
-  if(cp){const text=decodeURIComponent(cp.dataset.copy);
-    if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(text).then(()=>toastMsg("✅ Message copied"),()=>toastMsg("Couldn't copy",true));}
-    else{const ta=document.createElement("textarea");ta.value=text;document.body.appendChild(ta);ta.select();try{document.execCommand("copy");toastMsg("✅ Message copied");}catch(_){toastMsg("Couldn't copy",true);}document.body.removeChild(ta);}
-    return;}
-  ===== end Share PINs copy handler ===== */
+  const mp=e.target.closest("[data-mp]");
+  if(mp){
+    const action=mp.dataset.mp,name=mp.dataset.name;
+    if(action==="resetpin"){resetPin(name);return;}
+    if(action==="toggleadmin"){toggleAdmin(name,mp.dataset.now==="1");return;}
+    return;
+  }
   const btn=e.target.closest(".stepbtn");if(btn&&view==="results"){adjustResult(btn.dataset.num,btn.dataset.side,+btn.dataset.step);}
 });
 content.addEventListener("change",e=>{
