@@ -16,18 +16,14 @@
 
   /* ---- consistent button system ---- */
   button{cursor:pointer;transition:.15s;font-size:.9rem;font-weight:600;border-radius:8px;padding:9px 16px}
-  /* NAV TABS — all identical; active one is filled */
   .navbtn{background:var(--card);border:1px solid #415a77;color:var(--text);display:inline-flex;align-items:center;gap:6px}
   .navbtn:hover{background:#24344c;border-color:var(--accent);color:var(--text)}
   .navbtn.active{background:var(--accent);border-color:var(--accent);color:#001219;font-weight:700}
   .navbtn.active:hover{background:#33c6ec;border-color:#33c6ec;color:#001219}
-  /* LOGIN — single primary call-to-action (gold) */
   .loginbtn{background:var(--gold);color:#001219;border:1px solid var(--gold);font-weight:700}
   .loginbtn:hover{background:#ffdf85;border-color:#ffdf85;color:#001219}
-  /* LOG OUT / secondary — muted outline */
   .logoutbtn,.secbtn{background:transparent;border:1px solid var(--muted);color:var(--muted);font-weight:600}
   .logoutbtn:hover,.secbtn:hover{background:var(--danger);border-color:var(--danger);color:#001219}
-  /* generic non-nav buttons (Reload etc.) — match nav resting style */
   .controls button:not(.navbtn):not(.loginbtn):not(.logoutbtn){background:var(--card);border:1px solid #415a77;color:var(--text)}
   .controls button:not(.navbtn):not(.loginbtn):not(.logoutbtn):hover{background:#24344c;border-color:var(--accent);color:var(--text)}
 
@@ -116,25 +112,25 @@
   .lb-updated{color:var(--muted);font-size:.78rem}
   .lb-updated b{color:var(--accent)}
   .lbwrap{overflow-x:auto}
+  table.lb{width:100%;max-width:1060px;margin:0 auto;border-collapse:collapse;font-size:.86rem}
+  table.lb th,table.lb td{padding:9px 10px;text-align:center;border-bottom:1px solid #415a77;white-space:nowrap}
+  table.lb th{color:var(--accent);font-size:.78rem}
+  table.lb td.name{text-align:left;font-weight:600}
+  table.lb td.total,table.lb th.total{font-weight:700;color:var(--gold);background:#15263b}
   table.lb td.rank{color:var(--muted);width:42px;font-weight:700}
-
   /* 1st place — gold leader row */
   table.lb tr.leader td{background:rgba(255,209,102,.10)}
   table.lb tr.leader td.rank{color:var(--gold);font-size:1.05rem}
   table.lb tr.leader td.name{color:var(--gold);font-weight:800}
-
-  /* dotted divider under 3rd place (top-3 cutoff) */
+  /* dotted divider under 3rd place */
   table.lb tr.top3-cut td{border-bottom:2px dotted var(--accent)}
-
-  /* last place — muted "wooden spoon" row */
+  /* last place — muted wooden-spoon row */
   table.lb tr.last td{background:rgba(231,111,81,.10)}
   table.lb tr.last td.rank,table.lb tr.last td.name{color:var(--danger)}
-
-  /* keep your "you" highlight but let leader/last win visually */
+  /* keep "you" highlight but let leader/last win */
   table.lb tr.you-row td{background:rgba(0,180,216,.08)}
   table.lb tr.you-row.leader td{background:rgba(255,209,102,.14)}
   table.lb tr.you-row.last td{background:rgba(231,111,81,.14)}
-
 
   /* scoring modal */
   .modal-overlay{position:fixed;inset:0;background:rgba(3,8,15,.72);display:none;align-items:flex-start;justify-content:center;z-index:100;padding:12px;overflow-y:auto}
@@ -177,7 +173,6 @@
   </div>
 </div>
 
-<!-- top navigation -->
 <div class="controls" id="nav">
   <button class="navbtn" id="navLb">🏆 Leaderboard</button>
   <button class="navbtn" id="navAll">👥 All Predictions</button>
@@ -185,7 +180,6 @@
   <button class="navbtn" id="scoringBtn">📖 Scoring Format</button>
 </div>
 
-<!-- per-view controls -->
 <div class="controls" id="myControls" style="display:none">
   <span id="contextLabel" style="color:var(--muted)"></span>
   <select id="stageFilter"></select>
@@ -206,7 +200,6 @@
 
 <div class="toast" id="toast"></div>
 
-<!-- Login modal -->
 <div class="gate-overlay" id="gateOverlay">
   <div class="gate">
     <h3>🔑 Log in to enter predictions</h3>
@@ -221,7 +214,6 @@
   </div>
 </div>
 
-<!-- Scoring modal -->
 <div class="modal-overlay" id="scoringModal" role="dialog" aria-modal="true" aria-labelledby="scoringTitle">
   <div class="modal">
     <div class="modal-head"><h2 id="scoringTitle">📖 Scoring Format</h2><button class="modal-close" id="scoringClose" aria-label="Close">✕</button></div>
@@ -255,6 +247,7 @@
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
+  
 // ====== CONFIG ======
 const SUPABASE_URL = "https://nsfwtflpjsdbtbhimvmw.supabase.co";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5zZnd0ZmxwanNkYnRiaGltdm13Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA1NjY5ODUsImV4cCI6MjA5NjE0Mjk4NX0.gjajKj1IYgb1WdWlC5cm8nipdS9Qlz2iNKnLdCY1NiA";
@@ -284,11 +277,7 @@ const BUCKETS=[
 function isCode(s){return /^([12][A-L]|3[A-L]+|W\d+|RU\d+)$/.test(s);}
 
 let FIXTURES=[],FX={},GROUP_LOCK={};
-let preds={};
-let allPreds={};
-let allPlayers=[];
-let results={};
-let resultsUpdatedAt=null;
+let preds={},allPreds={},allPlayers=[],results={},resultsUpdatedAt=null;
 let me=null,myPin=null,missing=null,mode="lb";
 
 const $=id=>document.getElementById(id);
@@ -310,18 +299,13 @@ function lockTimeFor(num){const f=FX[num];if(!f)return null;return GROUP_LOCK[f.
 function isLocked(num){const t=lockTimeFor(num);return t?Date.now()>=t.getTime():false;}
 function fmtDeadline(d){if(!d)return"";return days[d.getDay()]+" "+p2(d.getDate())+" "+mons[d.getMonth()]+" "+d.getFullYear()+", "+p2(d.getHours())+":"+p2(d.getMinutes());}
 
-// ===== loads =====
 async function loadFixtures(){
   const {data,error}=await SB.from("fixtures").select("*").order("match_num");if(error)throw error;
   FIXTURES=data;FX={};data.forEach(f=>FX[f.match_num]=f);
   const earliest={};data.forEach(f=>{const t=new Date(f.kickoff).getTime();if(earliest[f.lock_group]==null||t<earliest[f.lock_group])earliest[f.lock_group]=t;});
   GROUP_LOCK={};Object.keys(earliest).forEach(g=>GROUP_LOCK[g]=new Date(earliest[g]-60*60*1000));
 }
-async function loadMyPreds(){
-  preds={};if(!me)return;
-  const {data,error}=await SB.from("predictions").select("*").eq("player",me);if(error)throw error;
-  data.forEach(r=>preds[r.match_num]={h:String(r.home),a:String(r.away),prog:r.prog||""});
-}
+async function loadMyPreds(){preds={};if(!me)return;const {data,error}=await SB.from("predictions").select("*").eq("player",me);if(error)throw error;data.forEach(r=>preds[r.match_num]={h:String(r.home),a:String(r.away),prog:r.prog||""});}
 async function loadAllPreds(){
   const {data,error}=await SB.from("predictions").select("*");if(error)throw error;
   allPreds={};data.forEach(r=>{allPreds[r.player]=allPreds[r.player]||{};allPreds[r.player][r.match_num]={h:String(r.home),a:String(r.away),prog:r.prog||""};});
@@ -332,18 +316,15 @@ async function loadAllPreds(){
 async function loadResults(){
   const {data,error}=await SB.from("results").select("*");if(error)throw error;
   results={};resultsUpdatedAt=null;
-  (data||[]).forEach(r=>{results[r.match_num]={h:r.home==null?"":String(r.home),a:r.away==null?"":String(r.away),pen:r.pen||""};
-    if(r.updated_at){const t=new Date(r.updated_at).getTime();if(resultsUpdatedAt==null||t>resultsUpdatedAt)resultsUpdatedAt=t;}});
+  (data||[]).forEach(r=>{results[r.match_num]={h:r.home==null?"":String(r.home),a:r.away==null?"":String(r.away),pen:r.pen||""};if(r.updated_at){const t=new Date(r.updated_at).getTime();if(resultsUpdatedAt==null||t>resultsUpdatedAt)resultsUpdatedAt=t;}});
 }
 
-// ===== save =====
 async function savePrediction(num){
   const r=preds[num];if(!r||r.h===""||r.a==="")return;
   const {error}=await SB.rpc("submit_prediction",{p_player:me,p_pin:myPin,p_match:num,p_home:+r.h,p_away:+r.a,p_prog:r.prog||""});
   if(error){toastMsg("🔒 "+error.message,true);await loadMyPreds();renderMy();}
 }
 
-// ===== scoring =====
 function scoreMatch(pred,res,ko,num){
   if(!pred||!res)return null;
   if(pred.h===""||pred.a===""||res.h===""||res.a==="")return null;
@@ -357,7 +338,6 @@ function scoreMatch(pred,res,ko,num){
   return pts;
 }
 
-// ===== my-view helpers =====
 function label(num){const f=FX[num];const rec=preds[num];let lab="—",cls="result";
   if(rec&&rec.h!==""&&rec.a!==""){const h=+rec.h,a=+rec.a;
     if(h>a){lab=f.home_code+" win";cls="result home";}else if(a>h){lab=f.away_code+" win";cls="result away";}
@@ -371,7 +351,6 @@ function buildText(roundKey){let lines=["WC2026 Predictions — "+me];ROUNDS.for
 function copyText(text){if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(text).then(()=>toastMsg("✅ Copied! Now paste into WhatsApp"),()=>fallbackCopy(text));}else fallbackCopy(text);}
 function fallbackCopy(text){const ta=document.createElement("textarea");ta.value=text;ta.style.position="fixed";ta.style.opacity="0";document.body.appendChild(ta);ta.focus();ta.select();try{document.execCommand("copy");toastMsg("✅ Copied! Now paste into WhatsApp");}catch(e){alert(text);}document.body.removeChild(ta);}
 
-// ===== MY PREDICTIONS view =====
 function renderMy(){
   if(!me){content.innerHTML=`<div class="hint">Please log in to enter your predictions.</div>`;return;}
   const filter=FILTERS.find(f=>f.val===stageFilter.value)||FILTERS[0];const q=search.value.trim().toLowerCase();
@@ -411,7 +390,6 @@ function renderMy(){
   contextLabel.textContent=`${done}/${total} predicted`;content.innerHTML=html;
 }
 
-// ===== ALL PREDICTIONS view =====
 function renderAll(){
   const filter=FILTERS.find(f=>f.val===allStageFilter.value)||FILTERS[0];const q=allSearch.value.trim().toLowerCase();
   const visible=FIXTURES.filter(f=>{if(!filter.test(f.match_num))return false;if(q){if(!((f.home_code+" "+f.away_code).toLowerCase().includes(q)))return false;}return true;});
@@ -428,12 +406,9 @@ function renderAll(){
       cells+=`<td class="cell"><span class="sc">${rec.h}–${rec.a}</span><span class="rs ${rc}">${rn}</span></td>`;});
     body+=`<tr class="${isYou?'you-row':''}"><td class="namecol${isYou?' you':''}">${p}${isYou?' (you)':''}</td>${cells}</tr>`;});
   const note=me?`🔒 Other players' predictions are hidden for each round until that round locks. Your own row is always visible.`:`🔒 Predictions are hidden for each round until that round locks (1 hour before its first kick-off). Log in to always see your own picks.`;
-  content.innerHTML=`<div class="ap-note">${note}</div>
-    <div class="matrixwrap"><table class="matrix"><thead>${gameHdr}</thead><tbody>${body}</tbody></table></div>
-    <div class="hint">Players down the left${me?" (you first)":""}; swipe sideways for more games.</div>`;
+  content.innerHTML=`<div class="ap-note">${note}</div><div class="matrixwrap"><table class="matrix"><thead>${gameHdr}</thead><tbody>${body}</tbody></table></div><div class="hint">Players down the left${me?" (you first)":""}; swipe sideways for more games.</div>`;
 }
 
-// ===== LEADERBOARD view =====
 function computeStats(){
   return allPlayers.map(p=>{const b={};BUCKETS.forEach(x=>b[x.key]=0);let total=0,perfect=0;
     FIXTURES.forEach(f=>{const num=f.match_num;const pred=(allPreds[p]||{})[num],res=results[num];const s=scoreMatch(pred,res,isKO(num),num);
@@ -444,76 +419,37 @@ function fmtUpdated(ms){if(ms==null)return "No results entered yet";const d=new 
 function renderLeaderboard(){
   $("lbUpdated").innerHTML="🏆 <b>"+fmtUpdated(resultsUpdatedAt)+"</b>";
   const stats=computeStats();
-  const anyScored = stats.some(s=>s.total>0);   // are there any points yet?
-  const n = stats.length;
-
-  let header=`<tr><th>#</th><th style="text-align:left">Player</th><th class="total">Total</th>`;
-  BUCKETS.forEach(x=>header+=`<th>${x.label}</th>`);
-  header+=`<th>Perfect</th></tr>`;
-
-  let rows="";
-  let displayRank=0, prevTotal=null;
+  const anyScored=stats.some(s=>s.total>0);const n=stats.length;
+  let header=`<tr><th>#</th><th style="text-align:left">Player</th><th class="total">Total</th>`;BUCKETS.forEach(x=>header+=`<th>${x.label}</th>`);header+=`<th>Perfect</th></tr>`;
+  let rows="",displayRank=0,prevTotal=null;
   stats.forEach((t,i)=>{
-    // Sequential position by default; share rank on a tie ONLY once points exist.
-    let pos;
-    if(anyScored && t.total===prevTotal){ pos=displayRank; }   // tie → same rank
-    else { pos=i+1; displayRank=pos; prevTotal=t.total; }
-
-    // Row state classes
+    let pos;if(anyScored&&t.total===prevTotal){pos=displayRank;}else{pos=i+1;displayRank=pos;prevTotal=t.total;}
     const classes=[];
-    if(me && t.player===me) classes.push("you-row");
-    // Leader: only if there's a clear leader (someone has scored) and they're top
-    if(anyScored && i===0) classes.push("leader");
-    // Last place: only meaningful with >1 player and some points scored
-    if(anyScored && n>1 && i===n-1) classes.push("last");
-    // Dotted cut after 3rd place (only if there are more than 3 players)
-    if(n>3 && i===2) classes.push("top3-cut");
-
-    const medal = (anyScored && i===0) ? "🥇 " : (anyScored && n>1 && i===n-1 ? "🥄 " : "");
-
-    let cells="";
-    BUCKETS.forEach(x=>cells+=`<td>${t.b[x.key]||0}</td>`);
-    rows+=`<tr class="${classes.join(' ')}">
-      <td class="rank">${pos}</td>
-      <td class="name">${medal}${t.player}${(me&&t.player===me)?' (you)':''}</td>
-      <td class="total">${t.total}</td>${cells}<td>${t.perfect}</td></tr>`;
+    if(me&&t.player===me)classes.push("you-row");
+    if(anyScored&&i===0)classes.push("leader");
+    if(anyScored&&n>1&&i===n-1)classes.push("last");
+    if(n>3&&i===2)classes.push("top3-cut");
+    const medal=(anyScored&&i===0)?"🥇 ":(anyScored&&n>1&&i===n-1?"🥄 ":"");
+    let cells="";BUCKETS.forEach(x=>cells+=`<td>${t.b[x.key]||0}</td>`);
+    rows+=`<tr class="${classes.join(' ')}"><td class="rank">${pos}</td><td class="name">${medal}${t.player}${(me&&t.player===me)?' (you)':''}</td><td class="total">${t.total}</td>${cells}<td>${t.perfect}</td></tr>`;
   });
-
-  content.innerHTML=`<div class="lbwrap"><table class="lb">${header}${rows}</table></div>
-    <div class="hint">Total beside the name; stage breakdown across (Final column doubled). <b>Perfect</b> = exact scoreline (Final perfect = 16). 🥇 leader · 🥄 last · dotted line marks the top 3.</div>`;
+  content.innerHTML=`<div class="lbwrap"><table class="lb">${header}${rows}</table></div><div class="hint">Total beside the name; stage breakdown across (Final column doubled). <b>Perfect</b> = exact scoreline (Final perfect = 16). 🥇 leader · 🥄 last · dotted line marks the top 3.</div>`;
 }
 
-// ===== router =====
-function setNavActive(){
-  $("navLb").classList.toggle("active",mode==="lb");
-  $("navAll").classList.toggle("active",mode==="all");
-  $("navMy").classList.toggle("active",mode==="my");
-}
+function setNavActive(){$("navLb").classList.toggle("active",mode==="lb");$("navAll").classList.toggle("active",mode==="all");$("navMy").classList.toggle("active",mode==="my");}
 function render(){
-  myControls.style.display=mode==="my"?"":"none";
-  allControls.style.display=mode==="all"?"":"none";
-  lbControls.style.display=mode==="lb"?"":"none";
-  myHint.style.display=(mode==="my"&&me)?"":"none";
-  setNavActive();
-  if(mode==="all")return renderAll();
-  if(mode==="lb")return renderLeaderboard();
-  renderMy();
+  myControls.style.display=mode==="my"?"":"none";allControls.style.display=mode==="all"?"":"none";lbControls.style.display=mode==="lb"?"":"none";
+  myHint.style.display=(mode==="my"&&me)?"":"none";setNavActive();
+  if(mode==="all")return renderAll();if(mode==="lb")return renderLeaderboard();renderMy();
 }
 
-// ===== view switchers =====
 async function showLeaderboard(){mode="lb";await Promise.all([loadAllPreds(),loadResults()]);render();}
 async function showAll(){mode="all";await loadAllPreds();render();}
-async function showMy(){
-  if(!me){openGate();return;}
-  mode="my";await loadMyPreds();render();
-}
+async function showMy(){if(!me){openGate();return;}mode="my";await loadMyPreds();render();}
 
-$("navLb").onclick=showLeaderboard;
-$("navAll").onclick=showAll;
-$("navMy").onclick=showMy;
+$("navLb").onclick=showLeaderboard;$("navAll").onclick=showAll;$("navMy").onclick=showMy;
 $("allReloadBtn").onclick=async()=>{await loadAllPreds();renderAll();toastMsg("↻ Reloaded");};
 $("lbReloadBtn").onclick=async()=>{await Promise.all([loadAllPreds(),loadResults()]);renderLeaderboard();toastMsg("↻ Reloaded");};
-
 stageFilter.addEventListener("change",()=>{missing=null;renderMy();});
 search.addEventListener("input",renderMy);
 allStageFilter.addEventListener("change",renderAll);
@@ -527,44 +463,29 @@ content.addEventListener("click",e=>{
 });
 content.addEventListener("change",e=>{if(mode!=="my")return;if(e.target.dataset.field){const num=+e.target.dataset.num;if(isLocked(num)){renderMy();return;}const s=preds[num]=preds[num]||{h:"",a:"",prog:""};s[e.target.dataset.field]=e.target.value;updateLabel(num);savePrediction(num);}});
 
-// scoring modal
 const sm=$("scoringModal");
 $("scoringBtn").onclick=()=>{sm.classList.add("show");document.body.style.overflow="hidden";};
 $("scoringClose").onclick=()=>{sm.classList.remove("show");document.body.style.overflow="";};
 sm.addEventListener("click",e=>{if(e.target===sm){sm.classList.remove("show");document.body.style.overflow="";}});
 document.addEventListener("keydown",e=>{if(e.key==="Escape"&&sm.classList.contains("show")){sm.classList.remove("show");document.body.style.overflow="";}});
 
-// ===== login modal =====
 async function populateNames(){const sel=$("gateName");if(sel.options.length>1)return;const {data,error}=await SB.from("player_names").select("name").order("name");if(error){$("gateErr").textContent="Could not load players: "+error.message;return;}data.forEach(p=>{const o=document.createElement("option");o.value=p.name;o.textContent=p.name;sel.appendChild(o);});}
 function openGate(){populateNames();$("gateErr").textContent="";gateOverlay.classList.add("show");document.body.style.overflow="hidden";setTimeout(()=>$("gateName").focus(),50);}
 function closeGate(){gateOverlay.classList.remove("show");document.body.style.overflow="";}
-async function doLogin(){const name=$("gateName").value,pin=$("gatePin").value.trim();$("gateErr").textContent="";if(!name||!pin){$("gateErr").textContent="Pick your name and enter your PIN.";return;}const {data,error}=await SB.rpc("verify_pin",{p_player:name,p_pin:pin});if(error){$("gateErr").textContent="Login error: "+error.message;return;}if(!data){$("gateErr").textContent="Wrong name or PIN.";return;}
-  me=name;myPin=pin;sessionStorage.setItem("wc_name",name);sessionStorage.setItem("wc_pin",pin);closeGate();updateUserBar();
-  mode="my";await loadMyPreds();render();}
+async function doLogin(){const name=$("gateName").value,pin=$("gatePin").value.trim();$("gateErr").textContent="";if(!name||!pin){$("gateErr").textContent="Pick your name and enter your PIN.";return;}const {data,error}=await SB.rpc("verify_pin",{p_player:name,p_pin:pin});if(error){$("gateErr").textContent="Login error: "+error.message;return;}if(!data){$("gateErr").textContent="Wrong name or PIN.";return;}me=name;myPin=pin;sessionStorage.setItem("wc_name",name);sessionStorage.setItem("wc_pin",pin);closeGate();updateUserBar();mode="my";await loadMyPreds();render();}
 $("gateBtn").onclick=doLogin;$("gatePin").addEventListener("keydown",e=>{if(e.key==="Enter")doLogin();});
-$("gateCancel").onclick=closeGate;
-gateOverlay.addEventListener("click",e=>{if(e.target===gateOverlay)closeGate();});
+$("gateCancel").onclick=closeGate;gateOverlay.addEventListener("click",e=>{if(e.target===gateOverlay)closeGate();});
 $("loginBtn").onclick=openGate;
 $("logoutBtn").onclick=()=>{sessionStorage.removeItem("wc_name");sessionStorage.removeItem("wc_pin");me=null;myPin=null;preds={};updateUserBar();showLeaderboard();};
+function updateUserBar(){if(me){$("whoBar").innerHTML="Logged in as <b>"+me+"</b>";$("loginBtn").style.display="none";$("logoutBtn").style.display="";}else{$("whoBar").textContent="Not logged in";$("loginBtn").style.display="";$("logoutBtn").style.display="none";}}
 
-function updateUserBar(){
-  if(me){$("whoBar").innerHTML="Logged in as <b>"+me+"</b>";$("loginBtn").style.display="none";$("logoutBtn").style.display="";}
-  else{$("whoBar").textContent="Not logged in";$("loginBtn").style.display="";$("logoutBtn").style.display="none";}
-}
-
-// ===== init =====
 async function init(){
   try{
     await loadFixtures();
     const sName=sessionStorage.getItem("wc_name"),sPin=sessionStorage.getItem("wc_pin");
     if(sName&&sPin){const {data}=await SB.rpc("verify_pin",{p_player:sName,p_pin:sPin});if(data){me=sName;myPin=sPin;await loadMyPreds();}}
-    updateUserBar();
-    await showLeaderboard();
-    setInterval(()=>{
-      if(mode==="my"&&me&&!search.value.trim())renderMy();
-      else if(mode==="all"&&!allSearch.value.trim())renderAll();
-      else if(mode==="lb"){Promise.all([loadAllPreds(),loadResults()]).then(renderLeaderboard);}
-    },60000);
+    updateUserBar();await showLeaderboard();
+    setInterval(()=>{if(mode==="my"&&me&&!search.value.trim())renderMy();else if(mode==="all"&&!allSearch.value.trim())renderAll();else if(mode==="lb"){Promise.all([loadAllPreds(),loadResults()]).then(renderLeaderboard);}},60000);
   }catch(err){content.innerHTML=`<div class="hint" style="color:#ffb4a2">⚠️ Could not connect: ${err.message}</div>`;}
 }
 init();
