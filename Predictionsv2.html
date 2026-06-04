@@ -431,7 +431,7 @@ function renderAll(){
     });
     body+=`<tr class="${isYou?'you-row':''}"><td class="namecol${isYou?' you':''}">${p}${isYou?' (you)':''}</td>${cells}</tr>`;});
 
-  const note=me?`🔒 Other players' predictions are hidden for each round until that round locks. Your own row is always visible. Played games are greyed out and show the actual result.`:`🔒 Predictions are hidden for each round until that round locks (1 hour before its first kick-off). Played games are greyed out and show the actual result. Log in to always see your own picks.`;
+  const note=me?`🔒 Other players' predictions are hidden for each round until that round locks. Your own row is always visible.`:`🔒 Predictions are hidden for each round until that round locks (1 hour before its first kick-off). Log in to see your own picks.`;
   content.innerHTML=`<div class="ap-note">${note}</div>
     <div class="matrixwrap"><table class="matrix"><thead>${gameHdr}</thead><tbody>${body}</tbody></table></div>
     <div class="hint">Players down the left${me?" (you first)":""}; swipe sideways for more games.</div>`;
