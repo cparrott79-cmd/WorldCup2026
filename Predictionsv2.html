@@ -13,8 +13,6 @@
   .sub{color:var(--muted);font-size:.85rem}
   .controls{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;align-items:center;margin:12px 0}
   select,input[type=text],input[type=password]{background:var(--card);color:var(--text);border:1px solid #415a77;border-radius:8px;padding:8px 12px;font-size:.9rem}
-
-  /* ---- consistent button system ---- */
   button{cursor:pointer;transition:.15s;font-size:.9rem;font-weight:600;border-radius:8px;padding:9px 16px}
   .navbtn{background:var(--card);border:1px solid #415a77;color:var(--text);display:inline-flex;align-items:center;gap:6px}
   .navbtn:hover{background:#24344c;border-color:var(--accent);color:var(--text)}
@@ -27,7 +25,6 @@
   .controls button:not(.navbtn):not(.loginbtn):not(.logoutbtn){background:var(--card);border:1px solid #415a77;color:var(--text)}
   .controls button:not(.navbtn):not(.loginbtn):not(.logoutbtn):hover{background:#24344c;border-color:var(--accent);color:var(--text)}
 
-  /* login modal */
   .gate-overlay{position:fixed;inset:0;background:rgba(3,8,15,.72);display:none;align-items:center;justify-content:center;z-index:120;padding:14px}
   .gate-overlay.show{display:flex}
   .gate{max-width:420px;width:100%;background:var(--card);border:1px solid #415a77;border-radius:14px;padding:24px;text-align:center}
@@ -86,17 +83,27 @@
   .matrixwrap{overflow-x:auto;max-width:100%;border:1px solid #2a3a52;border-radius:10px}
   table.matrix{border-collapse:separate;border-spacing:0;font-size:.82rem;width:max-content;min-width:100%}
   table.matrix th,table.matrix td{border-bottom:1px solid #2a3a52;white-space:nowrap}
-  table.matrix thead tr.games th{position:sticky;top:0;z-index:4;background:#15263b;color:var(--text);vertical-align:top;width:104px;min-width:104px;max-width:104px;padding:6px;font-weight:600;font-size:.74rem;text-align:center}
+  table.matrix thead tr.games th{position:sticky;top:0;z-index:4;background:#15263b;color:var(--text);vertical-align:top;width:108px;min-width:108px;max-width:108px;padding:6px;font-weight:600;font-size:.74rem;text-align:center}
   table.matrix thead tr.games th.gh-final{border:1px solid var(--gold)}
   table.matrix thead tr.games th.gh-locked{opacity:.8}
   table.matrix thead tr.games th .gh-teams{font-weight:700;line-height:1.2}
   table.matrix thead tr.games th .gh-v{color:var(--muted);font-weight:400;font-size:.68rem}
   table.matrix thead tr.games th .gh-meta{color:var(--muted);font-weight:400;font-size:.66rem;margin-top:2px}
+  table.matrix thead tr.games th .gh-date{color:var(--muted);font-weight:400;font-size:.64rem;margin-top:1px}
   table.matrix thead tr.games th .gh-lock{color:var(--lock);font-weight:700;font-size:.64rem;margin-top:2px}
+  /* played games (result entered) — grey the column text + show FT */
+  table.matrix thead tr.games th.gh-played{color:var(--muted)}
+  table.matrix thead tr.games th.gh-played .gh-teams{color:var(--muted)}
+  table.matrix thead tr.games th .gh-ft{display:block;color:var(--gold);font-weight:700;font-size:.66rem;margin-top:2px}
+  table.matrix td.cell.played{color:var(--muted)}
+  table.matrix td.cell.played .sc{color:var(--muted)}
+  table.matrix td.cell.played .rs.home,
+  table.matrix td.cell.played .rs.away,
+  table.matrix td.cell.played .rs.draw{color:var(--muted)}
   table.matrix th.namecol,table.matrix td.namecol{position:sticky;left:0;z-index:3;background:var(--card);width:66px;min-width:66px;max-width:66px;overflow:hidden;text-overflow:ellipsis;padding:7px 6px;text-align:left;font-weight:700;box-shadow:1px 0 0 #2a3a52}
   table.matrix thead tr.games th.namecol{z-index:6;background:#15263b}
   table.matrix td.namecol.you{color:var(--accent)}
-  table.matrix td.cell{text-align:center;padding:6px;font-variant-numeric:tabular-nums;width:104px;min-width:104px;max-width:104px}
+  table.matrix td.cell{text-align:center;padding:6px;font-variant-numeric:tabular-nums;width:108px;min-width:108px;max-width:108px}
   table.matrix td.cell .sc{font-size:.95rem;font-weight:700}
   table.matrix td.cell .rs{display:block;font-size:.66rem;margin-top:2px;overflow:hidden;text-overflow:ellipsis}
   table.matrix td.cell .rs.home,table.matrix td.cell .rs.away{color:var(--win)}
@@ -118,16 +125,12 @@
   table.lb td.name{text-align:left;font-weight:600}
   table.lb td.total,table.lb th.total{font-weight:700;color:var(--gold);background:#15263b}
   table.lb td.rank{color:var(--muted);width:42px;font-weight:700}
-  /* 1st place — gold leader row */
   table.lb tr.leader td{background:rgba(255,209,102,.10)}
   table.lb tr.leader td.rank{color:var(--gold);font-size:1.05rem}
   table.lb tr.leader td.name{color:var(--gold);font-weight:800}
-  /* dotted divider under 3rd place */
   table.lb tr.top3-cut td{border-bottom:2px dotted var(--accent)}
-  /* last place — muted wooden-spoon row */
   table.lb tr.last td{background:rgba(231,111,81,.10)}
   table.lb tr.last td.rank,table.lb tr.last td.name{color:var(--danger)}
-  /* keep "you" highlight but let leader/last win */
   table.lb tr.you-row td{background:rgba(0,180,216,.08)}
   table.lb tr.you-row.leader td{background:rgba(255,209,102,.14)}
   table.lb tr.you-row.last td{background:rgba(231,111,81,.14)}
@@ -247,7 +250,6 @@
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-  
 // ====== CONFIG ======
 const SUPABASE_URL = "https://nsfwtflpjsdbtbhimvmw.supabase.co";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5zZnd0ZmxwanNkYnRiaGltdm13Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA1NjY5ODUsImV4cCI6MjA5NjE0Mjk4NX0.gjajKj1IYgb1WdWlC5cm8nipdS9Qlz2iNKnLdCY1NiA";
@@ -293,6 +295,7 @@ FILTERS.forEach(f=>{const o=document.createElement("option");o.value=f.val;o.tex
 function toastMsg(m,err){toast.textContent=m;toast.className="toast show"+(err?" err":"");setTimeout(()=>toast.className="toast",err?2800:2200);}
 const days=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"],mons=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"],p2=n=>String(n).padStart(2,"0");
 function dateStr(d){return days[d.getDay()]+" "+p2(d.getDate())+" "+mons[d.getMonth()]+" "+d.getFullYear();}
+function dateShort(d){return days[d.getDay()]+" "+p2(d.getDate())+" "+mons[d.getMonth()];}
 function timeStr(d){return p2(d.getHours())+":"+p2(d.getMinutes());}
 
 function lockTimeFor(num){const f=FX[num];if(!f)return null;return GROUP_LOCK[f.lock_group]||null;}
@@ -326,16 +329,11 @@ async function savePrediction(num){
 }
 
 function scoreMatch(pred,res,ko,num){
-  if(!pred||!res)return null;
-  if(pred.h===""||pred.a===""||res.h===""||res.a==="")return null;
+  if(!pred||!res)return null;if(pred.h===""||pred.a===""||res.h===""||res.a==="")return null;
   const ph=+pred.h,pa=+pred.a,rh=+res.h,ra=+res.a;let pts=0,resultOK;
   if(ko){let ap=rh>ra?"H":ra>rh?"A":(res.pen||"");let pp=ph>pa?"H":pa>ph?"A":(pred.prog||"");resultOK=pp!==""&&pp===ap;}
   else{const pr=ph>pa?"H":pa>ph?"A":"D";const rr=rh>ra?"H":ra>rh?"A":"D";resultOK=pr===rr;}
-  const homeOK=ph===rh,awayOK=pa===ra;
-  if(resultOK)pts+=2;if(homeOK)pts+=2;if(awayOK)pts+=2;
-  if(resultOK&&homeOK&&awayOK)pts+=2;
-  if(num===FINAL_MATCH)pts*=2;
-  return pts;
+  const homeOK=ph===rh,awayOK=pa===ra;if(resultOK)pts+=2;if(homeOK)pts+=2;if(awayOK)pts+=2;if(resultOK&&homeOK&&awayOK)pts+=2;if(num===FINAL_MATCH)pts*=2;return pts;
 }
 
 function label(num){const f=FX[num];const rec=preds[num];let lab="—",cls="result";
@@ -393,20 +391,41 @@ function renderMy(){
 function renderAll(){
   const filter=FILTERS.find(f=>f.val===allStageFilter.value)||FILTERS[0];const q=allSearch.value.trim().toLowerCase();
   const visible=FIXTURES.filter(f=>{if(!filter.test(f.match_num))return false;if(q){if(!((f.home_code+" "+f.away_code).toLowerCase().includes(q)))return false;}return true;});
+  const playedOf=num=>{const r=results[num];return !!(r&&r.h!==""&&r.a!=="");};
+  const ftText=num=>{const r=results[num];return playedOf(num)?("FT "+r.h+"–"+r.a):"";};
+
   let gameHdr=`<tr class="games"><th class="namecol">Player</th>`;
-  visible.forEach(f=>{const isFinal=f.match_num===FINAL_MATCH,ko=new Date(f.kickoff),locked=isLocked(f.match_num);
-    gameHdr+=`<th class="${isFinal?'gh-final':''}${locked?'':' gh-locked'}"><div class="gh-teams">${f.home_code}</div><div class="gh-v">v</div><div class="gh-teams">${f.away_code}</div><div class="gh-meta">#${f.match_num} · ${timeStr(ko)}${isFinal?" · ×2":""}</div>${locked?"":`<div class="gh-lock">🔒 hidden</div>`}</th>`;});
+  visible.forEach(f=>{
+    const num=f.match_num,isFinal=num===FINAL_MATCH,ko=new Date(f.kickoff),locked=isLocked(num),played=playedOf(num);
+    const cls=[isFinal?'gh-final':'',locked?'':'gh-locked',played?'gh-played':''].filter(Boolean).join(' ');
+    gameHdr+=`<th class="${cls}">
+      <div class="gh-teams">${f.home_code}</div><div class="gh-v">v</div><div class="gh-teams">${f.away_code}</div>
+      <div class="gh-date">${dateShort(ko)}</div>
+      <div class="gh-meta">#${num} · ${timeStr(ko)}${isFinal?" · ×2":""}</div>
+      ${locked?"":`<div class="gh-lock">🔒 hidden</div>`}
+      ${played?`<div class="gh-ft">${ftText(num)}</div>`:""}
+    </th>`;
+  });
   gameHdr+=`</tr>`;
+
   let body="";
   allPlayers.forEach(p=>{const isYou=me&&p===me;let cells="";
-    visible.forEach(f=>{const num=f.match_num,locked=isLocked(num);const rec=(allPreds[p]||{})[num];
+    visible.forEach(f=>{
+      const num=f.match_num,locked=isLocked(num),played=playedOf(num);
+      const rec=(allPreds[p]||{})[num];
       if(!isYou&&!locked){cells+=`<td class="cell masked"><span class="sc">🔒</span></td>`;return;}
-      if(!rec||rec.h===""||rec.a===""){cells+=`<td class="cell empty">–</td>`;return;}
-      const h=+rec.h,a=+rec.a;let rn,rc;if(h>a){rn=f.home_code;rc="home";}else if(a>h){rn=f.away_code;rc="away";}else{if(isKO(num)&&rec.prog){rn=(rec.prog==="H"?f.home_code:f.away_code)+" (thru)";rc="draw";}else{rn="Draw";rc="draw";}}
-      cells+=`<td class="cell"><span class="sc">${rec.h}–${rec.a}</span><span class="rs ${rc}">${rn}</span></td>`;});
+      if(!rec||rec.h===""||rec.a===""){cells+=`<td class="cell empty${played?' played':''}">–</td>`;return;}
+      const h=+rec.h,a=+rec.a;let rn,rc;
+      if(h>a){rn=f.home_code;rc="home";}else if(a>h){rn=f.away_code;rc="away";}
+      else{if(isKO(num)&&rec.prog){rn=(rec.prog==="H"?f.home_code:f.away_code)+" (thru)";rc="draw";}else{rn="Draw";rc="draw";}}
+      cells+=`<td class="cell${played?' played':''}"><span class="sc">${rec.h}–${rec.a}</span><span class="rs ${rc}">${rn}</span></td>`;
+    });
     body+=`<tr class="${isYou?'you-row':''}"><td class="namecol${isYou?' you':''}">${p}${isYou?' (you)':''}</td>${cells}</tr>`;});
-  const note=me?`🔒 Other players' predictions are hidden for each round until that round locks. Your own row is always visible.`:`🔒 Predictions are hidden for each round until that round locks (1 hour before its first kick-off). Log in to always see your own picks.`;
-  content.innerHTML=`<div class="ap-note">${note}</div><div class="matrixwrap"><table class="matrix"><thead>${gameHdr}</thead><tbody>${body}</tbody></table></div><div class="hint">Players down the left${me?" (you first)":""}; swipe sideways for more games.</div>`;
+
+  const note=me?`🔒 Other players' predictions are hidden for each round until that round locks. Your own row is always visible. Played games are greyed out and show the actual result.`:`🔒 Predictions are hidden for each round until that round locks (1 hour before its first kick-off). Played games are greyed out and show the actual result. Log in to always see your own picks.`;
+  content.innerHTML=`<div class="ap-note">${note}</div>
+    <div class="matrixwrap"><table class="matrix"><thead>${gameHdr}</thead><tbody>${body}</tbody></table></div>
+    <div class="hint">Players down the left${me?" (you first)":""}; swipe sideways for more games.</div>`;
 }
 
 function computeStats(){
@@ -418,17 +437,12 @@ function computeStats(){
 function fmtUpdated(ms){if(ms==null)return "No results entered yet";const d=new Date(ms);return "Last updated "+days[d.getDay()]+" "+p2(d.getDate())+" "+mons[d.getMonth()]+" "+d.getFullYear()+", "+p2(d.getHours())+":"+p2(d.getMinutes());}
 function renderLeaderboard(){
   $("lbUpdated").innerHTML="🏆 <b>"+fmtUpdated(resultsUpdatedAt)+"</b>";
-  const stats=computeStats();
-  const anyScored=stats.some(s=>s.total>0);const n=stats.length;
-  let header=`<tr><th>#</th><th style="text-align:left">Player</th><th class="total">Total</th>`;BUCKETS.forEach(x=>header+=`<th>${x.label}</th>`);header+=`<th>Perfect</th></tr>`;
+  const stats=computeStats();const anyScored=stats.some(s=>s.total>0);const n=stats.length;
+  let header=`<tr><th>#</th><th style="text-align:left">Players (${n})</th><th class="total">Total</th>`;BUCKETS.forEach(x=>header+=`<th>${x.label}</th>`);header+=`<th>Perfect</th></tr>`;
   let rows="",displayRank=0,prevTotal=null;
   stats.forEach((t,i)=>{
     let pos;if(anyScored&&t.total===prevTotal){pos=displayRank;}else{pos=i+1;displayRank=pos;prevTotal=t.total;}
-    const classes=[];
-    if(me&&t.player===me)classes.push("you-row");
-    if(anyScored&&i===0)classes.push("leader");
-    if(anyScored&&n>1&&i===n-1)classes.push("last");
-    if(n>3&&i===2)classes.push("top3-cut");
+    const classes=[];if(me&&t.player===me)classes.push("you-row");if(anyScored&&i===0)classes.push("leader");if(anyScored&&n>1&&i===n-1)classes.push("last");if(n>3&&i===2)classes.push("top3-cut");
     const medal=(anyScored&&i===0)?"🥇 ":(anyScored&&n>1&&i===n-1?"🥄 ":"");
     let cells="";BUCKETS.forEach(x=>cells+=`<td>${t.b[x.key]||0}</td>`);
     rows+=`<tr class="${classes.join(' ')}"><td class="rank">${pos}</td><td class="name">${medal}${t.player}${(me&&t.player===me)?' (you)':''}</td><td class="total">${t.total}</td>${cells}<td>${t.perfect}</td></tr>`;
@@ -444,11 +458,11 @@ function render(){
 }
 
 async function showLeaderboard(){mode="lb";await Promise.all([loadAllPreds(),loadResults()]);render();}
-async function showAll(){mode="all";await loadAllPreds();render();}
+async function showAll(){mode="all";await Promise.all([loadAllPreds(),loadResults()]);render();}
 async function showMy(){if(!me){openGate();return;}mode="my";await loadMyPreds();render();}
 
 $("navLb").onclick=showLeaderboard;$("navAll").onclick=showAll;$("navMy").onclick=showMy;
-$("allReloadBtn").onclick=async()=>{await loadAllPreds();renderAll();toastMsg("↻ Reloaded");};
+$("allReloadBtn").onclick=async()=>{await Promise.all([loadAllPreds(),loadResults()]);renderAll();toastMsg("↻ Reloaded");};
 $("lbReloadBtn").onclick=async()=>{await Promise.all([loadAllPreds(),loadResults()]);renderLeaderboard();toastMsg("↻ Reloaded");};
 stageFilter.addEventListener("change",()=>{missing=null;renderMy();});
 search.addEventListener("input",renderMy);
@@ -485,7 +499,11 @@ async function init(){
     const sName=sessionStorage.getItem("wc_name"),sPin=sessionStorage.getItem("wc_pin");
     if(sName&&sPin){const {data}=await SB.rpc("verify_pin",{p_player:sName,p_pin:sPin});if(data){me=sName;myPin=sPin;await loadMyPreds();}}
     updateUserBar();await showLeaderboard();
-    setInterval(()=>{if(mode==="my"&&me&&!search.value.trim())renderMy();else if(mode==="all"&&!allSearch.value.trim())renderAll();else if(mode==="lb"){Promise.all([loadAllPreds(),loadResults()]).then(renderLeaderboard);}},60000);
+    setInterval(()=>{
+      if(mode==="my"&&me&&!search.value.trim())renderMy();
+      else if(mode==="all"&&!allSearch.value.trim()){Promise.all([loadAllPreds(),loadResults()]).then(renderAll);}
+      else if(mode==="lb"){Promise.all([loadAllPreds(),loadResults()]).then(renderLeaderboard);}
+    },60000);
   }catch(err){content.innerHTML=`<div class="hint" style="color:#ffb4a2">⚠️ Could not connect: ${err.message}</div>`;}
 }
 init();
