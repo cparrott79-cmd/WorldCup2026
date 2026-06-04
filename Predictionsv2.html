@@ -455,7 +455,7 @@ function renderLeaderboard(){
   const pot = n*5;
   const prizeBlock=`<div class="prize-box">
     <div class="prize-pot">💷 <b>£5 entry</b> · Total pot <b>£${pot}</b> <span class="prize-sub">(£5 × ${n} player${n===1?"":"s"})</span></div>
-    <div class="prize-breakdown">🥇 1st = <b>£60</b> · 🥈 2nd = <b>£10</b> · 🥉 3rd &amp; 4th = <b>£5 each</b></div>
+    <div class="prize-breakdown">🥇 1st = <b>£65</b> · 🥈 2nd = <b>£10</b> · 🥉 3rd &amp; 4th = <b>£5 each</b></div>
   </div>`;
 
   let header=`<tr><th>#</th><th style="text-align:left">Players (${n})</th><th class="total">Total</th>`;BUCKETS.forEach(x=>header+=`<th>${x.label}</th>`);header+=`<th>Perfect</th></tr>`;
