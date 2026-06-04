@@ -121,11 +121,10 @@
   table.matrix td.cell.masked .sc.lock-has{color:#3ddc84}   /* green = predicted */
   table.matrix td.cell.masked .sc.lock-none{color:#ff5a5a}  /* red = not predicted */
   /* legend / key under the All Predictions table */
-  .ap-key{max-width:1060px;margin:6px auto 0;display:flex;gap:18px;justify-content:center;flex-wrap:wrap;color:var(--muted);font-size:.78rem}
-  .ap-key .k{display:inline-flex;align-items:center;gap:6px}
-  .ap-key .k .pad{font-size:1rem}
-  .ap-key .k .green{color:#3ddc84}
-  .ap-key .k .red{color:#ff5a5a}
+  <div class="ap-key">
+      <span class="k">✅ Prediction made (hidden until the round locks)</span>
+      <span class="k">❌ No prediction entered yet</span>
+    </div>`;
   .ap-note{max-width:1060px;margin:0 auto 10px;background:#26303f;border:1px solid #415a77;color:var(--muted);padding:8px 12px;border-radius:8px;font-size:.8rem;text-align:center}
 
   /* Leaderboard */
@@ -435,11 +434,11 @@ function renderAll(){
     visible.forEach(f=>{
       const num=f.match_num,locked=isLocked(num),played=playedOf(num);
       const rec=(allPreds[p]||{})[num];
-      if(!isYou&&!locked){
-        const has = rec && rec.h!=="" && rec.a!=="";
-        cells+=`<td class="cell masked"><span class="sc ${has?'lock-has':'lock-none'}">🔒</span></td>`;
-        return;
-      }
+     if(!isYou&&!locked){
+  const has = rec && rec.h!=="" && rec.a!=="";
+  cells+=`<td class="cell masked"><span class="sc">${has?'✅':'❌'}</span></td>`;
+  return;
+}
       if(!rec||rec.h===""||rec.a===""){cells+=`<td class="cell empty${played?' played':''}">–</td>`;return;}
       const h=+rec.h,a=+rec.a;let rn,rc;
       if(h>a){rn=f.home_code;rc="home";}else if(a>h){rn=f.away_code;rc="away";}
