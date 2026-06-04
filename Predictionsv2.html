@@ -12,20 +12,24 @@
   h1{margin:0 0 4px;font-size:1.4rem}
   .sub{color:var(--muted);font-size:.85rem}
   .controls{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;align-items:center;margin:12px 0}
-  select,input[type=text],input[type=password],button{background:var(--card);color:var(--text);border:1px solid #415a77;border-radius:8px;padding:8px 12px;font-size:.9rem}
-  button{cursor:pointer;transition:.2s}
-  button:hover{background:var(--accent);color:#001219;border-color:var(--accent)}
-  .navbtn{background:var(--card);border:1px solid #415a77}
-  .navbtn.active{background:var(--accent);color:#001219;border-color:var(--accent);font-weight:700}
-  .mybtn{background:var(--win);color:#001219;border-color:var(--win);font-weight:700}
-  .mybtn:hover{background:#34c2b0;border-color:#34c2b0;color:#001219}
-  .mybtn.active{background:#34c2b0;border-color:#34c2b0;color:#001219}
-  .scorebtn{background:transparent;border:1px solid var(--accent);color:var(--accent);font-weight:700}
-  .scorebtn:hover{background:var(--accent);color:#001219;border-color:var(--accent)}
-  .loginbtn{background:var(--gold);color:#001219;border-color:var(--gold);font-weight:700}
+  select,input[type=text],input[type=password]{background:var(--card);color:var(--text);border:1px solid #415a77;border-radius:8px;padding:8px 12px;font-size:.9rem}
+
+  /* ---- consistent button system ---- */
+  button{cursor:pointer;transition:.15s;font-size:.9rem;font-weight:600;border-radius:8px;padding:9px 16px}
+  /* NAV TABS — all identical; active one is filled */
+  .navbtn{background:var(--card);border:1px solid #415a77;color:var(--text);display:inline-flex;align-items:center;gap:6px}
+  .navbtn:hover{background:#24344c;border-color:var(--accent);color:var(--text)}
+  .navbtn.active{background:var(--accent);border-color:var(--accent);color:#001219;font-weight:700}
+  .navbtn.active:hover{background:#33c6ec;border-color:#33c6ec;color:#001219}
+  /* LOGIN — single primary call-to-action (gold) */
+  .loginbtn{background:var(--gold);color:#001219;border:1px solid var(--gold);font-weight:700}
   .loginbtn:hover{background:#ffdf85;border-color:#ffdf85;color:#001219}
-  .logoutbtn{background:transparent;border:1px solid var(--muted);color:var(--muted)}
-  .logoutbtn:hover{background:var(--danger);color:#001219;border-color:var(--danger)}
+  /* LOG OUT / secondary — muted outline */
+  .logoutbtn,.secbtn{background:transparent;border:1px solid var(--muted);color:var(--muted);font-weight:600}
+  .logoutbtn:hover,.secbtn:hover{background:var(--danger);border-color:var(--danger);color:#001219}
+  /* generic non-nav buttons (Reload etc.) — match nav resting style */
+  .controls button:not(.navbtn):not(.loginbtn):not(.logoutbtn){background:var(--card);border:1px solid #415a77;color:var(--text)}
+  .controls button:not(.navbtn):not(.loginbtn):not(.logoutbtn):hover{background:#24344c;border-color:var(--accent);color:var(--text)}
 
   /* login modal */
   .gate-overlay{position:fixed;inset:0;background:rgba(3,8,15,.72);display:none;align-items:center;justify-content:center;z-index:120;padding:14px}
@@ -37,8 +41,8 @@
   .gate input{letter-spacing:3px}
   .gate .row{display:flex;gap:8px}
   .gate .row button{flex:1}
-  .gate .loginbtn{background:var(--gold);color:#001219;border-color:var(--gold);font-weight:700}
-  .gate .cancelbtn{background:transparent;border:1px solid var(--muted);color:var(--muted)}
+  .gate .cancelbtn{background:transparent;border:1px solid var(--muted);color:var(--muted);font-weight:600}
+  .gate .cancelbtn:hover{background:var(--danger);border-color:var(--danger);color:#001219}
   .gate .err{color:var(--danger);font-size:.82rem;min-height:18px;margin-top:8px}
 
   .userbar{max-width:560px;margin:0 auto 14px;background:var(--card);border:1px solid #415a77;border-radius:12px;padding:10px 16px;display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap}
@@ -50,7 +54,7 @@
   .stage-title .dbl{background:#001219;color:var(--gold);padding:1px 7px;border-radius:6px;font-size:.74rem;margin-left:8px}
   .stage-deadline{display:inline-block;margin-left:8px;font-size:.74rem;color:var(--muted)}
   .submit-row{display:flex;align-items:center;justify-content:flex-end;gap:8px;margin:8px 0 18px;flex-wrap:wrap}
-  .copybtn{background:var(--gold);color:#001219;border-color:var(--gold);font-weight:700}
+  .copybtn{background:var(--gold);color:#001219;border:1px solid var(--gold);font-weight:700}
   .copybtn:hover{background:#ffdf85;border-color:#ffdf85;color:#001219}
 
   .match{background:var(--card);padding:10px 14px;border-radius:10px;margin-bottom:7px}
@@ -128,7 +132,7 @@
   .modal{background:var(--card);border:1px solid #415a77;border-radius:14px;width:100%;max-width:560px;margin:auto;max-height:92vh;display:flex;flex-direction:column;box-shadow:0 18px 50px rgba(0,0,0,.55)}
   .modal-head{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:14px 16px;border-bottom:1px solid #2b3a52;position:sticky;top:0;background:var(--card);border-radius:14px 14px 0 0}
   .modal-head h2{margin:0;font-size:1.05rem;color:var(--accent)}
-  .modal-close{background:#2b3a52;border:none;color:var(--text);width:34px;height:34px;border-radius:8px;font-size:1.1rem;display:flex;align-items:center;justify-content:center}
+  .modal-close{background:#2b3a52;border:none;color:var(--text);width:34px;height:34px;border-radius:8px;font-size:1.1rem;display:flex;align-items:center;justify-content:center;padding:0}
   .modal-close:hover{background:var(--danger);color:#001219}
   .modal-body{padding:14px 16px;overflow-y:auto}
   .modal-body p{margin:0 0 12px;font-size:.86rem;line-height:1.5}.modal-body p.note{color:var(--muted);font-size:.8rem}
@@ -167,8 +171,8 @@
 <div class="controls" id="nav">
   <button class="navbtn" id="navLb">🏆 Leaderboard</button>
   <button class="navbtn" id="navAll">👥 All Predictions</button>
-  <button class="mybtn" id="navMy">📝 My Predictions</button>
-  <button class="scorebtn" id="scoringBtn">📖 Scoring Format</button>
+  <button class="navbtn" id="navMy">📝 My Predictions</button>
+  <button class="navbtn" id="scoringBtn">📖 Scoring Format</button>
 </div>
 
 <!-- per-view controls -->
@@ -270,10 +274,10 @@ const BUCKETS=[
 function isCode(s){return /^([12][A-L]|3[A-L]+|W\d+|RU\d+)$/.test(s);}
 
 let FIXTURES=[],FX={},GROUP_LOCK={};
-let preds={};                 // my predictions
-let allPreds={};              // everyone's predictions
+let preds={};
+let allPreds={};
 let allPlayers=[];
-let results={};               // match_num -> {h,a,pen}
+let results={};
 let resultsUpdatedAt=null;
 let me=null,myPin=null,missing=null,mode="lb";
 
@@ -453,11 +457,11 @@ function render(){
   renderMy();
 }
 
-// ===== view switchers (load fresh data each time) =====
+// ===== view switchers =====
 async function showLeaderboard(){mode="lb";await Promise.all([loadAllPreds(),loadResults()]);render();}
 async function showAll(){mode="all";await loadAllPreds();render();}
 async function showMy(){
-  if(!me){openGate();return;}        // not logged in → prompt login
+  if(!me){openGate();return;}
   mode="my";await loadMyPreds();render();
 }
 
@@ -512,7 +516,7 @@ async function init(){
     const sName=sessionStorage.getItem("wc_name"),sPin=sessionStorage.getItem("wc_pin");
     if(sName&&sPin){const {data}=await SB.rpc("verify_pin",{p_player:sName,p_pin:sPin});if(data){me=sName;myPin=sPin;await loadMyPreds();}}
     updateUserBar();
-    await showLeaderboard();   // public default landing
+    await showLeaderboard();
     setInterval(()=>{
       if(mode==="my"&&me&&!search.value.trim())renderMy();
       else if(mode==="all"&&!allSearch.value.trim())renderAll();
