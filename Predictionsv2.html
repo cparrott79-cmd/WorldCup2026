@@ -116,15 +116,25 @@
   .lb-updated{color:var(--muted);font-size:.78rem}
   .lb-updated b{color:var(--accent)}
   .lbwrap{overflow-x:auto}
-  table.lb{width:100%;max-width:1060px;margin:0 auto;border-collapse:collapse;font-size:.86rem}
-  table.lb th,table.lb td{padding:9px 10px;text-align:center;border-bottom:1px solid #415a77;white-space:nowrap}
-  table.lb th{color:var(--accent);font-size:.78rem}
-  table.lb td.name{text-align:left;font-weight:600}
-  table.lb td.total,table.lb th.total{font-weight:700;color:var(--gold);background:#15263b}
-  table.lb td.rank{color:var(--muted);width:36px}
-  table.lb tr:first-child td.rank{color:var(--gold);font-size:1.05rem}
+  table.lb td.rank{color:var(--muted);width:42px;font-weight:700}
+
+  /* 1st place — gold leader row */
+  table.lb tr.leader td{background:rgba(255,209,102,.10)}
+  table.lb tr.leader td.rank{color:var(--gold);font-size:1.05rem}
+  table.lb tr.leader td.name{color:var(--gold);font-weight:800}
+
+  /* dotted divider under 3rd place (top-3 cutoff) */
+  table.lb tr.top3-cut td{border-bottom:2px dotted var(--accent)}
+
+  /* last place — muted "wooden spoon" row */
+  table.lb tr.last td{background:rgba(231,111,81,.10)}
+  table.lb tr.last td.rank,table.lb tr.last td.name{color:var(--danger)}
+
+  /* keep your "you" highlight but let leader/last win visually */
   table.lb tr.you-row td{background:rgba(0,180,216,.08)}
-  table.lb tr.you-row td.name{color:var(--accent)}
+  table.lb tr.you-row.leader td{background:rgba(255,209,102,.14)}
+  table.lb tr.you-row.last td{background:rgba(231,111,81,.14)}
+
 
   /* scoring modal */
   .modal-overlay{position:fixed;inset:0;background:rgba(3,8,15,.72);display:none;align-items:flex-start;justify-content:center;z-index:100;padding:12px;overflow-y:auto}
@@ -434,10 +444,43 @@ function fmtUpdated(ms){if(ms==null)return "No results entered yet";const d=new 
 function renderLeaderboard(){
   $("lbUpdated").innerHTML="🏆 <b>"+fmtUpdated(resultsUpdatedAt)+"</b>";
   const stats=computeStats();
-  let header=`<tr><th>#</th><th style="text-align:left">Player</th><th class="total">Total</th>`;BUCKETS.forEach(x=>header+=`<th>${x.label}</th>`);header+=`<th>Perfect</th></tr>`;
-  let rows="",rank=0,prev=null;stats.forEach((t,i)=>{if(t.total!==prev){rank=i+1;prev=t.total;}let cells="";BUCKETS.forEach(x=>cells+=`<td>${t.b[x.key]||0}</td>`);
-    const you=(me&&t.player===me)?" you-row":"";rows+=`<tr class="${you}"><td class="rank">${rank}</td><td class="name">${t.player}${(me&&t.player===me)?' (you)':''}</td><td class="total">${t.total}</td>${cells}<td>${t.perfect}</td></tr>`;});
-  content.innerHTML=`<div class="lbwrap"><table class="lb">${header}${rows}</table></div><div class="hint">Total beside the name; stage breakdown across (Final column doubled). <b>Perfect</b> = exact scoreline (Final perfect = 16).</div>`;
+  const anyScored = stats.some(s=>s.total>0);   // are there any points yet?
+  const n = stats.length;
+
+  let header=`<tr><th>#</th><th style="text-align:left">Player</th><th class="total">Total</th>`;
+  BUCKETS.forEach(x=>header+=`<th>${x.label}</th>`);
+  header+=`<th>Perfect</th></tr>`;
+
+  let rows="";
+  let displayRank=0, prevTotal=null;
+  stats.forEach((t,i)=>{
+    // Sequential position by default; share rank on a tie ONLY once points exist.
+    let pos;
+    if(anyScored && t.total===prevTotal){ pos=displayRank; }   // tie → same rank
+    else { pos=i+1; displayRank=pos; prevTotal=t.total; }
+
+    // Row state classes
+    const classes=[];
+    if(me && t.player===me) classes.push("you-row");
+    // Leader: only if there's a clear leader (someone has scored) and they're top
+    if(anyScored && i===0) classes.push("leader");
+    // Last place: only meaningful with >1 player and some points scored
+    if(anyScored && n>1 && i===n-1) classes.push("last");
+    // Dotted cut after 3rd place (only if there are more than 3 players)
+    if(n>3 && i===2) classes.push("top3-cut");
+
+    const medal = (anyScored && i===0) ? "🥇 " : (anyScored && n>1 && i===n-1 ? "🥄 " : "");
+
+    let cells="";
+    BUCKETS.forEach(x=>cells+=`<td>${t.b[x.key]||0}</td>`);
+    rows+=`<tr class="${classes.join(' ')}">
+      <td class="rank">${pos}</td>
+      <td class="name">${medal}${t.player}${(me&&t.player===me)?' (you)':''}</td>
+      <td class="total">${t.total}</td>${cells}<td>${t.perfect}</td></tr>`;
+  });
+
+  content.innerHTML=`<div class="lbwrap"><table class="lb">${header}${rows}</table></div>
+    <div class="hint">Total beside the name; stage breakdown across (Final column doubled). <b>Perfect</b> = exact scoreline (Final perfect = 16). 🥇 leader · 🥄 last · dotted line marks the top 3.</div>`;
 }
 
 // ===== router =====
