@@ -24,6 +24,10 @@
   .logoutbtn:hover,.secbtn:hover{background:var(--danger);border-color:var(--danger);color:#001219}
   .controls button:not(.navbtn):not(.loginbtn):not(.logoutbtn){background:var(--card);border:1px solid #415a77;color:var(--text)}
   .controls button:not(.navbtn):not(.loginbtn):not(.logoutbtn):hover{background:#24344c;border-color:var(--accent);color:var(--text)}
+  /* Scoring Format button — dotted border to show it's different (opens a modal) */
+  #scoringBtn{border-style:dashed;border-color:var(--accent);color:var(--accent)}
+  #scoringBtn:hover{background:var(--accent);border-color:var(--accent);color:#001219;border-style:dashed}
+  #scoringBtn.active{border-style:dashed} /* (it never becomes active, but keeps the look if it ever did) */
 
   .gate-overlay{position:fixed;inset:0;background:rgba(3,8,15,.72);display:none;align-items:center;justify-content:center;z-index:120;padding:14px}
   .gate-overlay.show{display:flex}
