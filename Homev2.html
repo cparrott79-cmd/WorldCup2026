@@ -13,11 +13,8 @@
   .sub{color:var(--muted);font-size:.85rem}
   .controls{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;align-items:center;margin:12px 0}
   select,input[type=text],input[type=password]{background:var(--card);color:var(--text);border:1px solid #415a77;border-radius:8px;padding:8px 12px;font-size:.9rem}
-
-  /* ---- consistent button system (matches Predictionsv2) ---- */
   button{cursor:pointer;transition:.15s;font-size:.9rem;font-weight:600;border-radius:8px;padding:9px 16px;background:var(--card);color:var(--text);border:1px solid #415a77}
   button:hover{background:#24344c;border-color:var(--accent);color:var(--text)}
-  /* TAB PILLS — identical to Predictionsv2 .navbtn */
   .tabrow{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin:14px 0 8px}
   .tab{background:var(--card);border:1px solid #415a77;color:var(--text);padding:9px 16px;border-radius:8px;cursor:pointer;font-size:.9rem;font-weight:600;display:inline-flex;align-items:center;gap:6px}
   .tab:hover{background:#24344c;border-color:var(--accent);color:var(--text)}
@@ -25,7 +22,6 @@
   .tab.active:hover{background:#33c6ec;border-color:#33c6ec;color:#001219}
   .logoutbtn{background:transparent;border:1px solid var(--muted);color:var(--muted)}
   .logoutbtn:hover{background:var(--danger);border-color:var(--danger);color:#001219}
-
   .gate{max-width:420px;margin:36px auto;background:var(--card);border:1px solid #415a77;border-radius:14px;padding:24px;text-align:center}
   .gate h3{margin:0 0 6px;color:var(--accent)}
   .gate p{color:var(--muted);font-size:.85rem;margin:0 0 16px}
@@ -81,36 +77,21 @@
   table.gt td.pts{font-weight:700;color:var(--gold)}
   .legend{max-width:1100px;margin:14px auto 0;color:var(--muted);font-size:.78rem;text-align:center}
   .legend .swatch{display:inline-block;width:10px;height:10px;border-radius:2px;vertical-align:middle;margin-right:4px}
-  .lbwrap{overflow-x:auto}
-  table.lb{width:100%;max-width:1060px;margin:0 auto;border-collapse:collapse;font-size:.86rem}
-  table.lb th,table.lb td{padding:9px 10px;text-align:center;border-bottom:1px solid #415a77;white-space:nowrap}
-  table.lb th{color:var(--accent);font-size:.78rem}
-  table.lb td.name{text-align:left;font-weight:600}
-  table.lb td.total,table.lb th.total{font-weight:700;color:var(--gold);background:#15263b}
-  table.lb td.rank{color:var(--muted);width:42px;font-weight:700}
-  table.lb tr.leader td{background:rgba(255,209,102,.10)}
-  table.lb tr.leader td.rank{color:var(--gold);font-size:1.05rem}
-  table.lb tr.leader td.name{color:var(--gold);font-weight:800}
-  table.lb tr.top3-cut td{border-bottom:2px dotted var(--accent)}
-  table.lb tr.last td{background:rgba(231,111,81,.10)}
-  table.lb tr.last td.rank,table.lb tr.last td.name{color:var(--danger)}
-  .matrixwrap{overflow-x:auto;max-width:100%;border:1px solid #2a3a52;border-radius:10px}
-  table.matrix{border-collapse:separate;border-spacing:0;font-size:.82rem;width:max-content;min-width:100%}
-  table.matrix th,table.matrix td{border-bottom:1px solid #2a3a52;white-space:nowrap}
-  table.matrix thead tr.games th{position:sticky;top:0;z-index:4;background:#15263b;color:var(--text);vertical-align:top;width:104px;min-width:104px;max-width:104px;padding:6px;font-weight:600;font-size:.74rem;text-align:center}
-  table.matrix thead tr.games th.gh-final{border:1px solid var(--gold)}
-  table.matrix thead tr.games th .gh-teams{font-weight:700;line-height:1.2}
-  table.matrix thead tr.games th .gh-v{color:var(--muted);font-weight:400;font-size:.68rem}
-  table.matrix thead tr.games th .gh-meta{color:var(--muted);font-weight:400;font-size:.66rem;margin-top:2px}
-  table.matrix th.namecol,table.matrix td.namecol{position:sticky;left:0;z-index:3;background:var(--card);width:64px;min-width:64px;max-width:64px;overflow:hidden;text-overflow:ellipsis;padding:7px 6px;text-align:left;font-weight:700;box-shadow:1px 0 0 #2a3a52}
-  table.matrix thead tr.games th.namecol{z-index:6;background:#15263b}
-  table.matrix td.cell{text-align:center;padding:6px;font-variant-numeric:tabular-nums;width:104px;min-width:104px;max-width:104px}
-  table.matrix td.cell .sc{font-size:.95rem;font-weight:700}
-  table.matrix td.cell .rs{display:block;font-size:.66rem;margin-top:2px;overflow:hidden;text-overflow:ellipsis}
-  table.matrix td.cell .rs.home,table.matrix td.cell .rs.away{color:var(--win)}
-  table.matrix td.cell .rs.draw{color:var(--draw)}
-  table.matrix td.cell.empty{color:#43526a}
-  table.matrix tr:nth-child(even) td.cell{background:rgba(255,255,255,.015)}
+  /* Share PINs */
+  .share-note{background:#3d2c1b;border:1px solid var(--draw);color:var(--draw);padding:8px 12px;border-radius:8px;max-width:920px;margin:0 auto 12px;font-size:.82rem;text-align:center}
+  .share-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px;max-width:1000px;margin:0 auto}
+  .share-card{background:var(--card);border:1px solid #415a77;border-radius:12px;padding:12px 14px}
+  .share-card h4{margin:0 0 2px;color:var(--accent);font-size:1rem}
+  .share-card .pin{color:var(--gold);font-weight:700;font-size:.9rem;margin-bottom:10px}
+  .share-card .pin .pinval{letter-spacing:2px}
+  .share-card .actions{display:flex;gap:8px;flex-wrap:wrap}
+  .share-card a.btnlink,.share-card button.copybtn{display:inline-flex;align-items:center;gap:6px;text-decoration:none;font-size:.82rem;font-weight:600;padding:7px 12px;border-radius:8px;border:1px solid #415a77;background:var(--card);color:var(--text);cursor:pointer}
+  .share-card a.wa{background:#1f5f4d;border-color:#27795f;color:#bdf3e1}
+  .share-card a.wa:hover{background:#27795f;color:#fff}
+  .share-card a.sms{background:#243a55;border-color:#345982;color:#cfe2ff}
+  .share-card a.sms:hover{background:#345982;color:#fff}
+  .share-card button.copybtn:hover{background:#24344c;border-color:var(--accent)}
+  .share-card .nophone{color:var(--muted);font-size:.74rem;margin-top:6px}
   .hint{max-width:1060px;margin:8px auto;color:var(--muted);font-size:.8rem;text-align:center}
   .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:var(--win);color:#001219;font-weight:700;padding:10px 18px;border-radius:10px;opacity:0;transition:opacity .25s;pointer-events:none;z-index:50;max-width:90vw;text-align:center}
   .toast.show{opacity:1}.toast.err{background:var(--danger)}
@@ -120,7 +101,7 @@
 <body>
 <header>
   <h1>⚽ World Cup 2026 — Admin</h1>
-  <div class="sub">Enter results, assign 3rd-placed teams, and view the live leaderboard.</div>
+  <div class="sub">Enter results, assign 3rd-placed teams, and share PINs.</div>
 </header>
 
 <div id="gate" class="gate" style="display:none">
@@ -153,6 +134,26 @@ const SUPABASE_URL = "https://nsfwtflpjsdbtbhimvmw.supabase.co";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5zZnd0ZmxwanNkYnRiaGltdm13Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA1NjY5ODUsImV4cCI6MjA5NjE0Mjk4NX0.gjajKj1IYgb1WdWlC5cm8nipdS9Qlz2iNKnLdCY1NiA";
 const SB = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
+// ============================================================
+// ⚠️ PRIVATE — Share-PINs list. Fill in plain PINs (and optional
+// phone numbers in international format, e.g. +447700900123).
+// Phone is OPTIONAL: leave "" to show only the Copy-message button.
+// Because these are PLAINTEXT PINs, keep this file PRIVATE or don't
+// commit real values to a public repo.
+// ============================================================
+const PREDICTIONS_URL = "https://cparrott79-cmd.github.io/WorldCup2026/Predictionsv2.html";
+const SHARE_LIST = [
+  { name:"Chris",   pin:"1234", phone:"" },
+  { name:"Alfie",   pin:"1111", phone:"" },
+  { name:"Owen",    pin:"2222", phone:"" },
+  { name:"Josh",    pin:"3333", phone:"" },
+  { name:"Naomi",   pin:"4444", phone:"" },
+  { name:"Mama",    pin:"5555", phone:"" },
+  { name:"Grandad", pin:"6666", phone:"" },
+  { name:"Marie",   pin:"7777", phone:"" },
+  { name:"Smithy",  pin:"8888", phone:"" }
+];
+
 const FINAL_MATCH=104;
 const FIRST_KO=73;const isKO=n=>n>=FIRST_KO;
 const THIRD_SLOTS=["3ABCDF","3CDFGH","3CEFHI","3EHIJK","3AEHIJ","3BEFIJ","3EFGIJ","3DEIJL"];
@@ -169,16 +170,9 @@ const ROUNDS=[
 ];
 const roundOf=n=>ROUNDS.find(r=>r.test(n));
 const FILTERS=[{val:"",label:"All stages",test:()=>true}].concat(ROUNDS.map(r=>({val:r.key,label:r.label,test:r.test})));
-const BUCKETS=[
-  {key:"g1",label:"G1–24",test:n=>n>=1&&n<=24},{key:"g2",label:"G25–48",test:n=>n>=25&&n<=48},
-  {key:"g3",label:"G49–72",test:n=>n>=49&&n<=72},{key:"r32",label:"R32",test:n=>n>=73&&n<=88},
-  {key:"r16",label:"R16",test:n=>n>=89&&n<=96},{key:"qf",label:"QF",test:n=>n>=97&&n<=100},
-  {key:"sf",label:"SF",test:n=>n>=101&&n<=102},{key:"tp",label:"3rd",test:n=>n===103},
-  {key:"fin",label:"Final ×2",test:n=>n===104}
-];
 function isCode(s){return /^([12][A-L]|3[A-L]+|W\d+|RU\d+)$/.test(s);}
 
-let FIXTURES=[],FX={},results={},thirds={},allPreds={},players=[],me=null,myPin=null,view="results";
+let FIXTURES=[],FX={},results={},thirds={},me=null,myPin=null,view="results";
 
 const $=id=>document.getElementById(id);
 const content=$("content"),toast=$("toast");
@@ -188,14 +182,6 @@ function toastMsg(m,err){toast.textContent=m;toast.className="toast show"+(err?"
 const days=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"],mons=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"],p2=n=>String(n).padStart(2,"0");
 function dateStr(d){return days[d.getDay()]+" "+p2(d.getDate())+" "+mons[d.getMonth()]+" "+d.getFullYear();}
 function timeStr(d){return p2(d.getHours())+":"+p2(d.getMinutes());}
-
-function scoreMatch(pred,res,ko,num){
-  if(!pred||!res)return null;if(pred.h===""||pred.a===""||res.h===""||res.a==="")return null;
-  const ph=+pred.h,pa=+pred.a,rh=+res.h,ra=+res.a;let pts=0,resultOK;
-  if(ko){let ap=rh>ra?"H":ra>rh?"A":(res.pen||"");let pp=ph>pa?"H":pa>ph?"A":(pred.prog||"");resultOK=pp!==""&&pp===ap;}
-  else{const pr=ph>pa?"H":pa>ph?"A":"D";const rr=rh>ra?"H":ra>rh?"A":"D";resultOK=pr===rr;}
-  const homeOK=ph===rh,awayOK=pa===ra;if(resultOK)pts+=2;if(homeOK)pts+=2;if(awayOK)pts+=2;if(resultOK&&homeOK&&awayOK)pts+=2;if(num===FINAL_MATCH)pts*=2;return pts;
-}
 
 function computeGroups(){
   const groups={};
@@ -218,11 +204,10 @@ function displayTeam(c){const r=resolveTeam(c);if(r&&r!==c)return{name:r,code:c}
 function thirdPlacedTeams(){const g=computeGroups(),o={};Object.keys(g).forEach(k=>{if(g[k][2])o[k]=g[k][2].team;});return o;}
 
 async function loadAll(){
-  const [fx,res,pr]=await Promise.all([SB.from("fixtures").select("*").order("match_num"),SB.from("results").select("*"),SB.from("predictions").select("*")]);
+  const [fx,res]=await Promise.all([SB.from("fixtures").select("*").order("match_num"),SB.from("results").select("*")]);
   if(fx.error)throw fx.error;
   FIXTURES=fx.data;FX={};FIXTURES.forEach(f=>FX[f.match_num]=f);
   results={};(res.data||[]).forEach(r=>results[r.match_num]={h:r.home==null?"":String(r.home),a:r.away==null?"":String(r.away),pen:r.pen||""});
-  allPreds={};(pr.data||[]).forEach(r=>{allPreds[r.player]=allPreds[r.player]||{};allPreds[r.player][r.match_num]={h:String(r.home),a:String(r.away),prog:r.prog||""};});
 }
 async function loadThirds(){const raw=localStorage.getItem("wc_thirds");thirds=raw?JSON.parse(raw):{};}
 function saveThirds(){localStorage.setItem("wc_thirds",JSON.stringify(thirds));}
@@ -243,7 +228,7 @@ function adjustResult(num,side,delta){num=+num;const s=results[num]=results[num]
 
 function buildTabs(){
   const t=$("tabs");t.innerHTML="";
-  [["results","🎯 Results"],["groups","📊 Group Tables"],["matrix","🗒 All Predictions"],["leaderboard","🏆 Leaderboard"]]
+  [["results","🎯 Results"],["groups","📊 Group Tables"],["share","🔗 Share PINs"]]
   .forEach(([mode,label])=>{const el=document.createElement("div");el.className="tab"+(view===mode?" active":"");el.textContent=label;el.onclick=()=>{view=mode;render();};t.appendChild(el);});
   resControls.style.display=view==="results"?"":"none";
 }
@@ -298,49 +283,55 @@ function renderGroups(){
   content.innerHTML=html;
 }
 
-function renderMatrix(){
-  const q=search.value.trim().toLowerCase();const filter=FILTERS.find(f=>f.val===stageFilter.value)||FILTERS[0];
-  const visible=FIXTURES.filter(f=>{if(!filter.test(f.match_num))return false;if(q){const hN=resolveTeam(f.home_code)||f.home_code,aN=resolveTeam(f.away_code)||f.away_code;if(!((hN+" "+aN+" "+f.home_code+" "+f.away_code).toLowerCase().includes(q)))return false;}return true;});
-  if(!players.length){content.innerHTML=`<div class="hint">No players found.</div>`;return;}
-  let gameHdr=`<tr class="games"><th class="namecol">Player</th>`;
-  visible.forEach(f=>{const hN=resolveTeam(f.home_code)||f.home_code,aN=resolveTeam(f.away_code)||f.away_code,isFinal=f.match_num===FINAL_MATCH,ko=new Date(f.kickoff);
-    gameHdr+=`<th class="${isFinal?'gh-final':''}"><div class="gh-teams">${hN}</div><div class="gh-v">v</div><div class="gh-teams">${aN}</div><div class="gh-meta">#${f.match_num} · ${timeStr(ko)}${isFinal?" · ×2":""}</div></th>`;});
-  gameHdr+=`</tr>`;
-  let body="";players.forEach(p=>{let cells="";visible.forEach(f=>{const num=f.match_num,hN=resolveTeam(f.home_code)||f.home_code,aN=resolveTeam(f.away_code)||f.away_code;const rec=(allPreds[p]||{})[num];
-    if(!rec||rec.h===""||rec.a===""){cells+=`<td class="cell empty">–</td>`;}else{const h=+rec.h,a=+rec.a;let rn,rc;if(h>a){rn=hN;rc="home";}else if(a>h){rn=aN;rc="away";}else{if(isKO(num)&&rec.prog){rn=(rec.prog==="H"?hN:aN)+" (thru)";rc="draw";}else{rn="Draw";rc="draw";}}cells+=`<td class="cell"><span class="sc">${rec.h}–${rec.a}</span><span class="rs ${rc}">${rn}</span></td>`;}});
-    body+=`<tr><td class="namecol">${p}</td>${cells}</tr>`;});
-  content.innerHTML=`<div class="matrixwrap"><table class="matrix"><thead>${gameHdr}</thead><tbody>${body}</tbody></table></div><div class="hint">Players fixed on the left; swipe sideways for more games.</div>`;
+// ===== Share PINs view =====
+function shareMessage(name,pin){
+  return "Hi "+name+"! Here's your World Cup 2026 predictions login 👇\n"+
+         "🔗 "+PREDICTIONS_URL+"\n"+
+         "👤 Name: "+name+"\n"+
+         "🔑 PIN: "+pin+"\n"+
+         "Pick your name, enter your PIN, then tap \"My Predictions\" to fill in your scores — they save automatically!";
 }
-
-function computeStats(){
-  return players.map(p=>{const b={};BUCKETS.forEach(x=>b[x.key]=0);let total=0,perfect=0;
-    FIXTURES.forEach(f=>{const num=f.match_num;const pred=(allPreds[p]||{})[num],res=results[num];const s=scoreMatch(pred,res,isKO(num),num);
-      if(s!==null){total+=s;const bk=BUCKETS.find(x=>x.test(num));if(bk)b[bk.key]+=s;const maxFor=num===FINAL_MATCH?16:8;if(s===maxFor)perfect++;}});
-    return{player:p,total,perfect,b};}).sort((a,b)=>b.total-a.total||a.player.localeCompare(b.player));
-}
-function renderLeaderboard(){
-  const stats=computeStats();const anyScored=stats.some(s=>s.total>0);const n=stats.length;
-  let header=`<tr><th>#</th><th style="text-align:left">Player</th><th class="total">Total</th>`;BUCKETS.forEach(x=>header+=`<th>${x.label}</th>`);header+=`<th>Perfect</th></tr>`;
-  let rows="",displayRank=0,prevTotal=null;
-  stats.forEach((t,i)=>{
-    let pos;if(anyScored&&t.total===prevTotal){pos=displayRank;}else{pos=i+1;displayRank=pos;prevTotal=t.total;}
-    const classes=[];if(anyScored&&i===0)classes.push("leader");if(anyScored&&n>1&&i===n-1)classes.push("last");if(n>3&&i===2)classes.push("top3-cut");
-    const medal=(anyScored&&i===0)?"🥇 ":(anyScored&&n>1&&i===n-1?"🥄 ":"");
-    let cells="";BUCKETS.forEach(x=>cells+=`<td>${t.b[x.key]||0}</td>`);
-    rows+=`<tr class="${classes.join(' ')}"><td class="rank">${pos}</td><td class="name">${medal}${t.player}</td><td class="total">${t.total}</td>${cells}<td>${t.perfect}</td></tr>`;
+function renderShare(){
+  let cards="";
+  SHARE_LIST.forEach(p=>{
+    const msg=shareMessage(p.name,p.pin);
+    const enc=encodeURIComponent(msg);
+    const phone=(p.phone||"").replace(/[^\d+]/g,"");
+    const waNum=phone.replace(/^\+/,"");
+    const waHref = phone ? `https://wa.me/${waNum}?text=${enc}` : `https://wa.me/?text=${enc}`;
+    const smsHref = phone ? `sms:${phone}?&body=${enc}` : `sms:?&body=${enc}`;
+    cards+=`<div class="share-card">
+      <h4>${p.name}</h4>
+      <div class="pin">🔑 PIN: <span class="pinval">${p.pin}</span></div>
+      <div class="actions">
+        <button class="copybtn" data-copy="${encodeURIComponent(msg)}">📋 Copy message</button>
+        <a class="btnlink wa" href="${waHref}" target="_blank" rel="noopener">🟢 WhatsApp</a>
+        <a class="btnlink sms" href="${smsHref}">💬 SMS</a>
+      </div>
+      ${phone?"":`<div class="nophone">No phone set — WhatsApp/SMS will open blank to pick a contact. Add a number in SHARE_LIST to pre-fill.</div>`}
+    </div>`;
   });
-  content.innerHTML=`<div class="lbwrap"><table class="lb">${header}${rows}</table></div><div class="hint">Total beside the name; stage breakdown across (Final column doubled). <b>Perfect</b> = exact scoreline (Final perfect = 16). 🥇 leader · 🥄 last · dotted line marks the top 3.</div>`;
+  content.innerHTML=`<div class="share-note">⚠️ PINs are sensitive — send each person <b>only their own</b> PIN, ideally in a private 1-to-1 message. WhatsApp/SMS open with the message pre-filled; you tap send.</div>
+    <div class="share-grid">${cards}</div>
+    <div class="hint">“Copy message” copies the full text to your clipboard. WhatsApp opens the chat (with the contact if a number is set); SMS opens your messaging app.</div>`;
 }
 
-function render(){buildTabs();if(view==="groups")return renderGroups();if(view==="matrix")return renderMatrix();if(view==="leaderboard")return renderLeaderboard();renderResults();}
+function render(){buildTabs();if(view==="groups")return renderGroups();if(view==="share")return renderShare();renderResults();}
 
-content.addEventListener("click",e=>{const btn=e.target.closest(".stepbtn");if(btn&&view==="results"){adjustResult(btn.dataset.num,btn.dataset.side,+btn.dataset.step);}});
+content.addEventListener("click",e=>{
+  const cp=e.target.closest("[data-copy]");
+  if(cp){const text=decodeURIComponent(cp.dataset.copy);
+    if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(text).then(()=>toastMsg("✅ Message copied"),()=>toastMsg("Couldn't copy",true));}
+    else{const ta=document.createElement("textarea");ta.value=text;document.body.appendChild(ta);ta.select();try{document.execCommand("copy");toastMsg("✅ Message copied");}catch(_){toastMsg("Couldn't copy",true);}document.body.removeChild(ta);}
+    return;}
+  const btn=e.target.closest(".stepbtn");if(btn&&view==="results"){adjustResult(btn.dataset.num,btn.dataset.side,+btn.dataset.step);}
+});
 content.addEventListener("change",e=>{
   if(e.target.dataset.slot){thirds[e.target.dataset.slot]=e.target.value;saveThirds();render();return;}
   if(e.target.dataset.field&&view==="results"){const num=+e.target.dataset.num;const s=results[num]=results[num]||{h:"",a:"",pen:""};s[e.target.dataset.field]=e.target.value;updateResultLabel(num);setResult(num);}
 });
 stageFilter.addEventListener("change",render);search.addEventListener("input",render);
-$("reloadBtn").onclick=async()=>{await loadAll();players=Object.keys(allPreds).sort();render();toastMsg("↻ Reloaded");};
+$("reloadBtn").onclick=async()=>{await loadAll();render();toastMsg("↻ Reloaded");};
 
 async function populateNames(){const {data,error}=await SB.from("player_names").select("name,is_admin").eq("is_admin",true).order("name");if(error){$("gateErr").textContent="Could not load admins: "+error.message;return;}const sel=$("gateName");data.forEach(p=>{const o=document.createElement("option");o.value=p.name;o.textContent=p.name;sel.appendChild(o);});}
 async function doLogin(){const name=$("gateName").value,pin=$("gatePin").value.trim();$("gateErr").textContent="";if(!name||!pin){$("gateErr").textContent="Pick your name and enter your PIN.";return;}const {data,error}=await SB.rpc("verify_pin",{p_player:name,p_pin:pin});if(error){$("gateErr").textContent="Login error: "+error.message;return;}if(!data){$("gateErr").textContent="Wrong name or PIN.";return;}const adm=await SB.from("player_names").select("is_admin").eq("name",name).single();if(adm.error||!adm.data||!adm.data.is_admin){$("gateErr").textContent="That account isn't an admin.";return;}me=name;myPin=pin;sessionStorage.setItem("wc_admin",name);sessionStorage.setItem("wc_admin_pin",pin);await startApp();}
@@ -349,12 +340,10 @@ $("logoutBtn").onclick=()=>{sessionStorage.removeItem("wc_admin");sessionStorage
 
 async function startApp(){
   $("gate").style.display="none";$("app").style.display="";$("whoName").textContent=me;
-  await loadThirds();await loadAll();players=Object.keys(allPreds).sort();
-  if(!players.length){const {data}=await SB.from("player_names").select("name").order("name");players=(data||[]).map(p=>p.name);}
+  await loadThirds();await loadAll();
   render();
   SB.channel("admin-live")
     .on("postgres_changes",{event:"*",schema:"public",table:"results"},async()=>{await loadAll();render();})
-    .on("postgres_changes",{event:"*",schema:"public",table:"predictions"},async()=>{await loadAll();players=Object.keys(allPreds).sort();render();})
     .subscribe();
 }
 async function init(){
