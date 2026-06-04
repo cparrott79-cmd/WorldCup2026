@@ -3,38 +3,58 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>WC2026 — Make Your Predictions</title>
+<title>WC2026 Prediction Game</title>
 <style>
-  :root{--bg:#0d1b2a;--card:#1b263b;--accent:#00b4d8;--win:#2a9d8f;--draw:#e9c46a;--text:#e0e1dd;--muted:#8d99ae;--gold:#ffd166;--danger:#e76f51;--lock:#6b7a8f;}
+  :root{--bg:#0d1b2a;--card:#1b263b;--accent:#00b4d8;--win:#2a9d8f;--draw:#e9c46a;--text:#e0e1dd;--muted:#8d99ae;--gold:#ffd166;--qual:#2a9d8f;--third:#e9c46a;--danger:#e76f51;--lock:#8d99ae;}
   *{box-sizing:border-box}
   body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;background:var(--bg);color:var(--text);padding:14px}
   header{text-align:center;margin-bottom:14px}
-  h1{margin:0 0 4px;font-size:1.4rem}
+  h1{margin:0 0 4px;font-size:1.5rem}
   .sub{color:var(--muted);font-size:.85rem}
+  .tabrow{display:flex;gap:6px;justify-content:center;flex-wrap:wrap}
+  .tabrow.admin{margin:14px 0 8px}
+  .tab{background:var(--card);border:1px solid #415a77;color:var(--text);padding:8px 16px;border-radius:8px;cursor:pointer;font-size:.9rem;display:inline-flex;align-items:center;gap:6px}
+  .tab.active{background:var(--accent);color:#001219;border-color:var(--accent);font-weight:700}
+  .tab.enter{background:transparent;border:1px dashed var(--gold);color:var(--gold)}
+  .tab.enter.active,.tab.enter:hover{background:var(--gold);color:#001219;border-color:var(--gold)}
+  .tab.imp{background:transparent;border:1px dashed var(--win);color:var(--win)}
+  .tab.imp.active,.tab.imp:hover{background:var(--win);color:#001219;border-color:var(--win)}
   .controls{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;align-items:center;margin:12px 0}
-  select,input[type=text],button{background:var(--card);color:var(--text);border:1px solid #415a77;border-radius:8px;padding:8px 12px;font-size:.9rem}
+  select,input[type=text],input[type=password],button,textarea{background:var(--card);color:var(--text);border:1px solid #415a77;border-radius:8px;padding:8px 12px;font-size:.9rem;font-family:inherit}
   button{cursor:pointer;transition:.2s}
   button:hover{background:var(--accent);color:#001219;border-color:var(--accent)}
+  button.danger{border-color:var(--danger);color:var(--danger)}
+  button.danger:hover{background:var(--danger);color:#001219;border-color:var(--danger)}
+  .gate{max-width:420px;margin:40px auto;background:var(--card);border:1px solid #415a77;border-radius:14px;padding:24px;text-align:center}
+  .gate h3{margin:0 0 6px;color:var(--accent)}
+  .gate p{color:var(--muted);font-size:.85rem;margin:0 0 16px}
+  .gate input{width:160px;text-align:center;font-size:1.2rem;letter-spacing:3px;margin-bottom:12px}
+  .gate .err{color:var(--danger);font-size:.82rem;min-height:18px;margin-top:8px}
   .entry-name{max-width:560px;margin:0 auto 14px;background:var(--card);border:1px solid #415a77;border-radius:12px;padding:12px 16px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
   .entry-name label{font-size:.85rem;color:var(--muted)}
-  .entry-name select{flex:1;min-width:160px}
-  .stage-row{margin:16px 0 10px}
-  .stage-title{background:var(--accent);color:#001219;padding:6px 12px;border-radius:8px;font-weight:700;font-size:.92rem;margin:0;display:inline-block}
-  .stage-title.locked{background:var(--lock);color:#0d1b2a}
+  .entry-name input{flex:1;min-width:160px}
+  .import-panel{max-width:760px;margin:0 auto 14px;background:var(--card);border:1px solid #415a77;border-radius:12px;padding:16px}
+  .import-panel h3{margin:0 0 6px;color:var(--accent);font-size:1rem}
+  .import-panel p{color:var(--muted);font-size:.82rem;margin:0 0 10px}
+  .import-panel textarea{width:100%;min-height:200px;resize:vertical}
+  .import-row{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:10px}
+  .import-row label{font-size:.82rem;color:var(--muted)}
+  .go{background:var(--gold);color:#001219;border-color:var(--gold);font-weight:700}
+  .go:hover{background:#ffdf85;border-color:#ffdf85;color:#001219}
+  .report{margin-top:12px;font-size:.84rem;border-radius:8px;padding:10px 12px}
+  .report.ok{background:#16302a;border:1px solid var(--win);color:#8ff0dd}
+  .report.warn{background:#3d2c1b;border:1px solid var(--draw);color:#ffe3a0}
+  .report.err{background:#3d1f1b;border:1px solid var(--danger);color:#ffb4a2}
+  .report b{color:#fff}
+  .stage-row{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:16px 0 10px;flex-wrap:wrap}
+  .stage-title{background:var(--accent);color:#001219;padding:6px 12px;border-radius:8px;font-weight:700;font-size:.92rem;margin:0}
   .stage-title .dbl{background:#001219;color:var(--gold);padding:1px 7px;border-radius:6px;font-size:.74rem;margin-left:8px}
-  .stage-deadline{display:inline-block;margin-left:8px;font-size:.74rem;color:var(--muted)}
-  .submit-row{display:flex;align-items:center;justify-content:flex-end;gap:8px;margin:8px 0 18px;flex-wrap:wrap}
-  .copybtn{background:var(--gold);color:#001219;border-color:var(--gold);font-weight:700}
-  .copybtn:hover{background:#ffdf85;border-color:#ffdf85;color:#001219}
-  .copyall{background:var(--win);color:#001219;border-color:var(--win);font-weight:700}
-  .copyall:hover{background:#34c2b0;border-color:#34c2b0;color:#001219}
-  .scorebtn{background:transparent;border:1px solid var(--accent);color:var(--accent);font-weight:700}
-  .scorebtn:hover{background:var(--accent);color:#001219;border-color:var(--accent)}
-
-  /* --- match card: stacked rows --- */
+  .submit-row{display:flex;align-items:center;justify-content:flex-end;gap:8px;margin:8px 0 18px}
+  .exportbtn{background:var(--gold);color:#001219;border-color:var(--gold);font-weight:700}
+  .exportbtn:hover{background:#ffdf85;border-color:#ffdf85;color:#001219}
+  /* ---- Results match card: stacked rows ---- */
   .match{background:var(--card);padding:10px 14px;border-radius:10px;margin-bottom:7px}
   .match.finalmatch{border:1px solid var(--gold)}
-  .match.locked{opacity:.78}
   .match-top{display:grid;grid-template-columns:1fr 1fr;gap:10px;align-items:stretch}
   .side{display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:8px;min-width:0}
   .team{font-weight:600;font-size:1rem;line-height:1.25;text-align:center;overflow-wrap:break-word;word-break:normal;hyphens:none;max-width:100%}
@@ -42,7 +62,6 @@
   .meta{display:block;width:100%;text-align:center;margin-top:10px;padding-top:8px;border-top:1px solid #2b3a52;font-size:.72rem;color:var(--muted)}
   .meta .num{font-weight:600}
   .meta .dblpill{color:var(--gold);font-weight:700}
-  .meta .lockpill{color:var(--lock);font-weight:700;margin-left:6px;white-space:nowrap}
   .stepper{display:flex;align-items:center;gap:8px}
   .stepbtn{width:32px;height:32px;padding:0;font-size:1.2rem;font-weight:700;line-height:1;border:none;border-radius:50%;display:flex;align-items:center;justify-content:center;user-select:none;cursor:pointer;transition:.15s}
   .stepbtn.minus{background:#2b3a52;color:var(--text)}
@@ -50,9 +69,6 @@
   .stepbtn.plus{background:var(--accent);color:#001219}
   .stepbtn.plus:hover{background:#33c6ec;color:#001219}
   .stepbtn:active{transform:scale(.9)}
-  .stepbtn:disabled{background:#243044;color:#54627a;cursor:not-allowed}
-  .stepbtn:disabled:hover{background:#243044;color:#54627a;transform:none}
-  .prog:disabled{opacity:.55;cursor:not-allowed}
   .scoreval{min-width:22px;text-align:center;font-size:1.2rem;font-weight:700;color:var(--text);background:none;border:none;padding:0}
   .scoreval.empty{color:var(--muted);font-weight:400}
   .prog-row{margin-top:10px;text-align:center}
@@ -61,125 +77,126 @@
   .result{display:block;font-size:.7rem;text-align:center;padding:4px 6px;border-radius:6px;background:#0d1b2a;color:var(--muted)}
   .result.home,.result.away{background:var(--win);color:#001219;font-weight:700}
   .result.draw{background:var(--draw);color:#001219;font-weight:700}
+  .result.pts{background:var(--gold);color:#001219;font-weight:700}
+  /* ---- end results card ---- */
+  .lbwrap{overflow-x:auto}
+  table.lb{width:100%;max-width:1060px;margin:0 auto;border-collapse:collapse;font-size:.86rem}
+  table.lb th,table.lb td{padding:9px 10px;text-align:center;border-bottom:1px solid #415a77;white-space:nowrap}
+  table.lb th{color:var(--accent);font-size:.78rem}
+  table.lb td.name{text-align:left;font-weight:600}
+  table.lb td.total{font-weight:700;color:var(--gold);background:#15263b}
+  table.lb th.total{color:var(--gold);background:#15263b}
+  table.lb td.perfect,table.lb th.perfect{color:var(--win);font-weight:700}
+  table.lb td.rank{color:var(--muted);width:36px}
+  table.lb tr:first-child td.rank{color:var(--gold);font-size:1.05rem}
+  .hint{max-width:1060px;margin:8px auto;color:var(--muted);font-size:.8rem;text-align:center}
+  .admin-note{background:#3d2c1b;border:1px solid var(--draw);color:var(--draw);padding:8px 12px;border-radius:8px;max-width:920px;margin:0 auto 12px;font-size:.82rem;text-align:center}
   .missing-note{background:#3d1f1b;border:1px solid var(--danger);color:#ffb4a2;padding:10px 14px;border-radius:8px;max-width:920px;margin:0 auto 12px;font-size:.82rem}
   .missing-note b{color:#fff}
-  .locked-note{background:#26303f;border:1px solid #415a77;color:var(--muted);padding:8px 12px;border-radius:8px;margin:0 0 10px;font-size:.8rem}
-  .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:var(--win);color:#001219;font-weight:700;padding:10px 18px;border-radius:10px;box-shadow:0 6px 20px rgba(0,0,0,.4);opacity:0;transition:opacity .25s;pointer-events:none;z-index:50}
-  .toast.show{opacity:1}
-  .hint{max-width:760px;margin:8px auto;color:var(--muted);font-size:.8rem;text-align:center}
-
-  /* ---- Scoring modal (mobile-first) ---- */
-  .modal-overlay{position:fixed;inset:0;background:rgba(3,8,15,.72);display:none;align-items:flex-start;justify-content:center;z-index:100;padding:12px;overflow-y:auto;-webkit-overflow-scrolling:touch}
-  .modal-overlay.show{display:flex}
-  .modal{background:var(--card);border:1px solid #415a77;border-radius:14px;width:100%;max-width:560px;margin:auto;max-height:92vh;display:flex;flex-direction:column;box-shadow:0 18px 50px rgba(0,0,0,.55)}
-  .modal-head{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:14px 16px;border-bottom:1px solid #2b3a52;position:sticky;top:0;background:var(--card);border-radius:14px 14px 0 0;z-index:1}
-  .modal-head h2{margin:0;font-size:1.05rem;color:var(--accent)}
-  .modal-close{background:#2b3a52;border:none;color:var(--text);width:34px;height:34px;border-radius:8px;font-size:1.1rem;line-height:1;display:flex;align-items:center;justify-content:center;flex-shrink:0}
-  .modal-close:hover{background:var(--danger);color:#001219}
-  .modal-body{padding:14px 16px;overflow-y:auto;-webkit-overflow-scrolling:touch}
-  .modal-body p{margin:0 0 12px;font-size:.86rem;line-height:1.5;color:var(--text)}
-  .modal-body p.note{color:var(--muted);font-size:.8rem}
-  .modal-body h3{margin:16px 0 8px;font-size:.92rem;color:var(--gold)}
-  .modal-body h3:first-child{margin-top:0}
-  .score-table{width:100%;border-collapse:collapse;font-size:.82rem;margin-bottom:6px}
-  .score-table th,.score-table td{padding:7px 8px;border-bottom:1px solid #2b3a52;text-align:left}
-  .score-table th{color:var(--accent);font-size:.76rem;font-weight:700}
-  .score-table td.pts,.score-table th.pts{text-align:right;font-weight:700;color:var(--gold);white-space:nowrap}
-  .score-table tr.max td{font-weight:700}
-  .score-table tr.max td.pts{color:var(--win)}
-  .double-banner{background:#2b2410;border:1px solid var(--gold);color:var(--gold);padding:9px 12px;border-radius:8px;font-size:.84rem;font-weight:700;text-align:center;margin:10px 0 14px}
-  /* worked-examples table can scroll sideways on small phones */
-  .examples-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;border:1px solid #2b3a52;border-radius:8px}
-  .examples{width:100%;min-width:440px;border-collapse:collapse;font-size:.78rem}
-  .examples th,.examples td{padding:7px 8px;border-bottom:1px solid #2b3a52;text-align:center;white-space:nowrap}
-  .examples th{color:var(--accent);font-size:.72rem;font-weight:700}
-  .examples td.pred{text-align:left;font-weight:600}
-  .examples td.tot{font-weight:700;color:var(--gold)}
-  .examples tr.perfect td.tot{color:var(--win)}
-
+  .third-panel{background:var(--card);border:1px solid #415a77;border-radius:12px;padding:14px 18px;max-width:920px;margin:0 auto 16px}
+  .third-panel h3{margin:0 0 4px;color:var(--accent);font-size:.95rem}
+  .third-panel .pdesc{color:var(--muted);font-size:.78rem;margin-bottom:12px}
+  .third-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:12px 20px}
+  .third-row{display:flex;align-items:center;gap:12px}
+  .third-row label{font-size:.82rem;color:var(--text);font-weight:600;min-width:96px;text-align:right;flex-shrink:0}
+  .third-row select{flex:1;min-width:0;font-size:.8rem;padding:6px}
+  .chart-card{background:var(--card);border-radius:12px;padding:14px 16px;max-width:1060px;margin:0 auto 18px}
+  .chart-card h3{margin:0 0 4px;color:var(--accent);font-size:1rem}
+  .chart-card .pdesc{color:var(--muted);font-size:.78rem;margin-bottom:8px}
+  .legend-chart{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin-top:8px;font-size:.76rem}
+  .legend-chart .li{display:inline-flex;align-items:center;gap:5px;color:var(--muted)}
+  .legend-chart .ln{width:16px;height:3px;border-radius:2px;display:inline-block}
+  .summary-wrap{max-width:1060px;margin:0 auto 10px;display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:12px}
+  .scard{background:var(--card);border-radius:12px;padding:12px 14px;border-left:4px solid var(--accent)}
+  .scard h4{margin:0 0 6px;font-size:.95rem;color:var(--text)}
+  .scard h4 .badge{font-size:.72rem;color:var(--muted);font-weight:400}
+  .scard p{margin:0;font-size:.82rem;color:var(--muted);line-height:1.45}
+  .scard .stat{color:var(--gold);font-weight:700}
+  .groups{display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:16px;max-width:1100px;margin:0 auto}
+  .gcard{background:var(--card);border-radius:12px;padding:10px 12px}
+  .gcard h3{margin:2px 0 8px;color:var(--accent);font-size:1rem}
+  table.gt{width:100%;border-collapse:collapse;font-size:.82rem}
+  table.gt th{color:var(--muted);font-weight:600;text-align:center;padding:4px 3px;border-bottom:1px solid #415a77}
+  table.gt td{padding:5px 3px;text-align:center;border-bottom:1px solid #2a3a52}
+  table.gt td.tname{text-align:left;font-weight:600}
+  table.gt td.pos{color:var(--muted);width:22px}
+  table.gt tr.q1 td.pos,table.gt tr.q2 td.pos{color:var(--qual);font-weight:700}
+  table.gt tr.q1 td.tname,table.gt tr.q2 td.tname{border-left:3px solid var(--qual);padding-left:6px}
+  table.gt tr.q3 td.tname{border-left:3px solid var(--third);padding-left:6px}
+  table.gt td.pts{font-weight:700;color:var(--gold)}
+  .legend{max-width:1100px;margin:14px auto 0;color:var(--muted);font-size:.78rem;text-align:center}
+  .legend span{display:inline-block;margin:0 8px}
+  .swatch{display:inline-block;width:10px;height:10px;border-radius:2px;vertical-align:middle;margin-right:4px}
+  /* ---- All Predictions: transposed grid ---- */
+  .mx-toolbar{display:flex;gap:10px;align-items:center;justify-content:center;flex-wrap:wrap;margin:0 auto 12px;max-width:1100px}
+  .mx-toolbar .info{color:var(--muted);font-size:.8rem}
+  .matrixwrap{overflow-x:auto;max-width:100%;border:1px solid #2a3a52;border-radius:10px}
+  table.matrix{border-collapse:separate;border-spacing:0;font-size:.82rem;width:max-content;min-width:100%;table-layout:fixed}
+  table.matrix th,table.matrix td{border-bottom:1px solid #2a3a52;white-space:nowrap}
+  table.matrix tr.dayband th{position:sticky;top:0;z-index:5;background:#10202f;color:var(--accent);font-weight:700;text-align:left;padding:6px 10px;font-size:.8rem}
+  table.matrix tr.dayband th.namecorner{left:0;z-index:7;background:#10202f}
+  table.matrix thead tr.games th{position:sticky;z-index:4;background:#15263b;color:var(--text);vertical-align:top;
+    width:100px;min-width:100px;max-width:100px;padding:6px 6px;font-weight:600;font-size:.74rem;text-align:center}
+  table.matrix thead tr.games th.gh-final{border:1px solid var(--gold)}
+  table.matrix thead tr.games th .gh-hide{display:inline-flex;align-items:center;gap:4px;margin:0 0 5px;color:var(--muted);font-size:.66rem;cursor:pointer}
+  table.matrix thead tr.games th .gh-hide input{vertical-align:middle}
+  table.matrix thead tr.games th .gh-teams{font-weight:700;line-height:1.2}
+  table.matrix thead tr.games th .gh-v{color:var(--muted);font-weight:400;font-size:.68rem}
+  table.matrix thead tr.games th .gh-meta{color:var(--muted);font-weight:400;font-size:.66rem;margin-top:2px}
+  table.matrix tr.dayband th{top:0}
+  table.matrix thead tr.games th{top:31px}
+  /* Player column: fixed 78px (fits the longest name e.g. "Grandad") */
+  table.matrix th.namecol,table.matrix td.namecol{position:sticky;left:0;z-index:3;background:var(--card);
+    width:60px;min-width:60px;max-width:60px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+    padding:7px 6px;text-align:left;font-weight:700;box-shadow:1px 0 0 #2a3a52}
+  table.matrix thead tr.games th.namecol{z-index:6;background:#15263b}
+  /* day-band "Player" corner cell — force same 78px width & tighter padding */
+  table.matrix tr.dayband th.namecol{width:60px;min-width:60px;max-width:60px;padding:6px 6px;
+    overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  table.matrix td.cell{text-align:center;padding:6px 6px;font-variant-numeric:tabular-nums;width:100px;min-width:100px;max-width:100px}
+  table.matrix td.cell .sc{font-size:.95rem;font-weight:700}
+  table.matrix td.cell .rs{display:block;font-size:.66rem;margin-top:2px;overflow:hidden;text-overflow:ellipsis}
+  table.matrix td.cell .rs.home,table.matrix td.cell .rs.away{color:var(--win)}
+  table.matrix td.cell .rs.draw{color:var(--draw)}
+  table.matrix td.cell.empty{color:#43526a}
+  table.matrix tr:nth-child(even) td.cell{background:rgba(255,255,255,.015)}
   @media(max-width:640px){
     .team{font-size:.95rem}
     .stepper{gap:6px}
     .stepbtn{width:30px;height:30px}
-  }
-  /* desktop niceties */
-  @media(min-width:641px){
-    .modal-overlay{align-items:center}
-    .modal-body p{font-size:.9rem}
-    .score-table{font-size:.88rem}
-    .examples{font-size:.84rem}
+    .third-row label{min-width:80px}
   }
 </style>
 </head>
 <body>
 <header>
-  <h1>⚽ World Cup 2026 — Your Predictions</h1>
-  <div class="sub">Pick your name, fill in your scores, then tap <b>Copy</b> and paste into WhatsApp to send them in. Each stage locks 1 hour before its first match kicks off.</div>
+  <h1>⚽ World Cup 2026 — Prediction Game</h1>
+  <div class="sub">saved in this browser · remember to Export to back up</div>
 </header>
 
-<div class="entry-name">
-  <label for="entryName">Your name:</label>
-  <select id="entryName"></select>
-</div>
+<div class="tabrow admin" id="adminTabs"></div>
 
 <div class="controls">
   <span id="contextLabel" style="color:var(--muted)"></span>
   <select id="stageFilter"></select>
   <input type="text" id="search" placeholder="🔍 Search team…">
-  <button class="copyall" id="copyAllBtn">📋 Copy ALL predictions</button>
-  <button class="scorebtn" id="scoringBtn">📖 Scoring Format</button>
+  <button id="exportBtn">⬇ Export backup</button>
+  <button id="importBtn">⬆ Import backup</button>
+  <input type="file" id="importFile" accept=".json" style="display:none">
+  <button class="danger" id="clearResultsBtn" style="display:none">🗑 Clear all results</button>
 </div>
 
 <div id="content"></div>
-<div class="hint">Your predictions are saved in this browser automatically. When you're ready, use a <b>Copy</b> button and paste the text into a WhatsApp message to Chris. Once a stage locks (1 hour before its first match), those predictions can't be changed.</div>
-<div class="toast" id="toast"></div>
-
-<!-- Scoring Format modal -->
-<div class="modal-overlay" id="scoringModal" role="dialog" aria-modal="true" aria-labelledby="scoringTitle">
-  <div class="modal">
-    <div class="modal-head">
-      <h2 id="scoringTitle">📖 Scoring Format</h2>
-      <button class="modal-close" id="scoringClose" aria-label="Close">✕</button>
-    </div>
-    <div class="modal-body">
-      <p>Each game is worth up to <b>8 points</b>, earned in four independent ways:</p>
-      <table class="score-table">
-        <tr><th>What you get right</th><th class="pts">Points</th></tr>
-        <tr><td>✅ Correct outcome (right winner, or a draw)</td><td class="pts">+2</td></tr>
-        <tr><td>✅ Exact home-team score</td><td class="pts">+2</td></tr>
-        <tr><td>✅ Exact away-team score</td><td class="pts">+2</td></tr>
-        <tr><td>🎯 Spot-on bonus (all three above correct)</td><td class="pts">+2</td></tr>
-        <tr class="max"><td>Maximum per game</td><td class="pts">8</td></tr>
-      </table>
-      <div class="double-banner">🏆 The Final counts double — every point is ×2 (up to 16)</div>
-      <p class="note"><b>Knockout games:</b> if you predicted a draw (example 1-1), the game ends after extra time NOT after 90mins. This means the game will go to penalties, your “who goes through” pick counts as the outcome — get it right and that’s your +2 for the correct outcome.</p>
-
-      <h3>Worked examples</h3>
-      <p class="note">Actual result: <b>England 2–1 Croatia</b></p>
-      <div class="examples-scroll">
-        <table class="examples">
-          <tr><th>Your prediction</th><th>Outcome</th><th>Home</th><th>Away</th><th>Bonus</th><th>Total</th></tr>
-          <tr class="perfect"><td class="pred">England 2–1 (perfect)</td><td>+2</td><td>+2</td><td>+2</td><td>+2</td><td class="tot">8</td></tr>
-          <tr><td class="pred">England 2–0</td><td>+2</td><td>+2</td><td>—</td><td>—</td><td class="tot">4</td></tr>
-          <tr><td class="pred">England 3–1</td><td>+2</td><td>—</td><td>+2</td><td>—</td><td class="tot">4</td></tr>
-          <tr><td class="pred">England 1–0</td><td>+2</td><td>—</td><td>—</td><td>—</td><td class="tot">2</td></tr>
-          <tr><td class="pred">Croatia 1–2</td><td>—</td><td>—</td><td>—</td><td>—</td><td class="tot">0</td></tr>
-          <tr><td class="pred">Draw 1–1</td><td>—</td><td>—</td><td>+2</td><td>—</td><td class="tot">2</td></tr>
-        </table>
-      </div>
-      <p class="note" style="margin-top:12px">Each scoring part is independent — e.g. predicting <b>1–1</b> still banks <b>+2</b> for guessing Croatia’s score (1), even though the outcome was wrong.</p>
-    </div>
-  </div>
-</div>
 
 <script>
-// IMPORTANT: keep this list identical to the players in the Home (admin) page
-const PLAYERS=["Chris","Alfie","Owen","Josh","Naomi","Mama","Grandad","Marie","Smithy"];
+const ADMIN_PASSWORD="4dm1n";
 const FINAL_MATCH=104;
+const ENTRY_KEY="__entry";
+const DEFAULT_PLAYERS=["Chris","Alfie","Owen","Josh","Naomi","Mama","Grandad","Marie","Smithy","Uncle Rob","Auntie Margaret"];
 const FIXTURES=[
 [1,"Thu 11 Jun 2026","20:00","Mexico","South Africa","First Stage","A"],
 [2,"Fri 12 Jun 2026","03:00","Korea Republic","Czechia","First Stage","A"],
-[3,"Fri 12 Jun 2026","20:00","Canada","Bosnia and Herzegovina","First Stage","B"],
+[3,"Fri 12 Jun 2026","20:00","Canada","Bosnia and Herz","First Stage","B"],
 [4,"Sat 13 Jun 2026","02:00","USA","Paraguay","First Stage","D"],
 [5,"Sat 13 Jun 2026","20:00","Qatar","Switzerland","First Stage","B"],
 [6,"Sat 13 Jun 2026","23:00","Brazil","Morocco","First Stage","C"],
@@ -202,7 +219,7 @@ const FIXTURES=[
 [23,"Thu 18 Jun 2026","00:00","Ghana","Panama","First Stage","L"],
 [24,"Thu 18 Jun 2026","03:00","Uzbekistan","Colombia","First Stage","K"],
 [25,"Thu 18 Jun 2026","17:00","Czechia","South Africa","First Stage","A"],
-[26,"Thu 18 Jun 2026","20:00","Switzerland","Bosnia and Herzegovina","First Stage","B"],
+[26,"Thu 18 Jun 2026","20:00","Switzerland","Bosnia and Herz","First Stage","B"],
 [27,"Thu 18 Jun 2026","23:00","Canada","Qatar","First Stage","B"],
 [28,"Fri 19 Jun 2026","02:00","Mexico","Korea Republic","First Stage","A"],
 [29,"Fri 19 Jun 2026","20:00","USA","Australia","First Stage","D"],
@@ -226,7 +243,7 @@ const FIXTURES=[
 [47,"Wed 24 Jun 2026","00:00","Panama","Croatia","First Stage","L"],
 [48,"Wed 24 Jun 2026","03:00","Colombia","Congo DR","First Stage","K"],
 [49,"Wed 24 Jun 2026","20:00","Switzerland","Canada","First Stage","B"],
-[50,"Wed 24 Jun 2026","20:00","Bosnia and Herzegovina","Qatar","First Stage","B"],
+[50,"Wed 24 Jun 2026","20:00","Bosnia and Herz","Qatar","First Stage","B"],
 [51,"Wed 24 Jun 2026","23:00","Scotland","Brazil","First Stage","C"],
 [52,"Wed 24 Jun 2026","23:00","Morocco","Haiti","First Stage","C"],
 [53,"Thu 25 Jun 2026","02:00","Czechia","Mexico","First Stage","A"],
@@ -282,106 +299,161 @@ const FIXTURES=[
 [103,"Sat 18 Jul 2026","22:00","RU101","RU102","Play-off for third place",""],
 [104,"Sun 19 Jul 2026","20:00","W101","W102","Final",""]
 ];
-const FIRST_KO=73;const isKO=n=>n>=FIRST_KO;
+const FIRST_KO=73;
+const isKO=n=>n>=FIRST_KO;
+const THIRD_SLOTS=["3ABCDF","3CDFGH","3CEFHI","3EHIJK","3AEHIJ","3BEFIJ","3EFGIJ","3DEIJL"];
 const ROUNDS=[
-  {key:"fs1",label:"First Stage (1–24)",tag:"FS1",test:n=>n>=1&&n<=24},
-  {key:"fs2",label:"First Stage (25–48)",tag:"FS2",test:n=>n>=25&&n<=48},
-  {key:"fs3",label:"First Stage (49–72)",tag:"FS3",test:n=>n>=49&&n<=72},
-  {key:"r32",label:"Round of 32",tag:"R32",test:n=>n>=73&&n<=88},
-  {key:"r16",label:"Round of 16",tag:"R16",test:n=>n>=89&&n<=96},
-  {key:"qf",label:"Quarter-final",tag:"QF",test:n=>n>=97&&n<=100},
-  {key:"sf",label:"Semi-final",tag:"SF",test:n=>n>=101&&n<=102},
-  {key:"finals",label:"3rd-Place Play-off & Final",tag:"FINALS",test:n=>n>=103&&n<=104}
+  {key:"fs1",label:"First Stage (1–24)",test:n=>n>=1&&n<=24},
+  {key:"fs2",label:"First Stage (25–48)",test:n=>n>=25&&n<=48},
+  {key:"fs3",label:"First Stage (49–72)",test:n=>n>=49&&n<=72},
+  {key:"r32",label:"Round of 32",test:n=>n>=73&&n<=88},
+  {key:"r16",label:"Round of 16",test:n=>n>=89&&n<=96},
+  {key:"qf",label:"Quarter-final",test:n=>n>=97&&n<=100},
+  {key:"sf",label:"Semi-final",test:n=>n>=101&&n<=102},
+  {key:"tp",label:"Play-off for third place",test:n=>n===103},
+  {key:"fin",label:"Final",test:n=>n===104}
 ];
 const roundOf=n=>ROUNDS.find(r=>r.test(n));
 const FILTERS=[{val:"",label:"All stages",test:()=>true}].concat(ROUNDS.map(r=>({val:r.key,label:r.label,test:r.test})));
-
-/* ---- kickoff parsing & lock-GROUP logic ---- */
-const MONTHS={Jan:0,Feb:1,Mar:2,Apr:3,May:4,Jun:5,Jul:6,Aug:7,Sep:8,Oct:9,Nov:10,Dec:11};
-const LOCK_LEAD_MS=60*60*1000; // lock 1 hour before the group's first kickoff
-const LOCK_GROUPS=[
-  {key:"fs1", test:n=>n>=1&&n<=24},
-  {key:"fs2", test:n=>n>=25&&n<=48},
-  {key:"fs3", test:n=>n>=49&&n<=72},
-  {key:"r32", test:n=>n>=73&&n<=88},
-  {key:"r16", test:n=>n>=89&&n<=96},
-  {key:"qf",  test:n=>n>=97&&n<=100},
-  {key:"sf",  test:n=>n>=101&&n<=102},
-  {key:"finals", test:n=>n>=103&&n<=104} // 3rd-place play-off + Final lock together
+const BUCKETS=[
+  {key:"g1",label:"G1–24",test:n=>n>=1&&n<=24},
+  {key:"g2",label:"G25–48",test:n=>n>=25&&n<=48},
+  {key:"g3",label:"G49–72",test:n=>n>=49&&n<=72},
+  {key:"r32",label:"R32",test:n=>n>=73&&n<=88},
+  {key:"r16",label:"R16",test:n=>n>=89&&n<=96},
+  {key:"qf",label:"QF",test:n=>n>=97&&n<=100},
+  {key:"sf",label:"SF",test:n=>n>=101&&n<=102},
+  {key:"tp",label:"3rd Pl",test:n=>n===103},
+  {key:"fin",label:"Final ×2",test:n=>n===104}
 ];
-const lockGroupOf=n=>LOCK_GROUPS.find(g=>g.test(+n));
-function kickoffDate(num){
-  const f=FIXTURES.find(x=>x[0]===+num);if(!f)return null;
-  const parts=f[1].split(" ");
-  const day=+parts[1], mon=MONTHS[parts[2]], year=+parts[3];
-  const[h,m]=f[2].split(":").map(Number);
-  if(isNaN(day)||mon===undefined||isNaN(year))return null;
-  return new Date(year,mon,day,h,m,0,0);
-}
-const _groupLockCache={};
-function groupLockTime(group){
-  if(_groupLockCache[group.key]!==undefined)return _groupLockCache[group.key];
-  let earliest=Infinity;
-  FIXTURES.forEach(f=>{
-    if(!group.test(f[0]))return;
-    const ko=kickoffDate(f[0]);
-    if(ko&&ko.getTime()<earliest)earliest=ko.getTime();
-  });
-  const lock=(earliest===Infinity)?null:earliest-LOCK_LEAD_MS;
-  _groupLockCache[group.key]=lock;
-  return lock;
-}
-function isLocked(num){
-  const g=lockGroupOf(+num);
-  if(!g)return false;
-  const lock=groupLockTime(g);
-  if(lock===null)return false;
-  return Date.now()>=lock;
-}
-function fmtDeadline(ms){
-  if(ms===null)return "";
-  const d=new Date(ms);
-  const days=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
-  const mons=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
-  const pad=n=>String(n).padStart(2,"0");
-  return days[d.getDay()]+" "+pad(d.getDate())+" "+mons[d.getMonth()]+" "+d.getFullYear()+", "+pad(d.getHours())+":"+pad(d.getMinutes());
-}
-function roundLockTime(round){
-  const f=FIXTURES.find(x=>round.test(x[0]));
-  if(!f)return null;
-  const g=lockGroupOf(f[0]);
-  return g?groupLockTime(g):null;
-}
-/* -------------------------------------- */
+const SERIES_COLORS=["#00b4d8","#ffd166","#2a9d8f","#e76f51","#e9c46a","#9b5de5","#f15bb5","#00bbf9","#80ed99","#ff8fab","#c77dff","#fee440"];
 
-const STORE="wc2026predictions";
+const STORE="wc2026game";
 let data=JSON.parse(localStorage.getItem(STORE)||"{}");
-data.name=data.name||"";data.preds=data.preds||{};
+data.players=data.players||DEFAULT_PLAYERS.slice();
+data.preds=data.preds||{};
+data.results=data.results||{};
+data.thirds=data.thirds||{};
+data.pins=data.pins||{};
+data.entry=data.entry||{name:"",preds:{}};
+data.hidden=data.hidden||{};
+data.players.forEach(p=>{data.preds[p]=data.preds[p]||{};});
 function save(){localStorage.setItem(STORE,JSON.stringify(data));}
 
+let view={mode:"results"};
+let importReport=null;
+
+const adminTabs=document.getElementById("adminTabs");
 const content=document.getElementById("content");
 const stageFilter=document.getElementById("stageFilter");
 const search=document.getElementById("search");
 const contextLabel=document.getElementById("contextLabel");
-const entryName=document.getElementById("entryName");
-const toast=document.getElementById("toast");
-let missing=null;
+const clearBtn=document.getElementById("clearResultsBtn");
 
 FILTERS.forEach(f=>{const o=document.createElement("option");o.value=f.val;o.textContent=f.label;stageFilter.appendChild(o);});
 
-(function buildNameDropdown(){
-  const placeholder=document.createElement("option");
-  placeholder.value="";placeholder.textContent="— select your name —";
-  entryName.appendChild(placeholder);
-  PLAYERS.forEach(p=>{const o=document.createElement("option");o.value=p;o.textContent=p;entryName.appendChild(o);});
-  if(data.name&&PLAYERS.includes(data.name))entryName.value=data.name;
-  else{data.name="";save();}
-})();
+function buildTabs(){
+  adminTabs.innerHTML="";
+  const mk=(mode,label,cls)=>{
+    const t=document.createElement("div");
+    t.className="tab"+(cls?(" "+cls):"")+(view.mode===mode?" active":"");
+    t.textContent=label;t.onclick=()=>{view={mode};importReport=null;render();};adminTabs.appendChild(t);
+  };
+  mk("results","🎯 Results");
+  mk("groups","📊 Group Tables");
+  mk("matrix","🗒 All Predictions");
+  mk("leaderboard","🏆 Leaderboard");
+  mk("import","📥 Import predictions","imp");
+  mk("entry","📝 Enter predictions","enter");
+  clearBtn.style.display=view.mode==="results"?"":"none";
+}
 
+function clearAllResults(){
+  if(!confirm("Clear ALL entered results (scores, pens winners, and 3rd-place assignments)? Player predictions are kept. This cannot be undone unless you re-import a backup.")) return;
+  data.results={};data.thirds={};save();render();alert("All results cleared ✅");
+}
+
+function scoreMatch(pred,res,ko,num){
+  if(!pred||!res)return null;
+  if(pred.h===""||pred.a===""||res.h===""||res.a==="")return null;
+  const ph=+pred.h,pa=+pred.a,rh=+res.h,ra=+res.a;
+  let pts=0,resultOK;
+  if(ko){let ap=rh>ra?"H":ra>rh?"A":(res.pen||"");let pp=ph>pa?"H":pa>ph?"A":(pred.prog||"");resultOK=pp!==""&&pp===ap;}
+  else{const pr=ph>pa?"H":pa>ph?"A":"D";const rr=rh>ra?"H":ra>rh?"A":"D";resultOK=pr===rr;}
+  const homeOK=ph===rh,awayOK=pa===ra;
+  if(resultOK)pts+=2;if(homeOK)pts+=2;if(awayOK)pts+=2;
+  if(resultOK&&homeOK&&awayOK)pts+=2;
+  if(num===FINAL_MATCH)pts*=2;
+  return pts;
+}
+
+function computeGroups(){
+  const groups={};
+  FIXTURES.forEach(f=>{const[num,,,home,away,fstage,group]=f;if(isKO(num)||!group)return;
+    groups[group]=groups[group]||{};
+    [home,away].forEach(t=>{groups[group][t]=groups[group][t]||{team:t,P:0,W:0,D:0,L:0,GF:0,GA:0,GD:0,Pts:0};});});
+  FIXTURES.forEach(f=>{const[num,,,home,away,fstage,group]=f;if(isKO(num)||!group)return;
+    const r=data.results[num];if(!r||r.h===""||r.a==="")return;
+    const rh=+r.h,ra=+r.a,H=groups[group][home],A=groups[group][away];
+    H.P++;A.P++;H.GF+=rh;H.GA+=ra;A.GF+=ra;A.GA+=rh;
+    if(rh>ra){H.W++;A.L++;H.Pts+=3;}else if(ra>rh){A.W++;H.L++;A.Pts+=3;}else{H.D++;A.D++;H.Pts++;A.Pts++;}});
+  const out={};
+  Object.keys(groups).sort().forEach(g=>{const arr=Object.values(groups[g]);arr.forEach(t=>t.GD=t.GF-t.GA);
+    arr.sort((a,b)=>b.Pts-a.Pts||b.GD-a.GD||b.GF-a.GF||a.team.localeCompare(b.team));out[g]=arr;});
+  return out;
+}
+function resolveCode(code){
+  if(!code)return null;
+  let m=code.match(/^([12])([A-L])$/);
+  if(m){const pos=+m[1]-1,grp=m[2],table=computeGroups()[grp];if(!table)return null;
+    if(!table.every(t=>t.P>=3))return null;return table[pos]?table[pos].team:null;}
+  if(/^3[A-L]+$/.test(code))return data.thirds[code]||null;
+  m=code.match(/^W(\d+)$/);
+  if(m){const mn=+m[1],r=data.results[mn];if(!r||r.h===""||r.a==="")return null;
+    const rh=+r.h,ra=+r.a,f=FIXTURES.find(x=>x[0]===mn);let winSide=rh>ra?"H":ra>rh?"A":(r.pen||"");
+    if(winSide==="")return null;return resolveTeam(winSide==="H"?f[3]:f[4]);}
+  m=code.match(/^RU(\d+)$/);
+  if(m){const mn=+m[1],r=data.results[mn];if(!r||r.h===""||r.a==="")return null;
+    const rh=+r.h,ra=+r.a,f=FIXTURES.find(x=>x[0]===mn);let loseSide=rh>ra?"A":ra>rh?"H":(r.pen==="H"?"A":r.pen==="A"?"H":"");
+    if(loseSide==="")return null;return resolveTeam(loseSide==="H"?f[3]:f[4]);}
+  return null;
+}
 function isCode(s){return /^([12][A-L]|3[A-L]+|W\d+|RU\d+)$/.test(s);}
-function label(num){
-  num=+num;
-  const rec=data.preds[num];const f=FIXTURES.find(x=>x[0]===num);
+function resolveTeam(c){return isCode(c)?resolveCode(c):c;}
+function displayTeam(c){const r=resolveTeam(c);if(r&&r!==c)return{name:r,code:c};if(isCode(c))return{name:null,code:c};return{name:c,code:null};}
+function thirdPlacedTeams(){const groups=computeGroups(),out={};Object.keys(groups).forEach(g=>{if(groups[g][2])out[g]=groups[g][2].team;});return out;}
+
+function renderThirdPanel(){
+  const thirds=thirdPlacedTeams();let rows="";
+  THIRD_SLOTS.forEach(slot=>{
+    const allowedGroups=slot.slice(1).split("");
+    const opts=allowedGroups.map(g=>{const t=thirds[g];if(!t)return "";
+      const sel=data.thirds[slot]===t?" selected":"";return `<option value="${t}"${sel}>${t} (3rd ${g})</option>`;}).join("");
+    rows+=`<div class="third-row"><label>${slot}</label>
+      <select data-slot="${slot}"><option value="">— pick 3rd-placed team —</option>${opts}</select></div>`;
+  });
+  return `<div class="third-panel"><h3>Assign 3rd-placed teams to Round of 32</h3>
+    <div class="pdesc">Each slot only lists the 3rd-placed team from its eligible groups. Pick the eight that qualify. Fixtures below update automatically.</div>
+    <div class="third-grid">${rows}</div></div>`;
+}
+
+function resultLabelHtml(num){
+  const f=FIXTURES.find(x=>x[0]===num);
+  const homeName=resolveTeam(f[3])||f[3];
+  const awayName=resolveTeam(f[4])||f[4];
+  const rec=data.results[num];
+  let lab="—",cls="result";
+  if(rec&&rec.h!==""&&rec.a!==""){
+    const h=+rec.h,a=+rec.a;
+    if(h>a){lab=homeName+" win";cls="result home";}
+    else if(a>h){lab=awayName+" win";cls="result away";}
+    else{lab="Draw"+(rec.pen?" · "+(rec.pen==="H"?homeName:awayName)+" (pens)":"");cls="result draw";}
+  }
+  return{lab,cls};
+}
+function entryLabel(num){
+  const f=FIXTURES.find(x=>x[0]===num);
+  const rec=data.entry.preds[num];
   let lab="—",cls="result";
   if(rec&&rec.h!==""&&rec.a!==""){
     const h=+rec.h,a=+rec.a;
@@ -391,39 +463,191 @@ function label(num){
   }
   return{lab,cls};
 }
-function updateLabel(num){
+
+function render(){
+  buildTabs();
+  if(view.mode==="leaderboard"){renderLeaderboard();return;}
+  if(view.mode==="groups"){renderGroups();return;}
+  if(view.mode==="matrix"){renderMatrix();return;}
+  if(view.mode==="import"){renderImport();return;}
+  if(view.mode==="entry"){renderEntry();return;}
+  renderResults();
+}
+
+// ---------- RESULTS (stacked card + stepper) ----------
+function updateResultsLabel(num){
   num=+num;
   const cell=content.querySelector('.result-cell[data-result="'+num+'"]');
   if(!cell)return;
-  const{lab,cls}=label(num);
+  const{lab,cls}=resultLabelHtml(num);
   cell.innerHTML='<span class="'+cls+'">'+lab+'</span>';
 }
-function adjustScore(num,side,delta){
-  num=+num;
-  if(isLocked(num))return;
-  const s=data.preds[num]=data.preds[num]||{h:"",a:"",prog:""};
-  let cur=s[side]===""?0:(+s[side]||0);
-  cur+=delta;
-  if(cur<0)cur=0;if(cur>99)cur=99;
-  s[side]=String(cur);
-  save();
-  updateScoreDisplay(num,side);
-  updateLabel(num);
-}
-function updateScoreDisplay(num,side){
+function updateResultsScoreDisplay(num,side){
   num=+num;
   const row=content.querySelector('.match[data-matchnum="'+num+'"]');if(!row)return;
   const valEl=row.querySelector('.scoreval[data-num="'+num+'"][data-side="'+side+'"]');if(!valEl)return;
-  const rec=data.preds[num]||{h:"",a:"",prog:""};
+  const rec=data.results[num]||{h:"",a:"",pen:""};
   const v=rec[side];
   valEl.textContent=v===""?"–":v;
   valEl.classList.toggle("empty",v==="");
 }
+function adjustResultScore(num,side,delta){
+  num=+num;
+  const s=data.results[num]=data.results[num]||{h:"",a:"",pen:""};
+  let cur=s[side]===""?0:(+s[side]||0);
+  cur+=delta;if(cur<0)cur=0;if(cur>99)cur=99;
+  s[side]=String(cur);
+  save();
+  updateResultsScoreDisplay(num,side);
+  updateResultsLabel(num);
+}
 
-function missingForRound(round){
+function renderResults(){
+  contextLabel.textContent="Entering ACTUAL results";
+  const filter=FILTERS.find(f=>f.val===stageFilter.value)||FILTERS[0];
+  const q=search.value.trim().toLowerCase();
+  let html=`<div class="admin-note">🎯 Admin: enter the real results here. Tap − / + to set the score. For knockout draws, also pick who won on penalties.</div>`;
+  html+=renderThirdPanel();
+  let lastRoundKey=null,done=0,total=0;
+  FIXTURES.forEach(f=>{
+    const[num,date,ko,homeCode,awayCode,fstage,group]=f;
+    if(!filter.test(num))return;
+    const round=roundOf(num);const isFinal=num===FINAL_MATCH;
+    const homeD=displayTeam(homeCode),awayD=displayTeam(awayCode);
+    const homeLabel=homeD.name?homeD.name+(homeD.code?` <span class="code">(${homeD.code})</span>`:""):`<span class="code">${homeD.code}</span>`;
+    const awayLabel=awayD.name?awayD.name+(awayD.code?` <span class="code">(${awayD.code})</span>`:""):`<span class="code">${awayD.code}</span>`;
+    const homeName=homeD.name||homeCode, awayName=awayD.name||awayCode;
+    if(q){const hay=(homeName+" "+awayName+" "+homeCode+" "+awayCode).toLowerCase();if(!hay.includes(q))return;}
+    total++;
+    const knockout=isKO(num);
+    const rec=data.results[num]||{h:"",a:"",pen:""};
+    if(rec.h!==""&&rec.a!=="")done++;
+    if(round.key!==lastRoundKey){lastRoundKey=round.key;
+      const dbl=isFinal?`<span class="dbl">POINTS ×2</span>`:"";
+      html+=`<div class="stage-row"><div class="stage-title">${round.label}${dbl}</div></div>`;}
+    const groupTxt=group?"Group "+group+" · ":"";
+    const{lab,cls}=resultLabelHtml(num);
+    let pick="";
+    if(knockout){const v=rec.pen||"";
+      pick=`<select class="prog" data-num="${num}" data-field="pen" title="Pens winner">
+        <option value="">Pens winner…</option>
+        <option value="H"${v==="H"?" selected":""}>${homeName}</option>
+        <option value="A"${v==="A"?" selected":""}>${awayName}</option></select>`;}
+    const dblPill=isFinal?` · <span class="dblpill">points ×2</span>`:"";
+    const hDisp=rec.h===""?"–":rec.h, aDisp=rec.a===""?"–":rec.a;
+    html+=`<div class="match${isFinal?" finalmatch":""}" data-matchnum="${num}">
+      <div class="match-top">
+        <div class="side">
+          <div class="team home">${homeLabel}</div>
+          <div class="stepper">
+            <button type="button" class="stepbtn minus" data-step="-1" data-num="${num}" data-side="h" aria-label="Decrease home score">−</button>
+            <span class="scoreval${rec.h===""?" empty":""}" data-num="${num}" data-side="h">${hDisp}</span>
+            <button type="button" class="stepbtn plus" data-step="1" data-num="${num}" data-side="h" aria-label="Increase home score">+</button>
+          </div>
+        </div>
+        <div class="side">
+          <div class="team away">${awayLabel}</div>
+          <div class="stepper">
+            <button type="button" class="stepbtn minus" data-step="-1" data-num="${num}" data-side="a" aria-label="Decrease away score">−</button>
+            <span class="scoreval${rec.a===""?" empty":""}" data-num="${num}" data-side="a">${aDisp}</span>
+            <button type="button" class="stepbtn plus" data-step="1" data-num="${num}" data-side="a" aria-label="Increase away score">+</button>
+          </div>
+        </div>
+      </div>
+      ${pick?`<div class="prog-row">${pick}</div>`:""}
+      <div class="meta"><span class="num">#${num}</span> · ${groupTxt}${date} · ${ko}${knockout?" · KO":""}${dblPill}</div>
+      <div class="result-cell" data-result="${num}"><span class="${cls}">${lab}</span></div>
+    </div>`;
+  });
+  contextLabel.textContent+=` · ${done}/${total} entered`;
+  content.innerHTML=html;
+}
+
+// ---------- IMPORT PREDICTIONS ----------
+function parsePredictions(text){
+  const lines=text.split(/\r?\n/);
+  let name="";const entries=[];const errors=[];
+  lines.forEach(raw=>{
+    const line=raw.trim();
+    if(!line)return;
+    const nm=line.match(/predictions\s*[—\-:]\s*(.+)$/i);
+    if(nm){name=nm[1].trim();return;}
+    if(/^\[.*\]$/.test(line))return;
+    if(/^WC2026/i.test(line))return;
+    const numMatch=line.match(/^#?\s*(\d+)[.)]?\s+(.*)$/);
+    if(!numMatch){if(/\d+\s*[-–:]\s*\d+/.test(line))errors.push(line);return;}
+    const num=+numMatch[1];const rest=numMatch[2];
+    const scoreMatch=rest.match(/(\d+)\s*[-–:]\s*(\d+)/);
+    if(!scoreMatch){errors.push(line);return;}
+    const h=scoreMatch[1], a=scoreMatch[2];
+    const winMatch=rest.match(/[>›→]\s*(.+)$/);
+    const winnerName=winMatch?winMatch[1].trim():"";
+    const f=FIXTURES.find(x=>x[0]===num);
+    if(!f){errors.push("Unknown match #: "+line);return;}
+    const entry={num,h:String(+h),a:String(+a),prog:""};
+    if(isKO(num)&&(+h===+a)&&winnerName){
+      const low=winnerName.toLowerCase();
+      if(f[3].toLowerCase()===low)entry.prog="H";
+      else if(f[4].toLowerCase()===low)entry.prog="A";
+      else if(f[3].toLowerCase().includes(low)||low.includes(f[3].toLowerCase()))entry.prog="H";
+      else if(f[4].toLowerCase().includes(low)||low.includes(f[4].toLowerCase()))entry.prog="A";
+    }
+    entries.push(entry);
+  });
+  return{name,entries,errors};
+}
+
+function renderImport(){
+  contextLabel.textContent="Import a player's WhatsApp predictions";
+  const playerOpts=data.players.map(p=>`<option value="${p}">${p}</option>`).join("");
+  let report="";
+  if(importReport)report=`<div class="report ${importReport.cls}">${importReport.msg}</div>`;
+  content.innerHTML=`<div class="import-panel">
+    <h3>📥 Paste predictions from WhatsApp</h3>
+    <p>Paste the text a player sent you. It auto-detects their name from the header (override below if needed). Only the games in the text are updated; everything else is left as-is, and matching games are overwritten.</p>
+    <textarea id="pasteBox" placeholder="WC2026 Predictions — Chris
+[FS1]
+1. Mexico 1-1 South Africa
+2. Korea Republic 1-2 Czechia
+..."></textarea>
+    <div class="import-row">
+      <label for="playerSel">Add to player:</label>
+      <select id="playerSel"><option value="">— auto-detect from text —</option>${playerOpts}</select>
+      <button class="go" id="doImport">📥 Import predictions</button>
+    </div>
+    ${report}
+  </div>`;
+  document.getElementById("doImport").onclick=doImport;
+}
+
+function doImport(){
+  const text=document.getElementById("pasteBox").value;
+  const chosen=document.getElementById("playerSel").value;
+  if(!text.trim()){importReport={cls:"err",msg:"Nothing pasted. Paste the WhatsApp text first."};render();return;}
+  const parsed=parsePredictions(text);
+  let target=chosen;
+  if(!target){const det=parsed.name.toLowerCase();target=data.players.find(p=>p.toLowerCase()===det)||"";}
+  if(!target){importReport={cls:"warn",msg:`<b>Couldn't match a player.</b> Detected name: "${parsed.name||"(none)"}" — pick the player from the dropdown and import again.`};render();return;}
+  if(!parsed.entries.length){importReport={cls:"err",msg:`<b>No predictions found.</b> Each line should look like "1. Mexico 1-1 South Africa".`};render();return;}
+  data.preds[target]=data.preds[target]||{};
+  parsed.entries.forEach(en=>{data.preds[target][en.num]={h:en.h,a:en.a,prog:en.prog};});
+  save();
+  let msg=`<b>Imported ${parsed.entries.length} prediction${parsed.entries.length===1?"":"s"} for ${target}.</b>`;
+  if(parsed.errors.length){
+    msg+=`<br>⚠️ ${parsed.errors.length} line${parsed.errors.length===1?"":"s"} couldn't be read and were skipped:<br>`+parsed.errors.map(e=>"• "+e).join("<br>");
+    importReport={cls:"warn",msg};
+  }else{importReport={cls:"ok",msg:msg+" No errors. 👍"};}
+  render();
+  const box=document.getElementById("pasteBox");if(box&&!parsed.errors.length)box.value="";
+}
+
+// ---------- ENTER PREDICTIONS ----------
+function missingForRoundEntry(round){
   const items=[];
-  FIXTURES.forEach(f=>{const num=f[0];if(!round.test(num))return;
-    const rec=data.preds[num]||{h:"",a:"",prog:""};const probs=[];
+  FIXTURES.forEach(f=>{
+    const num=f[0];if(!round.test(num))return;
+    const rec=data.entry.preds[num]||{h:"",a:"",prog:""};
+    const probs=[];
     if(rec.h==="")probs.push("home score");
     if(rec.a==="")probs.push("away score");
     if(isKO(num)&&rec.h!==""&&rec.a!==""&&(+rec.h===+rec.a)&&!rec.prog)probs.push("who goes through (draw)");
@@ -431,156 +655,367 @@ function missingForRound(round){
   });
   return items;
 }
-
-function buildText(roundKey){
-  const name=(data.name||"").trim()||"(no name)";
-  let lines=["WC2026 Predictions — "+name];
-  ROUNDS.forEach(round=>{
-    if(roundKey&&round.key!==roundKey)return;
-    const ms=FIXTURES.filter(f=>round.test(f[0]));
-    const any=ms.some(f=>{const r=data.preds[f[0]];return r&&r.h!==""&&r.a!=="";});
-    if(!any)return;
-    lines.push("["+round.tag+"]");
-    ms.forEach(f=>{
-      const[num,,,home,away]=f;const r=data.preds[num];
-      if(!r||r.h===""||r.a==="")return;
-      let line=num+". "+home+" "+r.h+"-"+r.a+" "+away;
-      if(isKO(num)&&(+r.h===+r.a)&&r.prog)line+=" > "+(r.prog==="H"?home:away);
-      lines.push(line);
-    });
-  });
-  return lines.join("\n");
+let entryMissing=null;
+function exportRound(round){
+  const missing=missingForRoundEntry(round);
+  if(missing.length){entryMissing={round:round.key,items:missing};render();return;}
+  entryMissing=null;
+  const out={name:data.entry.name||"",round:round.key,roundLabel:round.label,predictions:{}};
+  FIXTURES.forEach(f=>{const num=f[0];if(!round.test(num))return;out.predictions[num]=data.entry.preds[num]||{};});
+  const blob=new Blob([JSON.stringify(out,null,2)],{type:"application/json"});
+  const a=document.createElement("a");a.href=URL.createObjectURL(blob);
+  const who=(data.entry.name||"predictions").replace(/[^a-z0-9]+/gi,"-").toLowerCase();
+  a.download=`wc2026-${who}-${round.key}.json`;a.click();
+  render();
 }
 
-function copyText(text){
-  if(navigator.clipboard&&navigator.clipboard.writeText){
-    navigator.clipboard.writeText(text).then(showCopied,()=>fallbackCopy(text));
-  }else fallbackCopy(text);
-}
-function fallbackCopy(text){
-  const ta=document.createElement("textarea");ta.value=text;ta.style.position="fixed";ta.style.opacity="0";
-  document.body.appendChild(ta);ta.focus();ta.select();
-  try{document.execCommand("copy");showCopied();}catch(e){alert("Couldn't auto-copy. Here's your text:\n\n"+text);}
-  document.body.removeChild(ta);
-}
-function showCopied(){toast.textContent="✅ Copied! Now paste into WhatsApp";toast.classList.add("show");
-  setTimeout(()=>toast.classList.remove("show"),2200);}
-
-function render(){
+function renderEntry(){
+  contextLabel.textContent="Enter your predictions";
   const filter=FILTERS.find(f=>f.val===stageFilter.value)||FILTERS[0];
   const q=search.value.trim().toLowerCase();
-  let html="",lastKey=null,openRound=null,done=0,total=0;
-  function footer(round){
+  let html=`<div class="entry-name">
+    <label for="entryName">Your name:</label>
+    <input type="text" id="entryName" maxlength="24" placeholder="Enter your name" value="${data.entry.name||""}">
+  </div>`;
+  let lastRoundKey=null,openRound=null,done=0,total=0;
+  function closeRoundFooter(round){
     if(!round)return "";
-    const f=FIXTURES.find(x=>round.test(x[0]));
-    const locked=f?isLocked(f[0]):false;
     let note="";
-    if(locked){
-      note=`<div class="locked-note">🔒 This stage is locked — predictions closed at ${fmtDeadline(roundLockTime(round))}.</div>`;
-    }else if(missing&&missing.round===round.key){
-      note=`<div class="missing-note"><b>"${round.label}" isn't complete — but you can still copy what you've got. Missing:</b><br>${missing.items.join("<br>")}</div>`;
-    }
-    return `${note}<div class="submit-row"><button class="copybtn" data-copy="${round.key}">📋 Copy "${round.label}"</button></div>`;
+    if(entryMissing&&entryMissing.round===round.key){
+      note=`<div class="missing-note"><b>Can't export "${round.label}" yet — these predictions are missing:</b><br>${entryMissing.items.join("<br>")}</div>`;}
+    return `${note}<div class="submit-row"><button class="exportbtn" data-export="${round.key}">⬇ Export "${round.label}"</button></div>`;
   }
   FIXTURES.forEach(f=>{
-    const[num,date,ko,home,away,fstage,group]=f;
+    const[num,date,ko,homeCode,awayCode,fstage,group]=f;
     if(!filter.test(num))return;
     const round=roundOf(num);const isFinal=num===FINAL_MATCH;
-    if(q){const hay=(home+" "+away).toLowerCase();if(!hay.includes(q))return;}
+    const homeLabel=isCode(homeCode)?`<span class="code">${homeCode}</span>`:homeCode;
+    const awayLabel=isCode(awayCode)?`<span class="code">${awayCode}</span>`:awayCode;
+    if(q){const hay=(homeCode+" "+awayCode).toLowerCase();if(!hay.includes(q))return;}
     total++;
-    const rec=data.preds[num]||{h:"",a:"",prog:""};
+    const knockout=isKO(num);
+    let rec=data.entry.preds[num]||{h:"",a:"",prog:""};
     if(rec.h!==""&&rec.a!=="")done++;
-    const locked=isLocked(num);
-    const dis=locked?" disabled":"";
-    if(round.key!==lastKey){if(openRound)html+=footer(openRound);lastKey=round.key;openRound=round;
-      const stageLocked=locked;
+    if(round.key!==lastRoundKey){
+      if(openRound)html+=closeRoundFooter(openRound);
+      lastRoundKey=round.key;openRound=round;
       const dbl=isFinal?`<span class="dbl">POINTS ×2</span>`:"";
-      const deadline=roundLockTime(round);
-      const deadlineTxt=stageLocked?`🔒 Locked`:`Locks ${fmtDeadline(deadline)}`;
-      html+=`<div class="stage-row"><div class="stage-title${stageLocked?" locked":""}">${round.label}${dbl}</div><span class="stage-deadline">${deadlineTxt}</span></div>`;}
+      html+=`<div class="stage-row"><div class="stage-title">${round.label}${dbl}</div></div>`;
+    }
     const groupTxt=group?"Group "+group+" · ":"";
-    const homeLabel=isCode(home)?`<span class="code">${home}</span>`:home;
-    const awayLabel=isCode(away)?`<span class="code">${away}</span>`:away;
-    const{lab,cls}=label(num);
-    let pick="";
-    if(isKO(num)){const v=rec.prog||"";
-      pick=`<select class="prog" data-num="${num}" data-field="prog" title="Who goes through"${dis}>
+    const{lab,cls}=entryLabel(num);
+    let pickHtml="";
+    if(knockout){const val=rec.prog||"";
+      pickHtml=`<select class="prog" data-num="${num}" data-field="prog" title="Who goes through">
         <option value="">Who goes through…</option>
-        <option value="H"${v==="H"?" selected":""}>${home}</option>
-        <option value="A"${v==="A"?" selected":""}>${away}</option></select>`;}
+        <option value="H"${val==="H"?" selected":""}>${homeCode}</option>
+        <option value="A"${val==="A"?" selected":""}>${awayCode}</option></select>`;}
     const dblPill=isFinal?` · <span class="dblpill">points ×2</span>`:"";
-    const lockPill=locked?`<span class="lockpill">🔒 Locked</span>`:"";
     const hDisp=rec.h===""?"–":rec.h, aDisp=rec.a===""?"–":rec.a;
-    html+=`<div class="match${isFinal?" finalmatch":""}${locked?" locked":""}" data-matchnum="${num}">
+    html+=`<div class="match${isFinal?" finalmatch":""}" data-matchnum="${num}" data-entry="1">
       <div class="match-top">
         <div class="side">
           <div class="team home">${homeLabel}</div>
           <div class="stepper">
-            <button type="button" class="stepbtn minus" data-step="-1" data-num="${num}" data-side="h" aria-label="Decrease home score"${dis}>−</button>
+            <button type="button" class="stepbtn minus" data-estep="-1" data-num="${num}" data-side="h" aria-label="Decrease home score">−</button>
             <span class="scoreval${rec.h===""?" empty":""}" data-num="${num}" data-side="h">${hDisp}</span>
-            <button type="button" class="stepbtn plus" data-step="1" data-num="${num}" data-side="h" aria-label="Increase home score"${dis}>+</button>
+            <button type="button" class="stepbtn plus" data-estep="1" data-num="${num}" data-side="h" aria-label="Increase home score">+</button>
           </div>
         </div>
         <div class="side">
           <div class="team away">${awayLabel}</div>
           <div class="stepper">
-            <button type="button" class="stepbtn minus" data-step="-1" data-num="${num}" data-side="a" aria-label="Decrease away score"${dis}>−</button>
+            <button type="button" class="stepbtn minus" data-estep="-1" data-num="${num}" data-side="a" aria-label="Decrease away score">−</button>
             <span class="scoreval${rec.a===""?" empty":""}" data-num="${num}" data-side="a">${aDisp}</span>
-            <button type="button" class="stepbtn plus" data-step="1" data-num="${num}" data-side="a" aria-label="Increase away score"${dis}>+</button>
+            <button type="button" class="stepbtn plus" data-estep="1" data-num="${num}" data-side="a" aria-label="Increase away score">+</button>
           </div>
         </div>
       </div>
-      ${pick?`<div class="prog-row">${pick}</div>`:""}
-      <div class="meta"><span class="num">#${num}</span> · ${groupTxt}${date} · ${ko}${isKO(num)?" · KO":""}${dblPill}${lockPill}</div>
+      ${pickHtml?`<div class="prog-row">${pickHtml}</div>`:""}
+      <div class="meta"><span class="num">#${num}</span> · ${groupTxt}${date} · ${ko}${knockout?" · KO":""}${dblPill}</div>
       <div class="result-cell" data-result="${num}"><span class="${cls}">${lab}</span></div>
     </div>`;
   });
-  if(openRound)html+=footer(openRound);
-  contextLabel.textContent=`${done}/${total} predicted`;
+  if(openRound)html+=closeRoundFooter(openRound);
+  contextLabel.textContent+=` · ${done}/${total} entered`;
+  content.innerHTML=html;
+  const nm=document.getElementById("entryName");
+  if(nm)nm.addEventListener("input",e=>{data.entry.name=e.target.value;save();});
+}
+function updateEntryLabel(num){
+  num=+num;
+  const cell=content.querySelector('.result-cell[data-result="'+num+'"]');
+  if(!cell)return;
+  const{lab,cls}=entryLabel(num);
+  cell.innerHTML='<span class="'+cls+'">'+lab+'</span>';
+}
+function updateEntryScoreDisplay(num,side){
+  num=+num;
+  const row=content.querySelector('.match[data-matchnum="'+num+'"]');if(!row)return;
+  const valEl=row.querySelector('.scoreval[data-num="'+num+'"][data-side="'+side+'"]');if(!valEl)return;
+  const rec=data.entry.preds[num]||{h:"",a:"",prog:""};
+  const v=rec[side];
+  valEl.textContent=v===""?"–":v;
+  valEl.classList.toggle("empty",v==="");
+}
+function adjustEntryScore(num,side,delta){
+  num=+num;
+  const s=data.entry.preds[num]=data.entry.preds[num]||{h:"",a:"",prog:""};
+  let cur=s[side]===""?0:(+s[side]||0);
+  cur+=delta;if(cur<0)cur=0;if(cur>99)cur=99;
+  s[side]=String(cur);
+  save();
+  updateEntryScoreDisplay(num,side);
+  updateEntryLabel(num);
+}
+
+function renderGroups(){
+  contextLabel.textContent="Live group standings (from actual results)";
+  const groups=computeGroups();let html=`<div class="groups">`;
+  Object.keys(groups).forEach(g=>{
+    let rows="";
+    groups[g].forEach((t,i)=>{const cls=i===0?"q1":i===1?"q2":i===2?"q3":"";
+      rows+=`<tr class="${cls}"><td class="pos">${i+1}</td><td class="tname">${t.team}</td>
+        <td>${t.P}</td><td>${t.W}</td><td>${t.D}</td><td>${t.L}</td>
+        <td>${t.GF}</td><td>${t.GA}</td><td>${t.GD>0?"+":""}${t.GD}</td><td class="pts">${t.Pts}</td></tr>`;});
+    html+=`<div class="gcard"><h3>Group ${g}</h3><table class="gt">
+      <tr><th></th><th style="text-align:left">Team</th><th>P</th><th>W</th><th>D</th><th>L</th><th>GF</th><th>GA</th><th>GD</th><th>Pts</th></tr>
+      ${rows}</table></div>`;});
+  html+=`</div><div class="legend">
+    <span><span class="swatch" style="background:var(--qual)"></span>Top 2 — qualify automatically</span>
+    <span><span class="swatch" style="background:var(--third)"></span>3rd — assign to Round of 32 in the Results tab</span>
+  </div><div class="hint">Ranking: Points → Goal Difference → Goals For → alphabetical. Updates as you enter results.</div>`;
   content.innerHTML=html;
 }
 
-// stepper buttons (+ / −) and copy buttons
+// ---------- ALL PREDICTIONS ----------
+function renderMatrix(){
+  const hiddenCount=Object.values(data.hidden).filter(Boolean).length;
+  contextLabel.textContent="All predictions — players down, games across";
+  const q=search.value.trim().toLowerCase();
+  const filter=FILTERS.find(f=>f.val===stageFilter.value)||FILTERS[0];
+  const visible=FIXTURES.filter(f=>{
+    const[num,,,homeCode,awayCode]=f;
+    if(!filter.test(num))return false;
+    if(data.hidden[num])return false;
+    if(q){const hN=resolveTeam(homeCode)||homeCode,aN=resolveTeam(awayCode)||awayCode;
+      const hay=(hN+" "+aN+" "+homeCode+" "+awayCode).toLowerCase();if(!hay.includes(q))return false;}
+    return true;
+  });
+  let html=`<div class="mx-toolbar">
+    <button class="go" id="unhideAll">↺ Unhide all</button>
+    <span class="info">${hiddenCount} game${hiddenCount===1?"":"s"} hidden · tick a game's box to hide it</span>
+  </div>`;
+  if(!visible.length){
+    html+=`<div class="hint">No games to show (everything is hidden or filtered out). Use <b>Unhide all</b> or change the stage filter.</div>`;
+    content.innerHTML=html;
+    document.getElementById("unhideAll").onclick=()=>{data.hidden={};save();render();};
+    return;
+  }
+  let lastDay=null, span=0, bandCells="";
+  function flushBand(){ if(span>0){bandCells+=`<th colspan="${span}">${lastDay}</th>`;} }
+  visible.forEach(f=>{const date=f[1];if(date!==lastDay){flushBand();lastDay=date;span=1;}else{span++;}});
+  flushBand();
+  const dayBands=`<tr class="dayband"><th class="namecorner namecol">Player</th>${bandCells}</tr>`;
+  let gameHdr=`<tr class="games"><th class="namecol">&nbsp;</th>`;
+  visible.forEach(f=>{
+    const[num,date,ko,homeCode,awayCode,fstage,group]=f;
+    const hN=resolveTeam(homeCode)||homeCode, aN=resolveTeam(awayCode)||awayCode;
+    const isFinal=num===FINAL_MATCH;
+    gameHdr+=`<th class="${isFinal?'gh-final':''}">
+      <label class="gh-hide"><input type="checkbox" data-hide="${num}"> Hide</label>
+      <div class="gh-teams">${hN}</div>
+      <div class="gh-v">v</div>
+      <div class="gh-teams">${aN}</div>
+      <div class="gh-meta">#${num} · ${ko}${isFinal?" · ×2":""}</div>
+    </th>`;
+  });
+  gameHdr+=`</tr>`;
+  let bodyRows="";
+  data.players.forEach(p=>{
+    let cells="";
+    visible.forEach(f=>{
+      const[num,,,homeCode,awayCode]=f;
+      const hN=resolveTeam(homeCode)||homeCode, aN=resolveTeam(awayCode)||awayCode;
+      const rec=data.preds[p][num];
+      if(!rec||rec.h===""||rec.a===""){cells+=`<td class="cell empty">–</td>`;}
+      else{
+        const h=+rec.h,a=+rec.a;
+        let resName,resCls;
+        if(h>a){resName=hN;resCls="home";}
+        else if(a>h){resName=aN;resCls="away";}
+        else{
+          if(isKO(num)&&rec.prog){resName=(rec.prog==="H"?hN:aN)+" (pens)";resCls="draw";}
+          else{resName="Draw";resCls="draw";}
+        }
+        cells+=`<td class="cell"><span class="sc">${rec.h}–${rec.a}</span><span class="rs ${resCls}">${resName}</span></td>`;
+      }
+    });
+    bodyRows+=`<tr><td class="namecol">${p}</td>${cells}</tr>`;
+  });
+  html+=`<div class="matrixwrap"><table class="matrix">
+    <thead>${dayBands}${gameHdr}</thead>
+    <tbody>${bodyRows}</tbody>
+  </table></div>
+  <div class="hint">Players are fixed on the left; swipe sideways for more games. Each cell shows the predicted score and result. Tick a game's <b>Hide</b> box to remove it; <b>Unhide all</b> brings them back.</div>`;
+  content.innerHTML=html;
+  document.getElementById("unhideAll").onclick=()=>{data.hidden={};save();render();};
+}
+
+function computeStats(){
+  return data.players.map(p=>{
+    const b={};BUCKETS.forEach(x=>b[x.key]=0);
+    let total=0,scored=0,perfect=0,resultHits=0,homeHits=0,awayHits=0;
+    FIXTURES.forEach(f=>{
+      const num=f[0];const pred=data.preds[p][num],res=data.results[num];
+      const s=scoreMatch(pred,res,isKO(num),num);
+      if(s!==null){
+        total+=s;scored++;const bk=BUCKETS.find(x=>x.test(num));if(bk)b[bk.key]+=s;
+        const maxForMatch=num===FINAL_MATCH?16:8;if(s===maxForMatch)perfect++;
+        const ph=+pred.h,pa=+pred.a,rh=+res.h,ra=+res.a;
+        let resultOK;
+        if(isKO(num)){let ap=rh>ra?"H":ra>rh?"A":(res.pen||"");let pp=ph>pa?"H":pa>ph?"A":(pred.prog||"");resultOK=pp!==""&&pp===ap;}
+        else{const pr=ph>pa?"H":pa>ph?"A":"D";const rr=rh>ra?"H":ra>rh?"A":"D";resultOK=pr===rr;}
+        if(resultOK)resultHits++;if(ph===rh)homeHits++;if(pa===ra)awayHits++;
+      }
+    });
+    const avg=scored?total/scored:0;
+    return{player:p,total,scored,perfect,avg,resultHits,homeHits,awayHits,b};
+  }).sort((a,b)=>b.total-a.total);
+}
+function cumulativeSeries(stat){let run=0;return BUCKETS.map(x=>{run+=stat.b[x.key]||0;return run;});}
+function buildChartSVG(stats){
+  const W=1000,H=320,padL=44,padR=16,padT=18,padB=46;
+  const xs=BUCKETS.length;
+  const maxY=Math.max(10,...stats.map(s=>cumulativeSeries(s).slice(-1)[0]||0));
+  const plotW=W-padL-padR,plotH=H-padT-padB;
+  const xAt=i=>padL+(xs<=1?0:(plotW*i/(xs-1)));
+  const yAt=v=>padT+plotH-(plotH*v/maxY);
+  let grid="";const steps=5;
+  for(let i=0;i<=steps;i++){const v=Math.round(maxY*i/steps);const y=yAt(v);
+    grid+=`<line x1="${padL}" y1="${y}" x2="${W-padR}" y2="${y}" stroke="#2a3a52" stroke-width="1"/>
+      <text x="${padL-8}" y="${y+4}" fill="#8d99ae" font-size="11" text-anchor="end">${v}</text>`;}
+  let xlab="";BUCKETS.forEach((b,i)=>{const x=xAt(i);
+    xlab+=`<text x="${x}" y="${H-padB+20}" fill="#8d99ae" font-size="11" text-anchor="middle">${b.label}</text>`;});
+  let lines="";
+  stats.forEach((s,si)=>{
+    const col=SERIES_COLORS[si%SERIES_COLORS.length];
+    const pts=cumulativeSeries(s);
+    const d=pts.map((v,i)=>`${i===0?"M":"L"}${xAt(i).toFixed(1)},${yAt(v).toFixed(1)}`).join(" ");
+    lines+=`<path d="${d}" fill="none" stroke="${col}" stroke-width="2.5" stroke-linejoin="round"/>`;
+    pts.forEach((v,i)=>{lines+=`<circle cx="${xAt(i).toFixed(1)}" cy="${yAt(v).toFixed(1)}" r="3" fill="${col}"/>`;});
+  });
+  return `<svg viewBox="0 0 ${W} ${H}" width="100%" preserveAspectRatio="xMidYMid meet" role="img">${grid}${xlab}${lines}</svg>`;
+}
+function buildChartLegend(stats){
+  return `<div class="legend-chart">`+stats.map((s,si)=>{
+    const col=SERIES_COLORS[si%SERIES_COLORS.length];
+    return `<span class="li"><span class="ln" style="background:${col}"></span>${s.player}</span>`;}).join("")+`</div>`;
+}
+function buildSummary(stats){
+  const anyScored=stats.some(s=>s.scored>0);
+  if(!anyScored){return `<div class="summary-wrap"><div class="scard" style="grid-column:1/-1;border-left-color:var(--muted)">
+      <h4>No results scored yet</h4><p>Enter actual results in the 🎯 Results tab and a performance summary will appear here automatically.</p></div></div>`;}
+  const leader=stats[0];
+  const cards=stats.map((s,i)=>{
+    const pos=i+1;const ordinal=pos===1?"1st":pos===2?"2nd":pos===3?"3rd":pos+"th";
+    const accuracy=s.scored?Math.round(100*s.resultHits/s.scored):0;
+    let blurb;
+    if(s.scored===0){blurb=`No scored predictions yet.`;}
+    else{const gap=leader.total-s.total;
+      const lead=i===0?`Out in front on <span class="stat">${s.total}</span> pts.`:`<span class="stat">${gap}</span> pt${gap===1?"":"s"} behind the leader (${leader.player}).`;
+      blurb=`${lead} Correct outcome in <span class="stat">${s.resultHits}/${s.scored}</span> games (${accuracy}%), `
+        +`nailed the home score <span class="stat">${s.homeHits}</span>× and away score <span class="stat">${s.awayHits}</span>×, `
+        +`with <span class="stat">${s.perfect}</span> perfect prediction${s.perfect===1?"":"s"}. `
+        +`Averaging <span class="stat">${s.avg.toFixed(1)}</span> pts per scored game.`;}
+    return `<div class="scard"><h4>${s.player} <span class="badge">— ${ordinal}, ${s.total} pts</span></h4><p>${blurb}</p></div>`;
+  }).join("");
+  return `<div class="summary-wrap">${cards}</div>`;
+}
+function renderLeaderboard(){
+  contextLabel.textContent="Overall standings, trend & summary";
+  const stats=computeStats();
+  let header=`<tr><th>#</th><th style="text-align:left">Player</th><th class="total">Total</th>`;
+  BUCKETS.forEach(x=>header+=`<th>${x.label}</th>`);header+=`<th class="perfect">Perfect</th></tr>`;
+  let rows="";let rank=0,prev=null;
+  stats.forEach((t,i)=>{
+    if(t.total!==prev){rank=i+1;prev=t.total;}
+    let cells="";BUCKETS.forEach(x=>cells+=`<td>${t.b[x.key]||0}</td>`);
+    rows+=`<tr><td class="rank">${rank}</td><td class="name">${t.player}</td><td class="total">${t.total}</td>${cells}<td class="perfect">${t.perfect}</td></tr>`;
+  });
+  const table=`<div class="lbwrap"><table class="lb">${header}${rows}</table></div>
+    <div class="hint">Total sits beside the name; stage breakdown across (Final column is doubled). <b>Perfect</b> counts exact-scoreline predictions (Final perfect = 16).</div>`;
+  const chart=`<div class="chart-card"><h3>📈 Cumulative points by stage</h3>
+    <div class="pdesc">Each line is a player's running total as the tournament progresses (Final points are doubled).</div>
+    ${buildChartSVG(stats)}${buildChartLegend(stats)}</div>`;
+  const summaryTitle=`<div class="stage-title" style="max-width:1060px;margin:18px auto 10px">📝 How each player is performing</div>`;
+  content.innerHTML=table+chart+summaryTitle+buildSummary(stats);
+}
+
+// ---- event handlers ----
 content.addEventListener("click",e=>{
   const btn=e.target.closest(".stepbtn");
   if(btn){
-    if(btn.disabled)return;
-    adjustScore(btn.dataset.num,btn.dataset.side,+btn.dataset.step);
-    return;
+    if(view.mode==="results"&&btn.dataset.step!==undefined){
+      adjustResultScore(btn.dataset.num,btn.dataset.side,+btn.dataset.step);return;
+    }
+    if(view.mode==="entry"&&btn.dataset.estep!==undefined){
+      adjustEntryScore(btn.dataset.num,btn.dataset.side,+btn.dataset.estep);return;
+    }
   }
-  const ck=e.target.dataset.copy;if(!ck)return;
-  const round=ROUNDS.find(r=>r.key===ck);
-  if(!(data.name||"").trim()){alert("Please choose your name at the top first.");entryName.focus();return;}
-  const m=missingForRound(round);missing=m.length?{round:ck,items:m}:null;
-  copyText(buildText(ck));render();
+  const exp=e.target.dataset.export;
+  if(exp){const round=ROUNDS.find(r=>r.key===exp);exportRound(round);}
+});
+content.addEventListener("input",e=>{
+  if(e.target.id==="entryName"){data.entry.name=e.target.value;save();}
 });
 content.addEventListener("change",e=>{
-  if(e.target.dataset.field){const num=+e.target.dataset.num;
-    if(isLocked(num)){render();return;}
-    const s=data.preds[num]=data.preds[num]||{h:"",a:"",prog:""};
-    s[e.target.dataset.field]=e.target.value;save();updateLabel(num);}
+  if(e.target.dataset.hide!==undefined){
+    const n=e.target.dataset.hide;
+    if(e.target.checked)data.hidden[n]=true; else delete data.hidden[n];
+    save();render();return;
+  }
+  if(e.target.dataset.slot){data.thirds[e.target.dataset.slot]=e.target.value;save();render();return;}
+  if(e.target.dataset.field){
+    const num=e.target.dataset.num;
+    if(view.mode==="results"){
+      const store=data.results[num]=data.results[num]||{h:"",a:"",pen:""};
+      store[e.target.dataset.field]=e.target.value;save();updateResultsLabel(+num);
+    }else if(view.mode==="entry"){
+      const store=data.entry.preds[num]=data.entry.preds[num]||{h:"",a:"",prog:""};
+      store[e.target.dataset.field]=e.target.value;save();updateEntryLabel(+num);
+    }
+  }
 });
-entryName.addEventListener("change",e=>{data.name=e.target.value;save();});
-stageFilter.addEventListener("change",()=>{missing=null;render();});
+
+stageFilter.addEventListener("change",()=>{entryMissing=null;render();});
 search.addEventListener("input",render);
-document.getElementById("copyAllBtn").onclick=()=>{
-  if(!(data.name||"").trim()){alert("Please choose your name at the top first.");entryName.focus();return;}
-  copyText(buildText(null));
+
+document.getElementById("exportBtn").onclick=()=>{
+  const blob=new Blob([JSON.stringify(data,null,2)],{type:"application/json"});
+  const a=document.createElement("a");a.href=URL.createObjectURL(blob);
+  a.download="wc2026-game-backup-"+new Date().toISOString().slice(0,10)+".json";a.click();
+};
+document.getElementById("importBtn").onclick=()=>document.getElementById("importFile").click();
+clearBtn.onclick=clearAllResults;
+document.getElementById("importFile").onchange=e=>{
+  const file=e.target.files[0];if(!file)return;
+  const r=new FileReader();
+  r.onload=()=>{
+    try{
+      const loaded=JSON.parse(r.result);
+      if(!loaded.results)throw new Error("Not a valid backup file");
+      data=loaded;data.players=data.players||DEFAULT_PLAYERS.slice();
+      data.preds=data.preds||{};data.results=data.results||{};data.thirds=data.thirds||{};data.pins=data.pins||{};
+      data.entry=data.entry||{name:"",preds:{}};data.hidden=data.hidden||{};
+      data.players.forEach(p=>{data.preds[p]=data.preds[p]||{};});
+      save();view={mode:"leaderboard"};render();alert("Backup imported successfully ✅");
+    }catch(err){alert("Could not import: "+err.message);}
+  };
+  r.readAsText(file);
 };
 
-/* ---- Scoring Format modal controls ---- */
-const scoringModal=document.getElementById("scoringModal");
-const scoringBtn=document.getElementById("scoringBtn");
-const scoringClose=document.getElementById("scoringClose");
-function openScoring(){scoringModal.classList.add("show");document.body.style.overflow="hidden";}
-function closeScoring(){scoringModal.classList.remove("show");document.body.style.overflow="";}
-scoringBtn.onclick=openScoring;
-scoringClose.onclick=closeScoring;
-scoringModal.addEventListener("click",e=>{ if(e.target===scoringModal)closeScoring(); }); // tap backdrop
-document.addEventListener("keydown",e=>{ if(e.key==="Escape"&&scoringModal.classList.contains("show"))closeScoring(); });
-
 render();
-setInterval(()=>{ if(!search.value.trim()) render(); }, 60000);
 </script>
 </body>
 </html>
