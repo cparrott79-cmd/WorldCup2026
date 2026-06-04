@@ -77,7 +77,7 @@
   table.gt td.pts{font-weight:700;color:var(--gold)}
   .legend{max-width:1100px;margin:14px auto 0;color:var(--muted);font-size:.78rem;text-align:center}
   .legend .swatch{display:inline-block;width:10px;height:10px;border-radius:2px;vertical-align:middle;margin-right:4px}
-  /* Share PINs */
+  /* ===== Share PINs styles — commented out (kept for future use) =====
   .share-note{background:#3d2c1b;border:1px solid var(--draw);color:var(--draw);padding:8px 12px;border-radius:8px;max-width:920px;margin:0 auto 12px;font-size:.82rem;text-align:center}
   .share-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px;max-width:1000px;margin:0 auto}
   .share-card{background:var(--card);border:1px solid #415a77;border-radius:12px;padding:12px 14px}
@@ -92,6 +92,7 @@
   .share-card a.sms:hover{background:#345982;color:#fff}
   .share-card button.copybtn:hover{background:#24344c;border-color:var(--accent)}
   .share-card .nophone{color:var(--muted);font-size:.74rem;margin-top:6px}
+  ===== end Share PINs styles ===== */
   .hint{max-width:1060px;margin:8px auto;color:var(--muted);font-size:.8rem;text-align:center}
   .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:var(--win);color:#001219;font-weight:700;padding:10px 18px;border-radius:10px;opacity:0;transition:opacity .25s;pointer-events:none;z-index:50;max-width:90vw;text-align:center}
   .toast.show{opacity:1}.toast.err{background:var(--danger)}
@@ -101,7 +102,7 @@
 <body>
 <header>
   <h1>⚽ World Cup 2026 — Admin</h1>
-  <div class="sub">Enter results, assign 3rd-placed teams, and share PINs.</div>
+  <div class="sub">Enter results and assign 3rd-placed teams.</div>
 </header>
 
 <div id="gate" class="gate" style="display:none">
@@ -119,7 +120,6 @@
   <div class="controls" id="resControls" style="display:none">
     <span id="contextLabel" style="color:var(--muted)"></span>
     <select id="stageFilter"></select>
-    <input type="text" id="search" placeholder="🔍 Search team…">
     <button id="reloadBtn">↻ Reload</button>
   </div>
   <div id="content"></div>
@@ -134,13 +134,7 @@ const SUPABASE_URL = "https://nsfwtflpjsdbtbhimvmw.supabase.co";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5zZnd0ZmxwanNkYnRiaGltdm13Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA1NjY5ODUsImV4cCI6MjA5NjE0Mjk4NX0.gjajKj1IYgb1WdWlC5cm8nipdS9Qlz2iNKnLdCY1NiA";
 const SB = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-// ============================================================
-// ⚠️ PRIVATE — Share-PINs list. Fill in plain PINs (and optional
-// phone numbers in international format, e.g. +447700900123).
-// Phone is OPTIONAL: leave "" to show only the Copy-message button.
-// Because these are PLAINTEXT PINs, keep this file PRIVATE or don't
-// commit real values to a public repo.
-// ============================================================
+/* ===== Share PINs config — commented out (kept for future use) =====
 const PREDICTIONS_URL = "https://cparrott79-cmd.github.io/WorldCup2026/Predictionsv2.html";
 const SHARE_LIST = [
   { name:"Chris",   pin:"1234", phone:"" },
@@ -153,6 +147,7 @@ const SHARE_LIST = [
   { name:"Marie",   pin:"7777", phone:"" },
   { name:"Smithy",  pin:"8888", phone:"" }
 ];
+===== end Share PINs config ===== */
 
 const FINAL_MATCH=104;
 const FIRST_KO=73;const isKO=n=>n>=FIRST_KO;
@@ -176,7 +171,7 @@ let FIXTURES=[],FX={},results={},thirds={},me=null,myPin=null,view="results";
 
 const $=id=>document.getElementById(id);
 const content=$("content"),toast=$("toast");
-const stageFilter=$("stageFilter"),search=$("search"),contextLabel=$("contextLabel"),resControls=$("resControls");
+const stageFilter=$("stageFilter"),contextLabel=$("contextLabel"),resControls=$("resControls");
 FILTERS.forEach(f=>{const o=document.createElement("option");o.value=f.val;o.textContent=f.label;stageFilter.appendChild(o);});
 function toastMsg(m,err){toast.textContent=m;toast.className="toast show"+(err?" err":"");setTimeout(()=>toast.className="toast",err?2800:2000);}
 const days=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"],mons=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"],p2=n=>String(n).padStart(2,"0");
@@ -228,7 +223,7 @@ function adjustResult(num,side,delta){num=+num;const s=results[num]=results[num]
 
 function buildTabs(){
   const t=$("tabs");t.innerHTML="";
-  [["results","🎯 Results"],["groups","📊 Group Tables"],["share","🔗 Share PINs"]]
+  [["results","🎯 Results"],["groups","📊 Group Tables"]]
   .forEach(([mode,label])=>{const el=document.createElement("div");el.className="tab"+(view===mode?" active":"");el.textContent=label;el.onclick=()=>{view=mode;render();};t.appendChild(el);});
   resControls.style.display=view==="results"?"":"none";
 }
@@ -240,7 +235,7 @@ function renderThirdPanel(){
   return `<div class="third-panel"><h3>Assign 3rd-placed teams to Round of 32</h3><div class="pdesc">Each slot lists only the 3rd-placed team from its eligible groups. Fixtures update automatically.</div><div class="third-grid">${rows}</div></div>`;
 }
 function renderResults(){
-  const filter=FILTERS.find(f=>f.val===stageFilter.value)||FILTERS[0];const q=search.value.trim().toLowerCase();
+  const filter=FILTERS.find(f=>f.val===stageFilter.value)||FILTERS[0];
   let html=`<div class="admin-note">🎯 Enter the real results. Tap − / + to set the score. For knockout draws, also pick who won on penalties.</div>`+renderThirdPanel();
   let lastKey=null,done=0,total=0;
   FIXTURES.forEach(f=>{
@@ -248,11 +243,10 @@ function renderResults(){
     const hD=displayTeam(f.home_code),aD=displayTeam(f.away_code);
     const homeLabel=hD.name?hD.name+(hD.code?` <span class="code">(${hD.code})</span>`:""):`<span class="code">${hD.code}</span>`;
     const awayLabel=aD.name?aD.name+(aD.code?` <span class="code">(${aD.code})</span>`:""):`<span class="code">${aD.code}</span>`;
-    const hN=hD.name||f.home_code,aN=aD.name||f.away_code;
-    if(q&&!((hN+" "+aN+" "+f.home_code+" "+f.away_code).toLowerCase().includes(q)))return;
     total++;const knockout=isKO(num);const rec=results[num]||{h:"",a:"",pen:""};if(rec.h!==""&&rec.a!=="")done++;
     if(round.key!==lastKey){lastKey=round.key;const dbl=isFinal?`<span class="dbl">POINTS ×2</span>`:"";html+=`<div class="stage-row"><div class="stage-title">${round.label}${dbl}</div></div>`;}
     const groupTxt=f.grp?"Group "+f.grp+" · ":"";const{lab,cls}=resultLabel(num);const ko=new Date(f.kickoff);
+    const hN=hD.name||f.home_code,aN=aD.name||f.away_code;
     let pick="";if(knockout){const v=rec.pen||"";pick=`<select class="prog" data-num="${num}" data-field="pen"><option value="">Pens winner…</option><option value="H"${v==="H"?" selected":""}>${hN}</option><option value="A"${v==="A"?" selected":""}>${aN}</option></select>`;}
     const dblPill=isFinal?` · <span class="dblpill">points ×2</span>`:"";const hDisp=rec.h===""?"–":rec.h,aDisp=rec.a===""?"–":rec.a;
     html+=`<div class="match${isFinal?" finalmatch":""}" data-matchnum="${num}">
@@ -283,7 +277,7 @@ function renderGroups(){
   content.innerHTML=html;
 }
 
-// ===== Share PINs view =====
+/* ===== Share PINs view — commented out (kept for future use) =====
 function shareMessage(name,pin){
   return "Hi "+name+"! Here's your World Cup 2026 predictions login 👇\n"+
          "🔗 "+PREDICTIONS_URL+"\n"+
@@ -298,8 +292,8 @@ function renderShare(){
     const enc=encodeURIComponent(msg);
     const phone=(p.phone||"").replace(/[^\d+]/g,"");
     const waNum=phone.replace(/^\+/,"");
-    const waHref = phone ? `https://wa.me/${waNum}?text=${enc}` : `https://wa.me/?text=${enc}`;
-    const smsHref = phone ? `sms:${phone}?&body=${enc}` : `sms:?&body=${enc}`;
+    const waHref = phone ? "https://wa.me/"+waNum+"?text="+enc : "https://wa.me/?text="+enc;
+    const smsHref = phone ? "sms:"+phone+"?&body="+enc : "sms:?&body="+enc;
     cards+=`<div class="share-card">
       <h4>${p.name}</h4>
       <div class="pin">🔑 PIN: <span class="pinval">${p.pin}</span></div>
@@ -308,29 +302,31 @@ function renderShare(){
         <a class="btnlink wa" href="${waHref}" target="_blank" rel="noopener">🟢 WhatsApp</a>
         <a class="btnlink sms" href="${smsHref}">💬 SMS</a>
       </div>
-      ${phone?"":`<div class="nophone">No phone set — WhatsApp/SMS will open blank to pick a contact. Add a number in SHARE_LIST to pre-fill.</div>`}
+      ${phone?"":`<div class="nophone">No phone set — WhatsApp/SMS will open blank to pick a contact.</div>`}
     </div>`;
   });
-  content.innerHTML=`<div class="share-note">⚠️ PINs are sensitive — send each person <b>only their own</b> PIN, ideally in a private 1-to-1 message. WhatsApp/SMS open with the message pre-filled; you tap send.</div>
-    <div class="share-grid">${cards}</div>
-    <div class="hint">“Copy message” copies the full text to your clipboard. WhatsApp opens the chat (with the contact if a number is set); SMS opens your messaging app.</div>`;
+  content.innerHTML=`<div class="share-note">⚠️ Send each person only their own PIN, privately.</div>
+    <div class="share-grid">${cards}</div>`;
 }
+===== end Share PINs view ===== */
 
-function render(){buildTabs();if(view==="groups")return renderGroups();if(view==="share")return renderShare();renderResults();}
+function render(){buildTabs();if(view==="groups")return renderGroups();renderResults();}
 
 content.addEventListener("click",e=>{
+  /* ===== Share PINs copy handler — commented out (kept for future use) =====
   const cp=e.target.closest("[data-copy]");
   if(cp){const text=decodeURIComponent(cp.dataset.copy);
     if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(text).then(()=>toastMsg("✅ Message copied"),()=>toastMsg("Couldn't copy",true));}
     else{const ta=document.createElement("textarea");ta.value=text;document.body.appendChild(ta);ta.select();try{document.execCommand("copy");toastMsg("✅ Message copied");}catch(_){toastMsg("Couldn't copy",true);}document.body.removeChild(ta);}
     return;}
+  ===== end Share PINs copy handler ===== */
   const btn=e.target.closest(".stepbtn");if(btn&&view==="results"){adjustResult(btn.dataset.num,btn.dataset.side,+btn.dataset.step);}
 });
 content.addEventListener("change",e=>{
   if(e.target.dataset.slot){thirds[e.target.dataset.slot]=e.target.value;saveThirds();render();return;}
   if(e.target.dataset.field&&view==="results"){const num=+e.target.dataset.num;const s=results[num]=results[num]||{h:"",a:"",pen:""};s[e.target.dataset.field]=e.target.value;updateResultLabel(num);setResult(num);}
 });
-stageFilter.addEventListener("change",render);search.addEventListener("input",render);
+stageFilter.addEventListener("change",render);
 $("reloadBtn").onclick=async()=>{await loadAll();render();toastMsg("↻ Reloaded");};
 
 async function populateNames(){const {data,error}=await SB.from("player_names").select("name,is_admin").eq("is_admin",true).order("name");if(error){$("gateErr").textContent="Could not load admins: "+error.message;return;}const sel=$("gateName");data.forEach(p=>{const o=document.createElement("option");o.value=p.name;o.textContent=p.name;sel.appendChild(o);});}
