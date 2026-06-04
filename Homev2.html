@@ -11,23 +11,28 @@
   header{text-align:center;margin-bottom:14px}
   h1{margin:0 0 4px;font-size:1.4rem}
   .sub{color:var(--muted);font-size:.85rem}
-  .tabrow{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin:14px 0 8px}
-  .tab{background:var(--card);border:1px solid #415a77;color:var(--text);padding:8px 14px;border-radius:8px;cursor:pointer;font-size:.88rem;font-weight:600}
-  .tab:hover{background:#24344c;border-color:var(--accent)}
-  .tab.active{background:var(--accent);color:#001219;border-color:var(--accent);font-weight:700}
   .controls{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;align-items:center;margin:12px 0}
   select,input[type=text],input[type=password]{background:var(--card);color:var(--text);border:1px solid #415a77;border-radius:8px;padding:8px 12px;font-size:.9rem}
+
+  /* ---- consistent button system (matches Predictionsv2) ---- */
   button{cursor:pointer;transition:.15s;font-size:.9rem;font-weight:600;border-radius:8px;padding:9px 16px;background:var(--card);color:var(--text);border:1px solid #415a77}
   button:hover{background:#24344c;border-color:var(--accent);color:var(--text)}
+  /* TAB PILLS — identical to Predictionsv2 .navbtn */
+  .tabrow{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin:14px 0 8px}
+  .tab{background:var(--card);border:1px solid #415a77;color:var(--text);padding:9px 16px;border-radius:8px;cursor:pointer;font-size:.9rem;font-weight:600;display:inline-flex;align-items:center;gap:6px}
+  .tab:hover{background:#24344c;border-color:var(--accent);color:var(--text)}
+  .tab.active{background:var(--accent);color:#001219;border-color:var(--accent);font-weight:700}
+  .tab.active:hover{background:#33c6ec;border-color:#33c6ec;color:#001219}
   .logoutbtn{background:transparent;border:1px solid var(--muted);color:var(--muted)}
   .logoutbtn:hover{background:var(--danger);border-color:var(--danger);color:#001219}
+
   .gate{max-width:420px;margin:36px auto;background:var(--card);border:1px solid #415a77;border-radius:14px;padding:24px;text-align:center}
   .gate h3{margin:0 0 6px;color:var(--accent)}
   .gate p{color:var(--muted);font-size:.85rem;margin:0 0 16px}
   .gate select,.gate input{width:100%;text-align:center;font-size:1.05rem;margin-bottom:12px}
   .gate input{letter-spacing:3px}
   .gate button{width:100%;background:var(--gold);color:#001219;border-color:var(--gold);font-weight:700}
-  .gate button:hover{background:#ffdf85;border-color:#ffdf85}
+  .gate button:hover{background:#ffdf85;border-color:#ffdf85;color:#001219}
   .gate .err{color:var(--danger);font-size:.82rem;min-height:18px;margin-top:8px}
   .topbar{max-width:560px;margin:0 auto 14px;background:var(--card);border:1px solid #415a77;border-radius:12px;padding:10px 16px;display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
   .topbar .who b{color:var(--accent)}
@@ -76,7 +81,6 @@
   table.gt td.pts{font-weight:700;color:var(--gold)}
   .legend{max-width:1100px;margin:14px auto 0;color:var(--muted);font-size:.78rem;text-align:center}
   .legend .swatch{display:inline-block;width:10px;height:10px;border-radius:2px;vertical-align:middle;margin-right:4px}
-  /* Leaderboard */
   .lbwrap{overflow-x:auto}
   table.lb{width:100%;max-width:1060px;margin:0 auto;border-collapse:collapse;font-size:.86rem}
   table.lb th,table.lb td{padding:9px 10px;text-align:center;border-bottom:1px solid #415a77;white-space:nowrap}
