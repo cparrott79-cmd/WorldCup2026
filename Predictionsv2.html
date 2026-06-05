@@ -24,10 +24,10 @@
   .logoutbtn:hover,.secbtn:hover{background:var(--danger);border-color:var(--danger);color:#001219}
   .controls button:not(.navbtn):not(.loginbtn):not(.logoutbtn){background:var(--card);border:1px solid #415a77;color:var(--text)}
   .controls button:not(.navbtn):not(.loginbtn):not(.logoutbtn):hover{background:#24344c;border-color:var(--accent);color:var(--text)}
-  /* Scoring Format button — dotted border to show it's different (opens a modal) */
+  /* Scoring Format button — dashed border to show it's different (opens a modal) */
   #scoringBtn{border-style:dashed;border-color:var(--accent);color:var(--accent)}
   #scoringBtn:hover{background:var(--accent);border-color:var(--accent);color:#001219;border-style:dashed}
-  #scoringBtn.active{border-style:dashed} /* (it never becomes active, but keeps the look if it ever did) */
+  #scoringBtn.active{border-style:dashed}
 
   .gate-overlay{position:fixed;inset:0;background:rgba(3,8,15,.72);display:none;align-items:center;justify-content:center;z-index:120;padding:14px}
   .gate-overlay.show{display:flex}
@@ -117,15 +117,9 @@
   table.matrix td.cell.masked .sc{font-size:1rem}
   table.matrix tr.you-row td.cell{background:rgba(0,180,216,.06)}
   table.matrix tr:nth-child(even) td.cell{background:rgba(255,255,255,.015)}
-    /* coloured padlocks on masked (pre-lock) cells */
-  table.matrix td.cell.masked .sc.lock-has{color:#3ddc84}   /* green = predicted */
-  table.matrix td.cell.masked .sc.lock-none{color:#ff5a5a}  /* red = not predicted */
   /* legend / key under the All Predictions table */
   .ap-key{max-width:1060px;margin:6px auto 0;display:flex;gap:18px;justify-content:center;flex-wrap:wrap;color:var(--muted);font-size:.78rem}
   .ap-key .k{display:inline-flex;align-items:center;gap:6px}
-  .ap-key .k .pad{font-size:1rem}
-  .ap-key .k .green{color:#3ddc84}
-  .ap-key .k .red{color:#ff5a5a}
   .ap-note{max-width:1060px;margin:0 auto 10px;background:#26303f;border:1px solid #415a77;color:var(--muted);padding:8px 12px;border-radius:8px;font-size:.8rem;text-align:center}
 
   /* Leaderboard */
@@ -435,9 +429,10 @@ function renderAll(){
     visible.forEach(f=>{
       const num=f.match_num,locked=isLocked(num),played=playedOf(num);
       const rec=(allPreds[p]||{})[num];
+      // Before a round locks, hide OTHER players' picks — show ✅ if entered, ❌ if not.
       if(!isYou&&!locked){
         const has = rec && rec.h!=="" && rec.a!=="";
-        cells+=`<td class="cell masked"><span class="sc ${has?'lock-has':'lock-none'}">🔒</span></td>`;
+        cells+=`<td class="cell masked"><span class="sc">${has?'✅':'❌'}</span></td>`;
         return;
       }
       if(!rec||rec.h===""||rec.a===""){cells+=`<td class="cell empty${played?' played':''}">–</td>`;return;}
@@ -451,10 +446,10 @@ function renderAll(){
   const note=me?`🔒 Other players' predictions are hidden for each round until that round locks. Your own row is always visible.`:`🔒 Predictions are hidden for each round until that round locks (1 hour before its first kick-off). Log in to see your own picks.`;
   content.innerHTML=`<div class="ap-note">${note}</div>
     <div class="matrixwrap"><table class="matrix"><thead>${gameHdr}</thead><tbody>${body}</tbody></table></div>
-        <div class="hint">Players down the left${me?" (you first)":""}; swipe sideways for more games.</div>
+    <div class="hint">Players down the left${me?" (you first)":""}; swipe sideways for more games.</div>
     <div class="ap-key">
-      <span class="k"><span class="pad green">🔒</span> Prediction made (hidden until the round locks)</span>
-      <span class="k"><span class="pad red">🔒</span> No prediction entered yet</span>
+      <span class="k">✅ Prediction made (hidden until the round locks)</span>
+      <span class="k">❌ No prediction entered yet</span>
     </div>`;
 }
 
@@ -468,13 +463,11 @@ function fmtUpdated(ms){if(ms==null)return "No results entered yet";const d=new 
 function renderLeaderboard(){
   $("lbUpdated").innerHTML="🏆 <b>"+fmtUpdated(resultsUpdatedAt)+"</b>";
   const stats=computeStats();const anyScored=stats.some(s=>s.total>0);const n=stats.length;
-  // £5 entry — pot grows with the number of players
-  const pot = n*5;
+  const pot=n*5;
   const prizeBlock=`<div class="prize-box">
     <div class="prize-pot">💷 <b>£5 entry</b> · Total pot <b>£${pot}</b> <span class="prize-sub">(£5 × ${n} player${n===1?"":"s"})</span></div>
     <div class="prize-breakdown">🥇 1st = <b>£60</b> · 🥈 2nd = <b>£15</b> · 🥉 3rd &amp; 4th = <b>£5 each</b></div>
   </div>`;
-
   let header=`<tr><th>#</th><th style="text-align:left">Players (${n})</th><th class="total">Total</th>`;BUCKETS.forEach(x=>header+=`<th>${x.label}</th>`);header+=`<th>Perfect</th></tr>`;
   let rows="",displayRank=0,prevTotal=null;
   stats.forEach((t,i)=>{
@@ -483,13 +476,12 @@ function renderLeaderboard(){
     if(me&&t.player===me)classes.push("you-row");
     if(anyScored&&i===0)classes.push("leader");
     if(anyScored&&n>1&&i===n-1)classes.push("last");
-    if(n>2&&i===2)classes.push("cut-top");     // dotted line ABOVE 3rd place
-    if(n>3&&i===3)classes.push("cut-bottom");  // dotted line UNDER 4th place
+    if(n>2&&i===2)classes.push("cut-top");
+    if(n>3&&i===3)classes.push("cut-bottom");
     const medal=(anyScored&&i===0)?"🥇 ":(anyScored&&n>1&&i===n-1?"🥄 ":"");
     let cells="";BUCKETS.forEach(x=>cells+=`<td>${t.b[x.key]||0}</td>`);
     rows+=`<tr class="${classes.join(' ')}"><td class="rank">${pos}</td><td class="name">${medal}${t.player}${(me&&t.player===me)?' (you)':''}</td><td class="total">${t.total}</td>${cells}<td>${t.perfect}</td></tr>`;
   });
-
   content.innerHTML=`${prizeBlock}<div class="lbwrap"><table class="lb">${header}${rows}</table></div><div class="hint">Total beside the name; stage breakdown across (Final column doubled). <b>Perfect</b> = exact scoreline (Final perfect = 16). 🥇 leader · 🥄 last · dotted lines bracket the prize places (3rd &amp; 4th).</div>`;
 }
 function setNavActive(){$("navLb").classList.toggle("active",mode==="lb");$("navAll").classList.toggle("active",mode==="all");$("navMy").classList.toggle("active",mode==="my");}
