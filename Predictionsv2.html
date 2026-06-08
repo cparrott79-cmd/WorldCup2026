@@ -25,7 +25,7 @@
   .controls button:not(.navbtn):not(.loginbtn):not(.logoutbtn){background:var(--card);border:1px solid #415a77;color:var(--text)}
   .controls button:not(.navbtn):not(.loginbtn):not(.logoutbtn):hover{background:#24344c;border-color:var(--accent);color:var(--text)}
   /* Scoring Format button — dashed border to show it's different (opens a modal) */
-  #scoringBtn{border-style:dashed;border-color:var(--accent);color:var(--accent)}
+  #scoringBtn{border-style:dashed;border-color:var(--accent);color:var(#fff)}
   #scoringBtn:hover{background:var(--accent);border-color:var(--accent);color:#001219;border-style:dashed}
   #scoringBtn.active{border-style:dashed}
 
@@ -117,6 +117,12 @@
   table.matrix td.cell.masked .sc{font-size:1rem}
   table.matrix tr.you-row td.cell{background:rgba(0,180,216,.06)}
   table.matrix tr:nth-child(even) td.cell{background:rgba(255,255,255,.015)}
+   /* perfect prediction on a played game — gold cell, black text */
+  table.matrix td.cell.perfect{background:#ffd166 !important;color:#001219 !important}
+  table.matrix td.cell.perfect .sc{color:#001219}
+  table.matrix td.cell.perfect .rs.home,
+  table.matrix td.cell.perfect .rs.away,
+  table.matrix td.cell.perfect .rs.draw{color:#001219}
   /* legend / key under the All Predictions table */
   .ap-key{max-width:1060px;margin:6px auto 0;display:flex;gap:18px;justify-content:center;flex-wrap:wrap;color:var(--muted);font-size:.78rem}
   .ap-key .k{display:inline-flex;align-items:center;gap:6px}
@@ -439,7 +445,14 @@ function renderAll(){
       const h=+rec.h,a=+rec.a;let rn,rc;
       if(h>a){rn=f.home_code;rc="home";}else if(a>h){rn=f.away_code;rc="away";}
       else{if(isKO(num)&&rec.prog){rn=(rec.prog==="H"?f.home_code:f.away_code)+" (thru)";rc="draw";}else{rn="Draw";rc="draw";}}
-      cells+=`<td class="cell${played?' played':''}"><span class="sc">${rec.h}–${rec.a}</span><span class="rs ${rc}">${rn}</span></td>`;
+            let perfect=false;
+      if(played){
+        const pts=scoreMatch(rec,results[num],isKO(num),num);
+        const maxFor=(num===FINAL_MATCH)?16:8;
+        perfect = pts===maxFor;
+      }
+      cells+=`<td class="cell${played?' played':''}${perfect?' perfect':''}"><span class="sc">${rec.h}–${rec.a}</span><span class="rs ${rc}">${rn}</span></td>`;
+
     });
     body+=`<tr class="${isYou?'you-row':''}"><td class="namecol${isYou?' you':''}">${p}${isYou?' (you)':''}</td>${cells}</tr>`;});
 
