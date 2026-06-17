@@ -165,6 +165,18 @@
   .fscard td.you{color:var(--accent)}
   .stats-empty{color:var(--muted);text-align:center;font-size:.85rem;margin:14px 0}
 
+  /* Head-to-head */
+  .h2h{background:var(--card);border:1px solid #2a3a52;border-radius:12px;padding:12px 14px;margin-top:16px}
+  .h2h h4{margin:0 0 10px;color:var(--gold);font-size:.9rem}
+  .h2h .pickers{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-bottom:12px}
+  .h2h select{min-width:130px}
+  .h2h table{width:100%;border-collapse:collapse;font-size:.84rem;max-width:480px;margin:0 auto}
+  .h2h td,.h2h th{padding:6px 10px;border-bottom:1px solid #2a3a52;text-align:center}
+  .h2h th{color:var(--accent);font-size:.78rem}
+  .h2h td.metric{text-align:left;color:var(--muted)}
+  .h2h td.win{color:var(--win);font-weight:700}
+  .h2h .vs{color:var(--muted);font-weight:700;align-self:center}
+
   /* scoring modal */
   .modal-overlay{position:fixed;inset:0;background:rgba(3,8,15,.72);display:none;align-items:flex-start;justify-content:center;z-index:100;padding:12px;overflow-y:auto}
   .modal-overlay.show{display:flex}
@@ -559,33 +571,160 @@ function buildRankChart(dates,colors,selected){
   return `<svg viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" role="img">${grid}${xlab}${lines}${lab}</svg>`;
 }
 function funStats(selected){
-  const rows=allPlayers.filter(p=>!selected||selected.has(p)).map(p=>{
-    let perfect=0,soClose=0,zeros=0;
-    FIXTURES.forEach(f=>{const num=f.match_num;const r=results[num];if(!r||r.h===""||r.a==="")return;
-      const pred=(allPreds[p]||{})[num];const s=scoreMatch(pred,r,isKO(num),num);if(s===null)return;
-      const maxFor=num===FINAL_MATCH?16:8;
-      if(s===maxFor){perfect++;return;}
-      if(s===0){zeros++;}
-      if(pred&&pred.h!==""&&pred.a!==""){const ph=+pred.h,pa=+pred.a,rh=+r.h,ra=+r.a;
-        const outcomeOK=(ph>pa&&rh>ra)||(pa>ph&&ra>rh)||(ph===pa&&rh===ra);
-        const homeExact=ph===rh,awayExact=pa===ra;
-        const oneOff=(homeExact&&Math.abs(pa-ra)===1)||(awayExact&&Math.abs(ph-rh)===1);
-        if(outcomeOK&&oneOff&&!(homeExact&&awayExact))soClose++;}
+  const MIN_PREDS = 5; // style stats only count players with >=5 predictions
+  const inSel = p => !selected || selected.has(p);
+
+  // ---- per-player aggregates ----
+  const rows = allPlayers.filter(inSel).map(p=>{
+    let perfect=0, soClose=0, zeros=0;
+    let draws=0, tight=0, goalSum=0, predCount=0, tightDen=0;
+    let bestDayPts=0, bestDayDate=null;
+    const dayPts={}; // ISO date -> points that day
+
+    FIXTURES.forEach(f=>{
+      const num=f.match_num;
+      const pred=(allPreds[p]||{})[num];
+      const r=results[num];
+
+      // prediction-style metrics (any prediction, played or not)
+      if(pred && pred.h!=="" && pred.a!==""){
+        predCount++;
+        const ph=+pred.h, pa=+pred.a;
+        goalSum += ph+pa;
+        if(ph===pa) draws++;
+        if(ph===pa || Math.abs(ph-pa)===1) tight++;  // tight = draw OR 1-goal margin
+        tightDen++;
+      }
+
+      // results-based metrics (only played games)
+      if(r && r.h!=="" && r.a!==""){
+        const s=scoreMatch(pred,r,isKO(num),num);
+        if(s!==null){
+          const maxFor=num===FINAL_MATCH?16:8;
+          if(s===maxFor) perfect++;
+          else { if(s===0) zeros++;
+            if(pred&&pred.h!==""&&pred.a!==""){
+              const ph=+pred.h,pa=+pred.a,rh=+r.h,ra=+r.a;
+              const outcomeOK=(ph>pa&&rh>ra)||(pa>ph&&ra>rh)||(ph===pa&&rh===ra);
+              const he=ph===rh, ae=pa===ra;
+              const oneOff=(he&&Math.abs(pa-ra)===1)||(ae&&Math.abs(ph-rh)===1);
+              if(outcomeOK&&oneOff&&!(he&&ae)) soClose++;
+            }
+          }
+          const d=new Date(f.kickoff).toISOString().slice(0,10);
+          dayPts[d]=(dayPts[d]||0)+s;
+        }
+      }
     });
-    return{p,perfect,soClose,zeros};
+    Object.keys(dayPts).forEach(d=>{ if(dayPts[d]>bestDayPts){bestDayPts=dayPts[d];bestDayDate=d;} });
+
+    const avgGoals = predCount? (goalSum/predCount) : 0;
+    const tightPct = tightDen? Math.round(100*tight/tightDen) : 0;
+    return {p,perfect,soClose,zeros,draws,tight,tightPct,avgGoals,predCount,bestDayPts,bestDayDate};
   });
-  function card(title,key,emptyMsg){
-    const sorted=rows.slice().sort((a,b)=>b[key]-a[key]).filter(r=>r[key]>0);
-    if(!sorted.length)return `<div class="fscard"><h4>${title}</h4><div class="stats-empty">${emptyMsg}</div></div>`;
-    let t="";sorted.forEach(r=>{t+=`<tr><td class="${(me&&r.p===me)?'you':''}">${r.p}${(me&&r.p===me)?' (you)':''}</td><td class="v">${r[key]}</td></tr>`;});
+
+  // ---- biggest one-day climb (uses rank-over-time) ----
+  const dates=statsDates();
+  let climbBest=null; // {p,from,to,gain,dateFrom,dateTo}
+  if(dates.length>=2){
+    const rk=dates.map(d=>ranksAt(d));
+    allPlayers.forEach(p=>{ if(!inSel(p))return;
+      for(let i=1;i<dates.length;i++){
+        const gain=rk[i-1][p]-rk[i][p]; // positive = moved up
+        if(climbBest===null || gain>climbBest.gain){
+          climbBest={p,from:rk[i-1][p],to:rk[i][p],gain,dateTo:dates[i]};
+        }
+      }
+    });
+  }
+
+  // ---- helpers to render a "leaderboard of a stat" ----
+  const fmtD = iso => { if(!iso) return ""; const d=new Date(iso+"T12:00:00"); return days[d.getDay()]+" "+p2(d.getDate())+" "+mons[d.getMonth()]; };
+  const youTag = p => (me&&p===me)?' (you)':'';
+  const youCls = p => (me&&p===me)?'you':'';
+
+  function listCard(title, items, fmtVal, emptyMsg){
+    if(!items.length) return `<div class="fscard"><h4>${title}</h4><div class="stats-empty">${emptyMsg}</div></div>`;
+    let t="";items.forEach(it=>{t+=`<tr><td class="${youCls(it.p)}">${it.p}${youTag(it.p)}</td><td class="v">${fmtVal(it)}</td></tr>`;});
     return `<div class="fscard"><h4>${title}</h4><table>${t}</table></div>`;
   }
+  const byDesc = key => rows.slice().filter(r=>r[key]>0).sort((a,b)=>b[key]-a[key]);
+  const eligible = rows.filter(r=>r.predCount>=MIN_PREDS);
+
+  // perfect / soClose / zeros
+  const cPerfect = listCard("🎯 Perfect scores", byDesc("perfect"), it=>it.perfect, "None yet.");
+  const cClose   = listCard("😬 So close (1 goal off perfect)", byDesc("soClose"), it=>it.soClose, "None yet.");
+  const cZeros   = listCard("0️⃣ Most zeros", byDesc("zeros"), it=>it.zeros, "Nobody's blanked — yet!");
+
+  // most points in a day
+  const dayLeaders = rows.filter(r=>r.bestDayPts>0).sort((a,b)=>b.bestDayPts-a.bestDayPts);
+  const cBigDay = listCard("💥 Most points in a day", dayLeaders, it=>`${it.bestDayPts} (${fmtD(it.bestDayDate)})`, "No results yet.");
+
+  // biggest climb
+  const cClimb = climbBest && climbBest.gain>0
+    ? `<div class="fscard"><h4>🚀 Biggest one-day climb</h4><table><tr><td class="${youCls(climbBest.p)}">${climbBest.p}${youTag(climbBest.p)}</td><td class="v">${climbBest.from}→${climbBest.to} (+${climbBest.gain})</td></tr></table></div>`
+    : `<div class="fscard"><h4>🚀 Biggest one-day climb</h4><div class="stats-empty">Need at least two match days.</div></div>`;
+
+  // style stats (min predictions)
+  const cDraws = listCard("🤝 Draw specialist", eligible.slice().filter(r=>r.draws>0).sort((a,b)=>b.draws-a.draws), it=>it.draws, "No draw-pickers yet.");
+  const cGoals = listCard("🥅 Goal-fest merchant (avg goals)", eligible.slice().sort((a,b)=>b.avgGoals-a.avgGoals), it=>it.avgGoals.toFixed(1), "Not enough predictions yet.");
+  const cLow   = listCard("🛡️ Low-scoring specialist (avg goals)", eligible.slice().sort((a,b)=>a.avgGoals-b.avgGoals), it=>it.avgGoals.toFixed(1), "Not enough predictions yet.");
+  const cTight = listCard("🤏 Tightest-games tipster", eligible.slice().filter(r=>r.tight>0).sort((a,b)=>b.tightPct-a.tightPct), it=>`${it.tightPct}%`, "Not enough predictions yet.");
+
   return `<div class="funstats">
-    ${card("🎯 Perfect scores","perfect","None yet.")}
-    ${card("😬 So close (1 goal off perfect)","soClose","None yet.")}
-    ${card("0️⃣ Most zeros","zeros","Nobody's blanked — yet!")}
+    ${cPerfect}${cClose}${cZeros}${cBigDay}${cClimb}${cDraws}${cGoals}${cLow}${cTight}
   </div>`;
 }
+
+let h2hA=null, h2hB=null; // chosen players
+
+function playerAggForH2H(p){
+  let total=0,perfect=0,soClose=0,zeros=0,games=0;
+  const perGame={}; // match_num -> points
+  FIXTURES.forEach(f=>{const num=f.match_num;const r=results[num];if(!r||r.h===""||r.a==="")return;
+    const s=scoreMatch((allPreds[p]||{})[num],r,isKO(num),num);if(s===null)return;
+    total+=s;games++;perGame[num]=s;const maxFor=num===FINAL_MATCH?16:8;
+    if(s===maxFor)perfect++;else if(s===0)zeros++;
+    const pred=(allPreds[p]||{})[num];
+    if(s!==maxFor&&pred&&pred.h!==""&&pred.a!==""){const ph=+pred.h,pa=+pred.a,rh=+r.h,ra=+r.a;
+      const outcomeOK=(ph>pa&&rh>ra)||(pa>ph&&ra>rh)||(ph===pa&&rh===ra);const he=ph===rh,ae=pa===ra;
+      const oneOff=(he&&Math.abs(pa-ra)===1)||(ae&&Math.abs(ph-rh)===1);if(outcomeOK&&oneOff&&!(he&&ae))soClose++;}
+  });
+  return {total,perfect,soClose,zeros,games,perGame};
+}
+
+function renderH2H(){
+  const opts = sel => allPlayers.map(p=>`<option value="${p}" ${sel===p?"selected":""}>${p}</option>`).join("");
+  let body=`<div class="pickers">
+    <select id="h2hSelA"><option value="">— player A —</option>${opts(h2hA)}</select>
+    <span class="vs">vs</span>
+    <select id="h2hSelB"><option value="">— player B —</option>${opts(h2hB)}</select>
+  </div>`;
+  if(h2hA && h2hB && h2hA!==h2hB){
+    const A=playerAggForH2H(h2hA), B=playerAggForH2H(h2hB);
+    // games where both predicted & game played: who scored more
+    let aWins=0,bWins=0,ties=0;
+    const nums=new Set([...Object.keys(A.perGame),...Object.keys(B.perGame)]);
+    nums.forEach(n=>{const a=A.perGame[n], b=B.perGame[n]; if(a==null||b==null)return; if(a>b)aWins++;else if(b>a)bWins++;else ties++;});
+    const row=(metric,a,b,higherWins=true)=>{
+      const aw = higherWins? a>b : a<b, bw = higherWins? b>a : b<a;
+      return `<tr><td class="${aw?'win':''}">${a}</td><td class="metric">${metric}</td><td class="${bw?'win':''}">${b}</td></tr>`;
+    };
+    body+=`<table>
+      <tr><th>${h2hA}</th><th></th><th>${h2hB}</th></tr>
+      ${row("Total points",A.total,B.total)}
+      ${row("Perfect scores",A.perfect,B.perfect)}
+      ${row("So close",A.soClose,B.soClose)}
+      ${row("Zeros",A.zeros,B.zeros,false)}
+      ${row("Games scored higher (h2h)",aWins,bWins)}
+    </table>
+    <div class="hint">${ties?`(${ties} games tied on points)`:""}</div>`;
+  } else {
+    body+=`<div class="stats-empty">Pick two different players to compare.</div>`;
+  }
+  return `<div class="h2h"><h4>🥊 Head-to-head</h4>${body}</div>`;
+}
+
 function renderStats(){
   const dates=statsDates();const colors=colorMap();const selected=statsSel;
   let chips="";allPlayers.forEach(p=>{const on=!selected||selected.has(p);
@@ -594,12 +733,18 @@ function renderStats(){
     <div class="stats-filter">${chips}</div>
     <div class="chart-card"><h3>📈 Leaderboard position by date (1st at the top)</h3>${buildRankChart(dates,colors,selected)}</div>
     ${funStats(selected)}
-    <div class="hint">Pick players above to focus the chart and stats. Position is recalculated after each day's games.</div>
+    ${renderH2H()}
+    <div class="hint">Pick players above to focus the chart and stats. Head-to-head compares any two, independent of the filter.</div>
   </div>`;
+  // chart filter chips
   content.querySelectorAll("[data-statp]").forEach(cb=>cb.addEventListener("change",()=>{
     const chosen=new Set([...content.querySelectorAll("[data-statp]:checked")].map(x=>x.dataset.statp));
     statsSel=(chosen.size===allPlayers.length)?null:chosen;renderStats();
   }));
+  // head-to-head dropdowns (independent of filter)
+  const selA=$("h2hSelA"), selB=$("h2hSelB");
+  if(selA) selA.addEventListener("change",e=>{h2hA=e.target.value||null;renderStats();});
+  if(selB) selB.addEventListener("change",e=>{h2hB=e.target.value||null;renderStats();});
 }
 async function showStats(){mode="stats";await Promise.all([loadAllPreds(),loadResults()]);statsSel=null;render();}
 
