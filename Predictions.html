@@ -231,7 +231,6 @@
 <div class="controls" id="statsControls" style="display:none">
   <button id="statsAll" class="secbtn2">All players</button>
   <button id="statsNone" class="secbtn2">Unselect all</button>
-  <button id="statsJustMe" class="secbtn2">Just me</button>
   <button id="statsReload">↻ Reload</button>
 </div>
 
@@ -621,7 +620,6 @@ $("allReloadBtn").onclick=async()=>{await Promise.all([loadAllPreds(),loadResult
 $("lbReloadBtn").onclick=async()=>{await Promise.all([loadAllPreds(),loadResults()]);renderLeaderboard();toastMsg("↻ Reloaded");};
 $("statsAll").onclick=()=>{statsSel=null;renderStats();};
 $("statsNone").onclick=()=>{statsSel=new Set();renderStats();}; 
-$("statsJustMe").onclick=()=>{if(!me){toastMsg("Log in to use 'Just me'",true);return;}statsSel=new Set([me]);renderStats();};
 $("statsReload").onclick=async()=>{await Promise.all([loadAllPreds(),loadResults()]);renderStats();toastMsg("↻ Reloaded");};
 stageFilter.addEventListener("change",()=>{missing=null;renderMy();});
 search.addEventListener("input",renderMy);
