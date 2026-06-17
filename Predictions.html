@@ -159,6 +159,7 @@
   .funstats{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin-top:16px}
   .fscard{background:var(--card);border:1px solid #2a3a52;border-radius:12px;padding:12px 14px}
   .fscard h4{margin:0 0 8px;color:var(--gold);font-size:.9rem}
+  .fscard h4[title]{cursor:help;text-decoration:underline dotted rgba(255,209,102,.4);text-underline-offset:3px}
   .fscard table{width:100%;border-collapse:collapse;font-size:.82rem}
   .fscard td{padding:4px 6px;border-bottom:1px solid #2a3a52}
   .fscard td.v{text-align:right;font-weight:700;color:var(--accent)}
@@ -330,6 +331,8 @@ let FIXTURES=[],FX={},GROUP_LOCK={};
 let preds={},allPreds={},allPlayers=[],results={},resultsUpdatedAt=null;
 let me=null,myPin=null,missing=null,mode="lb";
 let statsSel=null; // Set of selected player names; null = all
+let teamOdds=null;        // {team(name): decimalOdds}; null until loaded
+let winCache={sig:null,html:""}; // cached win-chance card
 
 const $=id=>document.getElementById(id);
 const content=$("content"),toast=$("toast");
@@ -369,6 +372,18 @@ async function loadResults(){
   const {data,error}=await SB.from("results").select("*");if(error)throw error;
   results={};resultsUpdatedAt=null;
   (data||[]).forEach(r=>{results[r.match_num]={h:r.home==null?"":String(r.home),a:r.away==null?"":String(r.away),pen:r.pen||""};if(r.updated_at){const t=new Date(r.updated_at).getTime();if(resultsUpdatedAt==null||t>resultsUpdatedAt)resultsUpdatedAt=t;}});
+}
+async function loadOdds(){
+  const {data,error}=await SB.from("team_odds").select("*");
+  if(error){teamOdds={};return;}
+  teamOdds={};
+  (data||[]).forEach(r=>{
+    const s=String(r.odds||"").trim();
+    let dec=null;
+    if(/^\d+\s*\/\s*\d+$/.test(s)){const [a,b]=s.split("/").map(x=>+x.trim());if(b>0)dec=a/b+1;} // fractional -> decimal
+    else if(/^\d*\.?\d+$/.test(s)){dec=+s;}                                                       // already decimal-ish
+    if(dec&&dec>1)teamOdds[r.team]=dec;
+  });
 }
 
 async function savePrediction(num){
@@ -578,7 +593,6 @@ function funStats(selected){
   const rows = allPlayers.filter(inSel).map(p=>{
     let perfect=0, soClose=0, zeros=0;
     let draws=0, tight=0, goalSum=0, predCount=0, tightDen=0;
-    let bestDayPts=0, bestDayDate=null;
     const dayPts={}; // ISO date -> points that day
 
     FIXTURES.forEach(f=>{
@@ -616,64 +630,181 @@ function funStats(selected){
         }
       }
     });
-    Object.keys(dayPts).forEach(d=>{ if(dayPts[d]>bestDayPts){bestDayPts=dayPts[d];bestDayDate=d;} });
 
     const avgGoals = predCount? (goalSum/predCount) : 0;
     const tightPct = tightDen? Math.round(100*tight/tightDen) : 0;
-    return {p,perfect,soClose,zeros,draws,tight,tightPct,avgGoals,predCount,bestDayPts,bestDayDate};
+    return {p,perfect,soClose,zeros,draws,tight,tightPct,avgGoals,predCount,dayPts};
   });
-
-  // ---- biggest one-day climb (uses rank-over-time) ----
-  const dates=statsDates();
-  let climbBest=null; // {p,from,to,gain,dateFrom,dateTo}
-  if(dates.length>=2){
-    const rk=dates.map(d=>ranksAt(d));
-    allPlayers.forEach(p=>{ if(!inSel(p))return;
-      for(let i=1;i<dates.length;i++){
-        const gain=rk[i-1][p]-rk[i][p]; // positive = moved up
-        if(climbBest===null || gain>climbBest.gain){
-          climbBest={p,from:rk[i-1][p],to:rk[i][p],gain,dateTo:dates[i]};
-        }
-      }
-    });
-  }
 
   // ---- helpers to render a "leaderboard of a stat" ----
   const fmtD = iso => { if(!iso) return ""; const d=new Date(iso+"T12:00:00"); return days[d.getDay()]+" "+p2(d.getDate())+" "+mons[d.getMonth()]; };
   const youTag = p => (me&&p===me)?' (you)':'';
   const youCls = p => (me&&p===me)?'you':'';
 
-  function listCard(title, items, fmtVal, emptyMsg){
-    if(!items.length) return `<div class="fscard"><h4>${title}</h4><div class="stats-empty">${emptyMsg}</div></div>`;
+  function listCard(title, tip, items, fmtVal, emptyMsg){
+    if(!items.length) return `<div class="fscard"><h4 title="${tip}">${title}</h4><div class="stats-empty">${emptyMsg}</div></div>`;
     let t="";items.forEach(it=>{t+=`<tr><td class="${youCls(it.p)}">${it.p}${youTag(it.p)}</td><td class="v">${fmtVal(it)}</td></tr>`;});
-    return `<div class="fscard"><h4>${title}</h4><table>${t}</table></div>`;
+    return `<div class="fscard"><h4 title="${tip}">${title}</h4><table>${t}</table></div>`;
   }
   const byDesc = key => rows.slice().filter(r=>r[key]>0).sort((a,b)=>b[key]-a[key]);
   const eligible = rows.filter(r=>r.predCount>=MIN_PREDS);
 
   // perfect / soClose / zeros
-  const cPerfect = listCard("🎯 Perfect scores", byDesc("perfect"), it=>it.perfect, "None yet.");
-  const cClose   = listCard("😬 So close (1 goal off perfect)", byDesc("soClose"), it=>it.soClose, "None yet.");
-  const cZeros   = listCard("0️⃣ Most zeros", byDesc("zeros"), it=>it.zeros, "Nobody's blanked — yet!");
+  const cPerfect = listCard("🎯 Perfect scores",
+    "Number of games predicted with the exact scoreline (full 8 pts, or 16 for the Final).",
+    byDesc("perfect"), it=>it.perfect, "None yet.");
+  const cClose   = listCard("😬 So close (1 goal off perfect)",
+    "Right outcome and one team's score exact, but the other team's score was off by exactly one goal.",
+    byDesc("soClose"), it=>it.soClose, "None yet.");
+  const cZeros   = listCard("0️⃣ Most zeros",
+    "Number of played games where the prediction scored 0 points.",
+    byDesc("zeros"), it=>it.zeros, "Nobody's blanked — yet!");
 
-  // most points in a day
-  const dayLeaders = rows.filter(r=>r.bestDayPts>0).sort((a,b)=>b.bestDayPts-a.bestDayPts);
-  const cBigDay = listCard("💥 Most points in a day", dayLeaders, it=>`${it.bestDayPts} (${fmtD(it.bestDayDate)})`, "No results yet.");
-
-  // biggest climb
-  const cClimb = climbBest && climbBest.gain>0
-    ? `<div class="fscard"><h4>🚀 Biggest one-day climb</h4><table><tr><td class="${youCls(climbBest.p)}">${climbBest.p}${youTag(climbBest.p)}</td><td class="v">${climbBest.from}→${climbBest.to} (+${climbBest.gain})</td></tr></table></div>`
-    : `<div class="fscard"><h4>🚀 Biggest one-day climb</h4><div class="stats-empty">Need at least two match days.</div></div>`;
+  // most points in a day — top 17 day-hauls (>=10), a player may appear more than once
+  const bigDays = [];
+  rows.forEach(r=>{ Object.keys(r.dayPts).forEach(d=>{ if(r.dayPts[d]>=10) bigDays.push({p:r.p, pts:r.dayPts[d], date:d}); }); });
+  bigDays.sort((a,b)=> b.pts-a.pts || a.date.localeCompare(b.date) || a.p.localeCompare(b.p));
+  const topDays = bigDays.slice(0,17);
+  const bigDayTip="Best single-day points hauls of 10 or more (sum of all that day's games). Top 17 days; a player can appear more than once for different days.";
+  const cBigDay = topDays.length
+    ? `<div class="fscard"><h4 title="${bigDayTip}">💥 Most points in a day</h4><table>${
+        topDays.map(it=>`<tr><td class="${youCls(it.p)}">${it.p}${youTag(it.p)}</td><td class="v">${it.pts} (${fmtD(it.date)})</td></tr>`).join("")
+      }</table></div>`
+    : `<div class="fscard"><h4 title="${bigDayTip}">💥 Most points in a day</h4><div class="stats-empty">No 10+ point days yet.</div></div>`;
 
   // style stats (min predictions)
-  const cDraws = listCard("🤝 Draw specialist", eligible.slice().filter(r=>r.draws>0).sort((a,b)=>b.draws-a.draws), it=>it.draws, "No draw-pickers yet.");
-  const cGoals = listCard("🥅 Goal-fest merchant (avg goals)", eligible.slice().sort((a,b)=>b.avgGoals-a.avgGoals), it=>it.avgGoals.toFixed(1), "Not enough predictions yet.");
-  const cLow   = listCard("🛡️ Low-scoring specialist (avg goals)", eligible.slice().sort((a,b)=>a.avgGoals-b.avgGoals), it=>it.avgGoals.toFixed(1), "Not enough predictions yet.");
-  const cTight = listCard("🤏 Tightest-games tipster", eligible.slice().filter(r=>r.tight>0).sort((a,b)=>b.tightPct-a.tightPct), it=>`${it.tightPct}%`, "Not enough predictions yet.");
+  const cDraws = listCard("🤝 Draw specialist",
+    "Most games predicted as a draw (equal scoreline). Min 5 predictions.",
+    eligible.slice().filter(r=>r.draws>0).sort((a,b)=>b.draws-a.draws), it=>it.draws, "No draw-pickers yet.");
+  const cGoals = listCard("🥅 Goal-fest merchant (avg goals)",
+    "Highest average total goals (home + away) across all their predictions. Min 5 predictions.",
+    eligible.slice().sort((a,b)=>b.avgGoals-a.avgGoals), it=>it.avgGoals.toFixed(1), "Not enough predictions yet.");
+  const cLow   = listCard("🛡️ Low-scoring specialist (avg goals)",
+    "Lowest average total goals (home + away) across all their predictions. Min 5 predictions.",
+    eligible.slice().sort((a,b)=>a.avgGoals-b.avgGoals), it=>it.avgGoals.toFixed(1), "Not enough predictions yet.");
+  const cTight = listCard("🤏 Tightest-games tipster",
+    "Share of predictions that are a draw or a one-goal margin. Min 5 predictions.",
+    eligible.slice().filter(r=>r.tight>0).sort((a,b)=>b.tightPct-a.tightPct), it=>`${it.tightPct}%`, "Not enough predictions yet.");
 
   return `<div class="funstats">
-    ${cPerfect}${cClose}${cZeros}${cBigDay}${cClimb}${cDraws}${cGoals}${cLow}${cTight}
+    ${winChanceCached()}${cPerfect}${cClose}${cZeros}${cBigDay}${cDraws}${cGoals}${cLow}${cTight}
   </div>`;
+}
+
+// ===== Win-chance (Monte Carlo, odds-driven, group-stage strength) =====
+const WC_SIMS=5000;
+const WC_BASE=1.35;   // baseline expected goals per team
+const WC_SPREAD=0.55; // how strongly odds skew xG (higher = bigger favourite edge)
+
+// implied (normalised) win prob per team, from decimal odds
+function impliedProbs(){
+  if(!teamOdds) return {};
+  const raw={},names=Object.keys(teamOdds);
+  names.forEach(t=>{raw[t]=1/teamOdds[t];});
+  let sum=0;names.forEach(t=>sum+=raw[t]);
+  const p={};names.forEach(t=>p[t]=sum>0?raw[t]/sum:0);
+  return p;
+}
+// strength multiplier per team: ~0.8 (weak) .. ~1.7 (strong), centred ~1.0
+function strengthMap(){
+  const p=impliedProbs(),names=Object.keys(p);
+  const map={};if(!names.length)return map;
+  // log-scale the probabilities so 500/1 outsiders aren't all identical mush
+  const logs=names.map(t=>Math.log(p[t]+1e-6));
+  const mn=Math.min(...logs),mx=Math.max(...logs);
+  names.forEach((t,i)=>{
+    const z=(mx>mn)?(logs[i]-mn)/(mx-mn):0.5; // 0..1
+    map[t]=0.8+ (z*0.9);                       // 0.8 .. 1.7
+  });
+  return map;
+}
+// poisson sample
+function poisson(lambda){let L=Math.exp(-lambda),k=0,pr=1;do{k++;pr*=Math.random();}while(pr>L);return k-1;}
+// simulate one scoreline for a fixture; returns {h,a} or null if teams unknown (KO placeholders)
+function simScore(f,strength){
+  const ht=f.home_code,at=f.away_code;
+  const hs=strength[ht],as=strength[at];
+  if(hs==null||as==null) return null; // unresolved KO placeholder / missing -> neutral handled by caller
+  const hx=WC_BASE*Math.pow(hs/as,WC_SPREAD)*1.05; // small home nudge
+  const ax=WC_BASE*Math.pow(as/hs,WC_SPREAD);
+  return {h:poisson(hx),a:poisson(ax)};
+}
+// neutral scoreline when teams unknown
+function simNeutral(){return {h:poisson(WC_BASE),a:poisson(WC_BASE)};}
+
+function resultsSignature(){
+  // played results + odds, so either changing forces a recompute on next render
+  let parts=[];
+  FIXTURES.forEach(f=>{const r=results[f.match_num];if(r&&r.h!==""&&r.a!=="")parts.push(f.match_num+":"+r.h+"-"+r.a+(r.pen?("p"+r.pen):""));});
+  const oddsSig=teamOdds?Object.keys(teamOdds).sort().map(t=>t+"="+teamOdds[t]).join(","):"none";
+  return parts.join("|")+"||"+oddsSig;
+}
+
+function winChanceCard(){
+  const tip="Monte Carlo estimate: keeps real results fixed, simulates remaining games "+WC_SIMS+
+    " times using bookmaker odds for team strength (group games) and a neutral model for unresolved knockout ties, then counts how often each player finishes top. Ties split. Updates only when a result or the odds change.";
+  if(!teamOdds){
+    return `<div class="fscard"><h4 title="${tip}">🔮 Chance of winning</h4><div class="stats-empty">Loading odds…</div></div>`;
+  }
+
+  // count games still to play
+  const remaining=FIXTURES.filter(f=>{const r=results[f.match_num];return !(r&&r.h!==""&&r.a!=="");});
+  if(remaining.length===0){
+    // tournament settled -> just reflect leaderboard
+    const fin=allPlayers.map(p=>({p,t:pointsUpTo(p,'9999')})).sort((a,b)=>b.t-a.t);
+    const top=fin.length?fin[0].t:0;const winners=fin.filter(x=>x.t===top).map(x=>x.p);
+    let t="";allPlayers.slice().sort((a,b)=>pointsUpTo(b,'9999')-pointsUpTo(a,'9999')).forEach(p=>{
+      const pct=winners.includes(p)?(100/winners.length):0;
+      t+=`<tr><td class="${(me&&p===me)?'you':''}">${p}${(me&&p===me)?' (you)':''}</td><td class="v">${pct.toFixed(0)}%</td></tr>`;});
+    return `<div class="fscard"><h4 title="${tip}">🔮 Chance of winning</h4><table>${t}</table><div class="stats-empty">Tournament complete.</div></div>`;
+  }
+
+  const strength=strengthMap();
+
+  // how many fixture teams (group stage) are missing odds?
+  const groupTeams=new Set();
+  FIXTURES.forEach(f=>{ if(!isKO(f.match_num)){groupTeams.add(f.home_code);groupTeams.add(f.away_code);} });
+  let missingOdds=0;groupTeams.forEach(t=>{if(strength[t]==null)missingOdds++;});
+
+  // base (locked-in) points from played games
+  const base={};allPlayers.forEach(p=>base[p]=0);
+  FIXTURES.forEach(f=>{const num=f.match_num;const r=results[num];if(!r||r.h===""||r.a==="")return;
+    allPlayers.forEach(p=>{const s=scoreMatch((allPreds[p]||{})[num],r,isKO(num),num);if(s!==null)base[p]+=s;});
+  });
+
+  const wins={};allPlayers.forEach(p=>wins[p]=0);
+
+  for(let sim=0;sim<WC_SIMS;sim++){
+    const tot={};allPlayers.forEach(p=>tot[p]=base[p]);
+    remaining.forEach(f=>{
+      const num=f.match_num,ko=isKO(num);
+      let sc=ko?simNeutral():simScore(f,strength);
+      if(sc==null)sc=simNeutral();
+      // build a synthetic "result" incl. random progression for level KO ties
+      const res={h:String(sc.h),a:String(sc.a),pen: (ko&&sc.h===sc.a)?(Math.random()<0.5?"H":"A"):""};
+      allPlayers.forEach(p=>{const s=scoreMatch((allPreds[p]||{})[num],res,ko,num);if(s!==null)tot[p]+=s;});
+    });
+    // who's top this sim
+    let best=-1;allPlayers.forEach(p=>{if(tot[p]>best)best=tot[p];});
+    const leaders=allPlayers.filter(p=>tot[p]===best);
+    leaders.forEach(p=>wins[p]+=1/leaders.length);
+  }
+
+  const ranked=allPlayers.slice().sort((a,b)=>wins[b]-wins[a]||pointsUpTo(b,'9999')-pointsUpTo(a,'9999'));
+  let t="";ranked.forEach(p=>{const pct=100*wins[p]/WC_SIMS;
+    t+=`<tr><td class="${(me&&p===me)?'you':''}">${p}${(me&&p===me)?' (you)':''}</td><td class="v">${pct<0.5&&pct>0?'<1':pct.toFixed(0)}%</td></tr>`;});
+  const warn=missingOdds?`<div class="stats-empty">⚠️ ${missingOdds} team${missingOdds===1?'':'s'} missing odds — using average strength.</div>`:"";
+  return `<div class="fscard"><h4 title="${tip}">🔮 Chance of winning</h4><table>${t}</table>${warn}</div>`;
+}
+
+// cached wrapper: only re-simulates when results OR odds change
+function winChanceCached(){
+  const sig=resultsSignature();
+  if(winCache.sig===sig && winCache.html) return winCache.html;
+  const html=winChanceCard();
+  // don't cache the transient "Loading odds…" state
+  if(teamOdds) winCache={sig,html};
+  return html;
 }
 
 let h2hA=null, h2hB=null; // chosen players
@@ -734,7 +865,7 @@ function renderStats(){
     <div class="chart-card"><h3>📈 Leaderboard position by date (1st at the top)</h3>${buildRankChart(dates,colors,selected)}</div>
     ${funStats(selected)}
     ${renderH2H()}
-    <div class="hint">Pick players above to focus the chart and stats. Head-to-head compares any two, independent of the filter.</div>
+    <div class="hint">Pick players above to focus the chart and stats. Head-to-head and chance-of-winning compare all players, independent of the filter.</div>
   </div>`;
   // chart filter chips
   content.querySelectorAll("[data-statp]").forEach(cb=>cb.addEventListener("change",()=>{
@@ -746,7 +877,7 @@ function renderStats(){
   if(selA) selA.addEventListener("change",e=>{h2hA=e.target.value||null;renderStats();});
   if(selB) selB.addEventListener("change",e=>{h2hB=e.target.value||null;renderStats();});
 }
-async function showStats(){mode="stats";await Promise.all([loadAllPreds(),loadResults()]);statsSel=null;render();}
+async function showStats(){mode="stats";await Promise.all([loadAllPreds(),loadResults(),loadOdds()]);statsSel=null;render();}
 
 function setNavActive(){$("navLb").classList.toggle("active",mode==="lb");$("navAll").classList.toggle("active",mode==="all");$("navMy").classList.toggle("active",mode==="my");$("navStats").classList.toggle("active",mode==="stats");}
 function render(){
@@ -765,7 +896,7 @@ $("allReloadBtn").onclick=async()=>{await Promise.all([loadAllPreds(),loadResult
 $("lbReloadBtn").onclick=async()=>{await Promise.all([loadAllPreds(),loadResults()]);renderLeaderboard();toastMsg("↻ Reloaded");};
 $("statsAll").onclick=()=>{statsSel=null;renderStats();};
 $("statsNone").onclick=()=>{statsSel=new Set();renderStats();}; 
-$("statsReload").onclick=async()=>{await Promise.all([loadAllPreds(),loadResults()]);renderStats();toastMsg("↻ Reloaded");};
+$("statsReload").onclick=async()=>{await Promise.all([loadAllPreds(),loadResults(),loadOdds()]);renderStats();toastMsg("↻ Reloaded");};
 stageFilter.addEventListener("change",()=>{missing=null;renderMy();});
 search.addEventListener("input",renderMy);
 allStageFilter.addEventListener("change",renderAll);
@@ -805,7 +936,7 @@ async function init(){
       if(mode==="my"&&me&&!search.value.trim())renderMy();
       else if(mode==="all"&&!allSearch.value.trim()){Promise.all([loadAllPreds(),loadResults()]).then(renderAll);}
       else if(mode==="lb"){Promise.all([loadAllPreds(),loadResults()]).then(renderLeaderboard);}
-      else if(mode==="stats"){Promise.all([loadAllPreds(),loadResults()]).then(renderStats);}
+      else if(mode==="stats"){Promise.all([loadAllPreds(),loadResults(),loadOdds()]).then(renderStats);}
     },60000);
   }catch(err){content.innerHTML=`<div class="hint" style="color:#ffb4a2">⚠️ Could not connect: ${err.message}</div>`;}
 }
