@@ -174,9 +174,12 @@
   .h2h table{width:100%;border-collapse:collapse;font-size:.84rem;max-width:480px;margin:0 auto}
   .h2h td,.h2h th{padding:6px 10px;border-bottom:1px solid #2a3a52;text-align:center}
   .h2h th{color:var(--accent);font-size:.78rem}
+  .h2h tr.section td{background:#15263b;color:var(--gold);font-weight:700;text-align:center;font-size:.74rem;letter-spacing:.03em;border-bottom:1px solid #2a3a52}
   .h2h td.metric{text-align:left;color:var(--muted)}
   .h2h td.win{color:var(--win);font-weight:700}
   .h2h .vs{color:var(--muted);font-weight:700;align-self:center}
+  .h2h .rivalry{max-width:480px;margin:10px auto 0;background:#15263b;border:1px solid #2a3a52;border-radius:8px;padding:8px 10px;font-size:.82rem;text-align:center}
+  .h2h .rivalry b{color:var(--gold)}
 
   /* scoring modal */
   .modal-overlay{position:fixed;inset:0;background:rgba(3,8,15,.72);display:none;align-items:flex-start;justify-content:center;z-index:100;padding:12px;overflow-y:auto}
@@ -569,7 +572,7 @@ function buildRankChart(dates,colors,selected){
             paint-order="stroke" stroke="#0d1b2a" stroke-width="3" stroke-linejoin="round">${l.name}</text>`;
   });
 
-  return `<svg viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" role="img">${grid}${xlab}${lines}${lab}</svg>`;
+  return `<svg viewBox="0 0 ${W} ${H}" width="100%" preserveAspectRatio="xMidYMid meet" role="img" style="max-width:740px;height:auto;display:block;margin:0 auto">${grid}${xlab}${lines}${lab}</svg>`;
 }
 function funStats(selected){
   const MIN_PREDS = 5; // style stats only count players with >=5 predictions
@@ -705,17 +708,38 @@ let h2hA=null, h2hB=null; // chosen players
 
 function playerAggForH2H(p){
   let total=0,perfect=0,soClose=0,zeros=0,games=0;
-  const perGame={}; // match_num -> points
-  FIXTURES.forEach(f=>{const num=f.match_num;const r=results[num];if(!r||r.h===""||r.a==="")return;
-    const s=scoreMatch((allPreds[p]||{})[num],r,isKO(num),num);if(s===null)return;
-    total+=s;games++;perGame[num]=s;const maxFor=num===FINAL_MATCH?16:8;
-    if(s===maxFor)perfect++;else if(s===0)zeros++;
+  let totalGoals=0, winnerGoalsSum=0, loserGoalsSum=0, decisivePreds=0;
+  const perGame={};        // match_num -> points (played games)
+  const scoreCounts={};    // "h-a" -> count (all predictions)
+  FIXTURES.forEach(f=>{
+    const num=f.match_num;
     const pred=(allPreds[p]||{})[num];
+    // style metrics over ALL predictions (played or not)
+    if(pred && pred.h!=="" && pred.a!==""){
+      const ph=+pred.h, pa=+pred.a;
+      totalGoals += ph+pa;
+      const key=ph+"-"+pa; scoreCounts[key]=(scoreCounts[key]||0)+1;
+      if(ph!==pa){ decisivePreds++; winnerGoalsSum+=Math.max(ph,pa); loserGoalsSum+=Math.min(ph,pa); }
+    }
+    // performance metrics over PLAYED games
+    const r=results[num]; if(!r||r.h===""||r.a==="")return;
+    const s=scoreMatch(pred,r,isKO(num),num); if(s===null)return;
+    total+=s; games++; perGame[num]=s; const maxFor=num===FINAL_MATCH?16:8;
+    if(s===maxFor)perfect++; else if(s===0)zeros++;
     if(s!==maxFor&&pred&&pred.h!==""&&pred.a!==""){const ph=+pred.h,pa=+pred.a,rh=+r.h,ra=+r.a;
       const outcomeOK=(ph>pa&&rh>ra)||(pa>ph&&ra>rh)||(ph===pa&&rh===ra);const he=ph===rh,ae=pa===ra;
       const oneOff=(he&&Math.abs(pa-ra)===1)||(ae&&Math.abs(ph-rh)===1);if(outcomeOK&&oneOff&&!(he&&ae))soClose++;}
   });
-  return {total,perfect,soClose,zeros,games,perGame};
+  // favourite scoreline = most frequent, tie -> lowest total goals
+  let favScore=null, favCount=0;
+  Object.keys(scoreCounts).forEach(k=>{const c=scoreCounts[k];
+    if(c>favCount || (c===favCount && favScore && (k.split("-").reduce((x,y)=>+x+ +y) < favScore.split("-").reduce((x,y)=>+x+ +y)))){favCount=c;favScore=k;}
+  });
+  const favGoals = favScore? favScore.split("-").reduce((x,y)=>+x+ +y,0):0;
+  return {total,perfect,soClose,zeros,games,perGame,totalGoals,
+    avgWinnerGoals: decisivePreds? winnerGoalsSum/decisivePreds : null,
+    avgLoserGoals: decisivePreds? loserGoalsSum/decisivePreds : null,
+    favScore, favCount, favGoals};
 }
 
 function renderH2H(){
@@ -727,27 +751,82 @@ function renderH2H(){
   </div>`;
   if(h2hA && h2hB && h2hA!==h2hB){
     const A=playerAggForH2H(h2hA), B=playerAggForH2H(h2hB);
-    // games where both predicted & game played: who scored more
+
+    // shared-game derived metrics: h2h game wins, twin-brain, outcome agreement, biggest disagreement
     let aWins=0,bWins=0,ties=0;
-    const nums=new Set([...Object.keys(A.perGame),...Object.keys(B.perGame)]);
-    nums.forEach(n=>{const a=A.perGame[n], b=B.perGame[n]; if(a==null||b==null)return; if(a>b)aWins++;else if(b>a)bWins++;else ties++;});
-    const row=(metric,a,b,higherWins=true)=>{
-      const aw = higherWins? a>b : a<b, bw = higherWins? b>a : b<a;
-      return `<tr><td class="${aw?'win':''}">${a}</td><td class="metric">${metric}</td><td class="${bw?'win':''}">${b}</td></tr>`;
-    };
-    body+=`<table>
+    let bothScoreline=0, sameScoreline=0, bothOutcome=0, sameOutcome=0;
+    let bestGap=-1, bestGame=null;
+    const outcomeOf=pred=>{const h=+pred.h,a=+pred.a;return h>a?"H":a>h?"A":"D";};
+    FIXTURES.forEach(f=>{
+      const num=f.match_num;
+      const pa=(allPreds[h2hA]||{})[num], pb=(allPreds[h2hB]||{})[num];
+      const bothPredicted = pa&&pa.h!==""&&pa.a!=="" && pb&&pb.h!==""&&pb.a!=="";
+      if(bothPredicted){
+        bothScoreline++; if(+pa.h===+pb.h && +pa.a===+pb.a) sameScoreline++;
+        bothOutcome++; if(outcomeOf(pa)===outcomeOf(pb)) sameOutcome++;
+      }
+      // biggest disagreement on a played game both predicted
+      const sa=A.perGame[num], sb=B.perGame[num];
+      if(sa!=null && sb!=null){
+        if(sa>sb)aWins++; else if(sb>sa)bWins++; else ties++;
+        const gap=Math.abs(sa-sb);
+        if(gap>bestGap || (gap===bestGap && bestGame && new Date(f.kickoff)>new Date(FX[bestGame.num].kickoff))){
+          bestGap=gap; bestGame={num,sa,sb,f};
+        }
+      }
+    });
+
+    // lead "days in front" using per-date running totals
+    const dates=statsDates(); let aDays=0,bDays=0,tieDays=0;
+    dates.forEach(d=>{const ta=pointsUpTo(h2hA,d), tb=pointsUpTo(h2hB,d); if(ta>tb)aDays++; else if(tb>ta)bDays++; else tieDays++;});
+
+    const win=(a,b,higher=true)=>({aw:higher?a>b:a<b, bw:higher?b>a:a>b});
+    const rowHL=(metric,a,b,higher=true)=>{const {aw,bw}=win(a,b,higher);
+      return `<tr><td class="${aw?'win':''}">${a}</td><td class="metric">${metric}</td><td class="${bw?'win':''}">${b}</td></tr>`;};
+    const rowPlain=(metric,a,b)=>`<tr><td>${a}</td><td class="metric">${metric}</td><td>${b}</td></tr>`;
+    const sect=t=>`<tr class="section"><td colspan="3">${t}</td></tr>`;
+    const pct=(num,den)=>den? Math.round(100*num/den)+"%" : "—";
+    const fav=X=>X.favScore? X.favScore.replace("-","–")+" (×"+X.favCount+")" : "—";
+    const avg1=v=>v==null?"—":v.toFixed(1);
+
+    let tbl=`<table>
       <tr><th>${h2hA}</th><th></th><th>${h2hB}</th></tr>
-      ${row("Total points",A.total,B.total)}
-      ${row("Perfect scores",A.perfect,B.perfect)}
-      ${row("So close",A.soClose,B.soClose)}
-      ${row("Zeros",A.zeros,B.zeros,false)}
-      ${row("Games scored higher (h2h)",aWins,bWins)}
-    </table>
-    <div class="hint">${ties?`(${ties} games tied on points)`:""}</div>`;
+      ${sect("⚔️ Performance")}
+      ${rowHL("Total points",A.total,B.total)}
+      ${rowHL("Perfect scores",A.perfect,B.perfect)}
+      ${rowHL("So close",A.soClose,B.soClose)}
+      ${rowHL("Zeros",A.zeros,B.zeros,false)}
+      ${rowHL("Games scored higher",aWins,bWins)}
+      ${rowHL("Days led (vs each other)",aDays,bDays)}
+      ${sect("🎭 Style")}
+      ${rowPlain("Favourite score",fav(A),fav(B))}
+      ${rowPlain("Avg goals — winner",avg1(A.avgWinnerGoals),avg1(B.avgWinnerGoals))}
+      ${rowPlain("Avg goals — loser",avg1(A.avgLoserGoals),avg1(B.avgLoserGoals))}
+      ${rowPlain("Total goals predicted",A.totalGoals,B.totalGoals)}
+      ${sect("🧠 Agreement")}
+      ${rowPlain("👯 Twin-brain (exact scores)",pct(sameScoreline,bothScoreline),pct(sameScoreline,bothScoreline))}
+      ${rowPlain("🎯 Outcome agreement",pct(sameOutcome,bothOutcome),pct(sameOutcome,bothOutcome))}
+    </table>`;
+
+    // rivalry moment
+    let rival="";
+    if(bestGame && bestGap>0){
+      const f=bestGame.f; const fixt=`${f.home_code} v ${f.away_code}`;
+      const aHi=bestGame.sa>bestGame.sb, bHi=bestGame.sb>bestGame.sa;
+      rival=`<div class="rivalry">🃏 Biggest disagreement — <b>#${bestGame.num}</b> ${fixt} (${dateShort(new Date(f.kickoff))}): `+
+        `<span class="${aHi?'':''}">${h2hA} ${bestGame.sa}</span> vs <span>${h2hB} ${bestGame.sb}</span> · Δ${bestGap} pts</div>`;
+    } else {
+      rival=`<div class="rivalry">🃏 Biggest disagreement — no shared played games yet.</div>`;
+    }
+
+    // agreement note when no shared games
+    const agNote = bothScoreline===0 ? `<div class="hint">No games both have predicted yet — agreement stats will appear once you overlap.</div>` : "";
+
+    body+=tbl+rival+agNote;
   } else {
     body+=`<div class="stats-empty">Pick two different players to compare.</div>`;
   }
-  return `<div class="h2h"><h4>🥊 Head-to-head</h4>${body}</div>`;
+  return `<div class="h2h"><h4 title="Compare any two players. Performance metrics use played games; style metrics use all predictions; agreement uses games both have predicted (scoreline/outcome only, ignoring knockout progression). 'Days led' counts match-days each was ahead of the other on cumulative points.">🥊 Head-to-head</h4>${body}</div>`;
 }
 
 function renderStats(){
