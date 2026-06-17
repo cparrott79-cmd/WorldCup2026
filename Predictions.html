@@ -159,7 +159,10 @@
   .funstats{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin-top:16px}
   .fscard{background:var(--card);border:1px solid #2a3a52;border-radius:12px;padding:12px 14px}
   .fscard h4{margin:0 0 8px;color:var(--gold);font-size:.9rem}
-  .fscard h4[title]{cursor:help;text-decoration:underline dotted rgba(255,209,102,.4);text-underline-offset:3px}
+  .fscard h4.tip{cursor:pointer;display:flex;align-items:center;gap:6px;user-select:none}
+  .fscard h4.tip .tip-i{display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;border-radius:50%;background:#2b3a52;color:var(--accent);font-size:.7rem;font-weight:700;flex:0 0 auto}
+  .fscard .tip-body{display:none;margin:6px 0 2px;padding:8px 10px;background:#15263b;border:1px solid #2a3a52;border-radius:8px;color:var(--muted);font-size:.76rem;line-height:1.4}
+  .fscard .tip-body.show{display:block}
   .fscard table{width:100%;border-collapse:collapse;font-size:.82rem}
   .fscard td{padding:4px 6px;border-bottom:1px solid #2a3a52}
   .fscard td.v{text-align:right;font-weight:700;color:var(--accent)}
@@ -169,6 +172,10 @@
   /* Head-to-head */
   .h2h{background:var(--card);border:1px solid #2a3a52;border-radius:12px;padding:12px 14px;margin-top:16px}
   .h2h h4{margin:0 0 10px;color:var(--gold);font-size:.9rem}
+  .h2h h4.tip{cursor:pointer;display:flex;align-items:center;gap:6px;user-select:none;justify-content:center}
+  .h2h h4.tip .tip-i{display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;border-radius:50%;background:#2b3a52;color:var(--accent);font-size:.7rem;font-weight:700;flex:0 0 auto}
+  .h2h .tip-body{display:none;margin:0 auto 10px;max-width:480px;padding:8px 10px;background:#15263b;border:1px solid #2a3a52;border-radius:8px;color:var(--muted);font-size:.76rem;line-height:1.4}
+  .h2h .tip-body.show{display:block}
   .h2h .pickers{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-bottom:12px}
   .h2h select{min-width:130px}
   .h2h table{width:100%;border-collapse:collapse;font-size:.84rem;max-width:480px;margin:0 auto}
@@ -650,9 +657,10 @@ function funStats(selected){
   const youCls = p => (me&&p===me)?'you':'';
 
   function listCard(title, tip, items, fmtVal, emptyMsg){
-    if(!items.length) return `<div class="fscard"><h4 title="${tip}">${title}</h4><div class="stats-empty">${emptyMsg}</div></div>`;
+    const head=`<h4 class="tip" role="button" tabindex="0"><span class="tip-i" aria-hidden="true">i</span>${title}</h4><div class="tip-body">${tip}</div>`;
+    if(!items.length) return `<div class="fscard">${head}<div class="stats-empty">${emptyMsg}</div></div>`;
     let t="";items.forEach(it=>{t+=`<tr><td class="${youCls(it.p)}">${it.p}${youTag(it.p)}</td><td class="v">${fmtVal(it)}</td></tr>`;});
-    return `<div class="fscard"><h4 title="${tip}">${title}</h4><table>${t}</table></div>`;
+    return `<div class="fscard">${head}<table>${t}</table></div>`;
   }
   const byDesc = key => rows.slice().filter(r=>r[key]>0).sort((a,b)=>b[key]-a[key]);
   const eligible = rows.filter(r=>r.predCount>=MIN_PREDS);
@@ -679,11 +687,12 @@ function funStats(selected){
   bigDays.sort((a,b)=> b.pts-a.pts || a.date.localeCompare(b.date) || a.p.localeCompare(b.p));
   const topDays = bigDays.slice(0,17);
   const bigDayTip="Best single-day points hauls of 10 or more (sum of all that day's games). Top 17 days; a player can appear more than once for different days.";
+  const bigDayHead=`<h4 class="tip" role="button" tabindex="0"><span class="tip-i" aria-hidden="true">i</span>💥 Most points in a day</h4><div class="tip-body">${bigDayTip}</div>`;
   const cBigDay = topDays.length
-    ? `<div class="fscard"><h4 title="${bigDayTip}">💥 Most points in a day</h4><table>${
+    ? `<div class="fscard">${bigDayHead}<table>${
         topDays.map(it=>`<tr><td class="${youCls(it.p)}">${it.p}${youTag(it.p)}</td><td class="v">${it.pts} (${fmtD(it.date)})</td></tr>`).join("")
       }</table></div>`
-    : `<div class="fscard"><h4 title="${bigDayTip}">💥 Most points in a day</h4><div class="stats-empty">No 10+ point days yet.</div></div>`;
+    : `<div class="fscard">${bigDayHead}<div class="stats-empty">No 10+ point days yet.</div></div>`;
 
   // style stats (min predictions)
   const cDraws = listCard("🤝 Draw specialist",
@@ -735,11 +744,10 @@ function playerAggForH2H(p){
   Object.keys(scoreCounts).forEach(k=>{const c=scoreCounts[k];
     if(c>favCount || (c===favCount && favScore && (k.split("-").reduce((x,y)=>+x+ +y) < favScore.split("-").reduce((x,y)=>+x+ +y)))){favCount=c;favScore=k;}
   });
-  const favGoals = favScore? favScore.split("-").reduce((x,y)=>+x+ +y,0):0;
   return {total,perfect,soClose,zeros,games,perGame,totalGoals,
     avgWinnerGoals: decisivePreds? winnerGoalsSum/decisivePreds : null,
     avgLoserGoals: decisivePreds? loserGoalsSum/decisivePreds : null,
-    favScore, favCount, favGoals};
+    favScore, favCount};
 }
 
 function renderH2H(){
@@ -812,9 +820,8 @@ function renderH2H(){
     let rival="";
     if(bestGame && bestGap>0){
       const f=bestGame.f; const fixt=`${f.home_code} v ${f.away_code}`;
-      const aHi=bestGame.sa>bestGame.sb, bHi=bestGame.sb>bestGame.sa;
       rival=`<div class="rivalry">🃏 Biggest disagreement — <b>#${bestGame.num}</b> ${fixt} (${dateShort(new Date(f.kickoff))}): `+
-        `<span class="${aHi?'':''}">${h2hA} ${bestGame.sa}</span> vs <span>${h2hB} ${bestGame.sb}</span> · Δ${bestGap} pts</div>`;
+        `<span>${h2hA} ${bestGame.sa}</span> vs <span>${h2hB} ${bestGame.sb}</span> · Δ${bestGap} pts</div>`;
     } else {
       rival=`<div class="rivalry">🃏 Biggest disagreement — no shared played games yet.</div>`;
     }
@@ -826,7 +833,8 @@ function renderH2H(){
   } else {
     body+=`<div class="stats-empty">Pick two different players to compare.</div>`;
   }
-  return `<div class="h2h"><h4 title="Compare any two players. Performance metrics use played games; style metrics use all predictions; agreement uses games both have predicted (scoreline/outcome only, ignoring knockout progression). 'Days led' counts match-days each was ahead of the other on cumulative points.">🥊 Head-to-head</h4>${body}</div>`;
+  const h2hTip="Compare any two players. Performance metrics use played games; style metrics use all predictions; agreement uses games both have predicted (scoreline/outcome only, ignoring knockout progression). 'Days led' counts match-days each was ahead of the other on cumulative points.";
+  return `<div class="h2h"><h4 class="tip" role="button" tabindex="0"><span class="tip-i" aria-hidden="true">i</span>🥊 Head-to-head</h4><div class="tip-body">${h2hTip}</div>${body}</div>`;
 }
 
 function renderStats(){
@@ -838,7 +846,7 @@ function renderStats(){
     <div class="chart-card"><h3>📈 Leaderboard position by date (1st at the top)</h3>${buildRankChart(dates,colors,selected)}</div>
     ${funStats(selected)}
     ${renderH2H()}
-    <div class="hint">Pick players above to focus the chart and stats. Head-to-head compares any two, independent of the filter.</div>
+    <div class="hint">Pick players above to focus the chart and stats. Head-to-head compares any two, independent of the filter. Tap the ⓘ on any card for details.</div>
   </div>`;
   // chart filter chips
   content.querySelectorAll("[data-statp]").forEach(cb=>cb.addEventListener("change",()=>{
@@ -876,10 +884,20 @@ allStageFilter.addEventListener("change",renderAll);
 allSearch.addEventListener("input",renderAll);
 
 content.addEventListener("click",e=>{
+  // tap/click to toggle stat tooltips (works on mobile + desktop)
+  const h=e.target.closest("h4.tip");
+  if(h){const tb=h.nextElementSibling;if(tb&&tb.classList.contains("tip-body"))tb.classList.toggle("show");return;}
   if(mode!=="my")return;
   const btn=e.target.closest(".stepbtn");
   if(btn){if(btn.disabled)return;adjustScore(btn.dataset.num,btn.dataset.side,+btn.dataset.step);return;}
   const ck=e.target.dataset.copy;if(!ck)return;const round=ROUNDS.find(r=>r.key===ck);const m=missingForRound(round);missing=m.length?{round:ck,items:m}:null;copyText(buildText(ck));renderMy();
+});
+content.addEventListener("keydown",e=>{
+  if((e.key==="Enter"||e.key===" ") && e.target.classList&&e.target.classList.contains("tip")){
+    e.preventDefault();
+    const tb=e.target.nextElementSibling;
+    if(tb&&tb.classList.contains("tip-body")) tb.classList.toggle("show");
+  }
 });
 content.addEventListener("change",e=>{if(mode!=="my")return;if(e.target.dataset.field){const num=+e.target.dataset.num;if(isLocked(num)){renderMy();return;}const s=preds[num]=preds[num]||{h:"",a:"",prog:""};s[e.target.dataset.field]=e.target.value;updateLabel(num);savePrediction(num);}});
 
