@@ -196,6 +196,25 @@
   .h2h .vs{color:var(--muted);font-weight:700;align-self:center}
   .h2h .rivalry{max-width:480px;margin:10px auto 0;background:#15263b;border:1px solid #2a3a52;border-radius:8px;padding:8px 10px;font-size:.82rem;text-align:center}
   .h2h .rivalry b{color:var(--gold)}
+  /* Player profiles + archetype modal */
+  .profiles{background:var(--card);border:1px solid #2a3a52;border-radius:12px;padding:12px 14px;margin-top:16px}
+  .profiles h4{margin:0 0 10px;color:var(--gold);font-size:.9rem;text-align:center}
+  .profiles .plist{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
+  .profiles .prow{display:inline-flex;align-items:center;gap:6px;font-size:.82rem;background:#15263b;border:1px solid #2a3a52;border-radius:14px;padding:5px 11px;cursor:pointer;user-select:none}
+  .profiles .prow:hover{border-color:var(--accent)}
+  .profiles .prow .swatch{width:12px;height:12px;border-radius:50%;display:inline-block}
+  .profiles .prow.you{color:var(--accent)}
+  .pf-overlay{position:fixed;inset:0;background:rgba(3,8,15,.72);display:none;align-items:center;justify-content:center;z-index:110;padding:16px}
+  .pf-overlay.show{display:flex}
+  .pf-card{background:var(--card);border:1px solid #415a77;border-radius:14px;max-width:380px;width:100%;padding:20px;text-align:center;box-shadow:0 18px 50px rgba(0,0,0,.55);position:relative}
+  .pf-card .pf-close{position:absolute;top:10px;right:10px;background:#2b3a52;border:none;color:var(--text);width:30px;height:30px;border-radius:8px;font-size:1rem;cursor:pointer;display:flex;align-items:center;justify-content:center}
+  .pf-card .pf-close:hover{background:var(--danger);color:#001219}
+  .pf-card .pf-emoji{font-size:2.4rem;line-height:1;margin-bottom:6px}
+  .pf-card .pf-arch{color:var(--gold);font-weight:800;font-size:1.05rem;margin-bottom:2px}
+  .pf-card .pf-name{color:var(--muted);font-size:.82rem;margin-bottom:12px}
+  .pf-card .pf-blurb{font-size:.9rem;line-height:1.5;color:var(--text)}
+  .pf-card .pf-standing{margin-top:12px;font-size:.82rem;color:var(--muted)}
+  .pf-card .pf-standing b{color:var(--accent)}
 
   /* scoring modal */
   .modal-overlay{position:fixed;inset:0;background:rgba(3,8,15,.72);display:none;align-items:flex-start;justify-content:center;z-index:100;padding:12px;overflow-y:auto}
@@ -225,7 +244,7 @@
 </style>
 </head>
 <body>
-<div id="verTag">v2.0.2</div>  
+<div id="verTag">v2.0.3</div>  
 <header>
   <h1>⚽ World Cup 2026 — Predictions &amp; Leaderboard</h1>
   <div class="sub">Browse the leaderboard and predictions freely. Log in only when you want to enter or change your own scores.</div>
@@ -285,7 +304,16 @@
     <div class="err" id="gateErr"></div>
   </div>
 </div>
-
+<div class="pf-overlay" id="pfOverlay">
+  <div class="pf-card">
+    <button class="pf-close" id="pfClose" aria-label="Close">✕</button>
+    <div class="pf-emoji" id="pfEmoji"></div>
+    <div class="pf-arch" id="pfArch"></div>
+    <div class="pf-name" id="pfName"></div>
+    <div class="pf-blurb" id="pfBlurb"></div>
+    <div class="pf-standing" id="pfStanding"></div>
+  </div>
+</div>  
 <div class="modal-overlay" id="scoringModal" role="dialog" aria-modal="true" aria-labelledby="scoringTitle">
   <div class="modal">
     <div class="modal-head"><h2 id="scoringTitle">📖 Scoring Format</h2><button class="modal-close" id="scoringClose" aria-label="Close">✕</button></div>
@@ -884,6 +912,92 @@ function renderH2H(){
   const h2hTip="Compare any two players. Performance metrics use played games; style metrics use all predictions; agreement uses games both have predicted (scoreline/outcome only, ignoring knockout progression). 'Days led' counts match-days each was ahead of the other on cumulative points.";
   return `<div class="h2h"><h4 class="tip" role="button" tabindex="0"><span class="tip-i" aria-hidden="true">i</span>🥊 Head-to-head</h4><div class="tip-body">${h2hTip}</div>${body}</div>`;
 }
+// ===== Player profiles / archetypes =====
+function playerProfile(p){
+  // gather the same signals used elsewhere
+  let predCount=0, goalSum=0, draws=0, tight=0, tightDen=0;
+  let scored=0, perfect=0, soClose=0, outcomeOK=0, zeros=0, total=0;
+  FIXTURES.forEach(f=>{
+    const num=f.match_num, pred=(allPreds[p]||{})[num], r=results[num];
+    if(pred && pred.h!=="" && pred.a!==""){
+      predCount++; const ph=+pred.h, pa=+pred.a; goalSum+=ph+pa;
+      if(ph===pa) draws++;
+      if(ph===pa || Math.abs(ph-pa)===1) tight++;
+      tightDen++;
+    }
+    if(r && r.h!=="" && r.a!==""){
+      const s=scoreMatch(pred,r,isKO(num),num);
+      if(s!==null){ scored++; total+=s;
+        const maxFor=num===FINAL_MATCH?16:8;
+        if(s===maxFor) perfect++;
+        else { if(s===0) zeros++;
+          if(pred&&pred.h!==""&&pred.a!==""){const ph=+pred.h,pa=+pred.a,rh=+r.h,ra=+r.a;
+            const outOK=(ph>pa&&rh>ra)||(pa>ph&&ra>rh)||(ph===pa&&rh===ra);const he=ph===rh,ae=pa===ra;
+            const oneOff=(he&&Math.abs(pa-ra)===1)||(ae&&Math.abs(ph-rh)===1);if(outOK&&oneOff&&!(he&&ae))soClose++;}
+        }
+        if(s>=2) outcomeOK++;
+      }
+    }
+  });
+  const avgGoals = predCount? goalSum/predCount : 0;
+  const drawPct = predCount? draws/predCount : 0;
+  const tightPct = tightDen? tight/tightDen : 0;
+  const outPct = scored? outcomeOK/scored : 0;
+
+  // standing (live leaderboard position)
+  const order=allPlayers.map(x=>({x,t:pointsUpTo(x,'9999')})).sort((a,b)=>b.t-a.t);
+  let pos=0,prev=null,rank=0; order.forEach((o,i)=>{if(o.t!==prev){rank=i+1;prev=o.t;}if(o.x===p)pos=rank;});
+  const n=allPlayers.length;
+  const standing = scored? `Currently <b>${pos}${pos===1?"st":pos===2?"nd":pos===3?"rd":"th"}</b> of ${n} on ${total} pts.` : "";
+
+  // too little data
+  if(predCount<3 || scored<3){
+    return {emoji:"🌱", arch:"The Rookie", blurb:"Too soon to tell! Make a few more predictions and get some games played, and we'll reveal your true colours.", standing};
+  }
+
+  // choose archetype by dominant trait (priority order)
+  let emoji, arch, blurb;
+  if(avgGoals>=3.0 && tightPct<0.5){
+    emoji="🎲"; arch="The Daredevil";
+    blurb=`You average a wild <b>${avgGoals.toFixed(1)}</b> goals a game — nil-nils are for cowards. Bold calls, big swings, never boring.`;
+  } else if(avgGoals<=1.8 && tightPct>=0.55){
+    emoji="🧱"; arch="The Accountant";
+    blurb=`A frugal <b>${avgGoals.toFixed(1)}</b> goals a game and ${Math.round(tightPct*100)}% of your picks are tight. Low-risk, low-drama, quietly calculating.`;
+  } else if(drawPct>=0.30){
+    emoji="🤝"; arch="The Diplomat";
+    blurb=`${Math.round(drawPct*100)}% of your predictions are draws — you refuse to take sides. Honourable, if a little non-committal.`;
+  } else if(soClose>=3 && outPct>=0.5 && perfect<=1){
+    emoji="😬"; arch="The Nearly Man";
+    blurb=`You read games brilliantly (${outcomeOK}/${scored} outcomes right) but the exact scores just won't fall — only ${perfect} perfect. Genuinely unlucky. The football gods owe you one.`;
+  } else if(perfect>=2 || outPct>=0.7){
+    emoji="🎯"; arch="The Sniper";
+    blurb=`${perfect} perfect score${perfect===1?"":"s"} and ${Math.round(outPct*100)}% of outcomes called right. You see the game before it happens. Frightening.`;
+  } else {
+    emoji="⚽"; arch="The Entertainer";
+    blurb=`A bit of everything — <b>${avgGoals.toFixed(1)}</b> goals a game, the odd gem, the odd shocker. Reliably watchable.`;
+  }
+  return {emoji, arch, blurb, standing};
+}
+
+function renderProfiles(){
+  const colors=colorMap();
+  let rows="";
+  allPlayers.forEach(p=>{const you=(me&&p===me);
+    rows+=`<span class="prow${you?' you':''}" data-profile="${p.replace(/"/g,'&quot;')}"><span class="swatch" style="background:${colors[p]}"></span>${p}${you?' (you)':''}</span>`;});
+  return `<div class="profiles"><h4>🃏 Player profiles — tap a name</h4><div class="plist">${rows}</div></div>`;
+}
+
+function openProfile(p){
+  const prof=playerProfile(p);
+  $("pfEmoji").textContent=prof.emoji;
+  $("pfArch").textContent=prof.arch;
+  $("pfName").textContent=p;
+  $("pfBlurb").innerHTML=prof.blurb;
+  $("pfStanding").innerHTML=prof.standing||"";
+  $("pfOverlay").classList.add("show");
+  document.body.style.overflow="hidden";
+}
+function closeProfile(){$("pfOverlay").classList.remove("show");document.body.style.overflow="";}
 
 function renderStats(){
   const dates=statsDates();const colors=colorMap();const selected=statsSel;
@@ -894,8 +1008,10 @@ function renderStats(){
     <div class="chart-card"><h3>📈 Leaderboard position by date (1st at the top)</h3>${buildRankChart(dates,colors,selected)}</div>
     ${funStats(selected)}
     ${renderH2H()}
-    <div class="hint">Pick players above to focus the chart and the Players stats. Scorelines and head-to-head use all players, independent of the filter. Tap the ⓘ on any card for details.</div>
+    ${renderProfiles()}
+    <div class="hint">Pick players above to focus the chart and the Players stats. Scorelines, head-to-head and profiles use all players, independent of the filter. Tap the ⓘ on any card for details.</div>
   </div>`;
+
   content.querySelectorAll("[data-statp]").forEach(cb=>cb.addEventListener("change",()=>{
     const chosen=new Set([...content.querySelectorAll("[data-statp]:checked")].map(x=>x.dataset.statp));
     statsSel=(chosen.size===allPlayers.length)?null:chosen;renderStats();
@@ -903,6 +1019,7 @@ function renderStats(){
   const selA=$("h2hSelA"), selB=$("h2hSelB");
   if(selA) selA.addEventListener("change",e=>{h2hA=e.target.value||null;renderStats();});
   if(selB) selB.addEventListener("change",e=>{h2hB=e.target.value||null;renderStats();});
+  content.querySelectorAll("[data-profile]").forEach(el=>el.addEventListener("click",()=>openProfile(el.dataset.profile)));
 }
 async function showStats(){mode="stats";await Promise.all([loadAllPreds(),loadResults()]);statsSel=null;render();}
 
@@ -951,7 +1068,10 @@ $("scoringBtn").onclick=()=>{sm.classList.add("show");document.body.style.overfl
 $("scoringClose").onclick=()=>{sm.classList.remove("show");document.body.style.overflow="";};
 sm.addEventListener("click",e=>{if(e.target===sm){sm.classList.remove("show");document.body.style.overflow="";}});
 document.addEventListener("keydown",e=>{if(e.key==="Escape"&&sm.classList.contains("show")){sm.classList.remove("show");document.body.style.overflow="";}});
-
+$("pfClose").onclick=closeProfile;
+$("pfOverlay").addEventListener("click",e=>{if(e.target===$("pfOverlay"))closeProfile();});
+document.addEventListener("keydown",e=>{if(e.key==="Escape"&&$("pfOverlay").classList.contains("show"))closeProfile();});
+  
 async function populateNames(){const sel=$("gateName");if(sel.options.length>1)return;const {data,error}=await SB.from("player_names").select("name").order("name");if(error){$("gateErr").textContent="Could not load players: "+error.message;return;}data.forEach(p=>{const o=document.createElement("option");o.value=p.name;o.textContent=p.name;sel.appendChild(o);});}
 function openGate(){populateNames();$("gateErr").textContent="";gateOverlay.classList.add("show");document.body.style.overflow="hidden";setTimeout(()=>$("gateName").focus(),50);}
 function closeGate(){gateOverlay.classList.remove("show");document.body.style.overflow="";}
