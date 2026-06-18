@@ -28,6 +28,8 @@
   #scoringBtn{border-style:dashed;border-color:var(--accent);color:#fff}
   #scoringBtn:hover{background:var(--accent);border-color:var(--accent);color:#001219;border-style:dashed}
   #scoringBtn.active{border-style:dashed}
+  #navStats{position:relative;overflow:visible}
+  #navStats .newbadge{position:absolute;top:-7px;right:-7px;background:var(--gold);color:#001219;font-size:.58rem;font-weight:800;line-height:1;letter-spacing:.04em;padding:3px 5px;border-radius:6px;box-shadow:0 1px 4px rgba(0,0,0,.4);pointer-events:none}
 
   .gate-overlay{position:fixed;inset:0;background:rgba(3,8,15,.72);display:none;align-items:center;justify-content:center;z-index:120;padding:14px}
   .gate-overlay.show{display:flex}
@@ -234,7 +236,7 @@
   <button class="navbtn" id="navLb">🏆 Leaderboard</button>
   <button class="navbtn" id="navAll">👥 All Predictions</button>
   <button class="navbtn" id="navMy">📝 My Predictions</button>
-  <button class="navbtn" id="navStats">📈 Stats</button>
+  <button class="navbtn" id="navStats">📈 Stats<span class="newbadge" style="display:none">NEW</span></button>
   <button class="navbtn" id="scoringBtn">📖 Scoring Format</button>
 </div>
 
@@ -664,6 +666,7 @@ function funStats(selected){
   const youTag = p => (me&&p===me)?' (you)':'';
   const youCls = p => (me&&p===me)?'you':'';
   const fmtScore = k => k.replace("-","–");
+  const normScore = (h,a) => (Math.max(h,a))+"-"+(Math.min(h,a)); // 0-2 and 2-0 both -> "2-0"
 
   function listCard(title, tip, items, fmtVal, emptyMsg){
     const head=`<h4 class="tip" role="button" tabindex="0"><span class="tip-i" aria-hidden="true">i</span>${title}</h4><div class="tip-body">${tip}</div>`;
@@ -683,7 +686,7 @@ function funStats(selected){
 
   // ===== PLAYERS group =====
   const cHot = listCard("🔥 Hot streak",
-    "Longest run of consecutive games (in kick-off order) where you scored "+HOT_MIN+"+ points. A played game scoring below "+HOT_MIN+" — or one you didn't predict — ends the run. Only streaks of 2+ are shown.",
+    "Longest run of consecutive games (in kick-off order) where you scored "+HOT_MIN+" or more points. A played game scoring below "+HOT_MIN+" — or one you didn't predict — ends the run. Only streaks of 2+ are shown.",
     rows.slice().filter(r=>r.hot>=2).sort((a,b)=>b.hot-a.hot), it=>it.hot, "No hot streaks yet.");
   const cPerfect = listCard("🎯 Perfect scores",
     "Number of games predicted with the exact scoreline (full 8 pts, or 16 for the Final).",
@@ -707,21 +710,18 @@ function funStats(selected){
     "Each player's best single-day haul (sum of that day's games) and the date it happened.",
     dayLeaders, it=>`${it._best} (${fmtD(it._bestDate)})`, "No results yet.");
 
-  // ===== SCORELINES group (counted by scoreline, not by person) =====
-  // build counts across all players & results
+  // ===== SCORELINES group (counted by scoreline, both ways merged) =====
   const perfectHits={}, zeroPreds={}, actualResults={};
   FIXTURES.forEach(f=>{
     const num=f.match_num, r=results[num];
     if(r && r.h!=="" && r.a!==""){
-      // actual result scoreline (90-min as stored, ignoring pens)
-      const ak=(+r.h)+"-"+(+r.a); actualResults[ak]=(actualResults[ak]||0)+1;
-      // per player: perfect-hit & zero-scoring predicted scorelines
+      const ak=normScore(+r.h,+r.a); actualResults[ak]=(actualResults[ak]||0)+1;
       const maxFor=num===FINAL_MATCH?16:8;
       allPlayers.forEach(p=>{
         const pred=(allPreds[p]||{})[num];
         if(!pred||pred.h===""||pred.a==="")return;
         const s=scoreMatch(pred,r,isKO(num),num); if(s===null)return;
-        const pk=(+pred.h)+"-"+(+pred.a);
+        const pk=normScore(+pred.h,+pred.a);
         if(s===maxFor) perfectHits[pk]=(perfectHits[pk]||0)+1;
         else if(s===0) zeroPreds[pk]=(zeroPreds[pk]||0)+1;
       });
@@ -732,17 +732,18 @@ function funStats(selected){
     .sort((a,b)=> (asc? a.n-b.n : b.n-a.n) || totalGoals(a.score)-totalGoals(b.score) || a.score.localeCompare(b.score))
     .slice(0,n);
 
+  const bothWays=" Scorelines count both ways (e.g. 2–0 includes 0–2).";
   const cPerfectScores = scoreCard("🎯 Top perfect-hit scorelines",
-    "The exact scorelines that landed a perfect (full-marks) result most often, counted across every player's predictions.",
+    "The exact scorelines that landed a perfect (full-marks) result most often, counted across every player's predictions."+bothWays,
     topN(perfectHits,5,false), "No perfect hits yet.");
   const cActualScores = scoreCard("📊 Top actual result scorelines",
-    "The most common real full-time scorelines so far (90-min score, penalties ignored).",
+    "The most common real full-time scorelines so far (90-min score, penalties ignored)."+bothWays,
     topN(actualResults,5,false), "No results yet.");
   const cZeroScores = scoreCard("0️⃣ Top zero-scoring scorelines",
-    "The predicted scorelines that earned someone 0 points most often — the picks that burn people.",
+    "The predicted scorelines that earned someone 0 points most often — the picks that burn people."+bothWays,
     topN(zeroPreds,5,false), "No zeros yet.");
   const cRareScores = scoreCard("📉 Rarest actual result scorelines",
-    "The least common real full-time scorelines so far (ties broken by fewest goals, then scoreline order).",
+    "The least common real full-time scorelines so far (ties broken by fewest goals, then scoreline order)."+bothWays,
     topN(actualResults,5,true), "No results yet.");
 
   return `<div class="funstats">
@@ -752,6 +753,7 @@ function funStats(selected){
     ${cPerfectScores}${cActualScores}${cZeroScores}${cRareScores}
   </div>`;
 }
+
 
 let h2hA=null, h2hB=null; // chosen players
 
@@ -961,6 +963,10 @@ async function init(){
   }catch(err){content.innerHTML=`<div class="hint" style="color:#ffb4a2">⚠️ Could not connect: ${err.message}</div>`;}
 }
 init();
+
+// "NEW" badge on the Stats button — auto-hides after 21 Jun 2026, 23:59 BST (22:59 UTC)
+const STATS_NEW_UNTIL = Date.parse("2026-06-22T22:59:00Z");
+(function(){ const b=document.querySelector("#navStats .newbadge"); if(b && Date.now() < STATS_NEW_UNTIL) b.style.display=""; })();
 </script>
 </body>
 </html>
