@@ -914,11 +914,20 @@ function renderH2H(){
 }
 // ===== Player profiles / archetypes =====
 function playerProfile(p){
-  // gather the same signals used elsewhere
+  // ---- stage cutoff: only current + previous rounds (ignore future pre-fills) ----
+  const curKey = activeStageKey();
+  const curIdx = ROUNDS.findIndex(r=>r.key===curKey);
+  const inScope = num => {
+    const idx = ROUNDS.findIndex(r=>r.test(num));
+    return idx!==-1 && idx<=curIdx;          // this round or earlier
+  };
+
   let predCount=0, goalSum=0, draws=0, tight=0, tightDen=0;
   let scored=0, perfect=0, soClose=0, outcomeOK=0, zeros=0, total=0;
   FIXTURES.forEach(f=>{
-    const num=f.match_num, pred=(allPreds[p]||{})[num], r=results[num];
+    const num=f.match_num;
+    if(!inScope(num)) return;                // <-- ignore future stages
+    const pred=(allPreds[p]||{})[num], r=results[num];
     if(pred && pred.h!=="" && pred.a!==""){
       predCount++; const ph=+pred.h, pa=+pred.a; goalSum+=ph+pa;
       if(ph===pa) draws++;
@@ -944,18 +953,25 @@ function playerProfile(p){
   const tightPct = tightDen? tight/tightDen : 0;
   const outPct = scored? outcomeOK/scored : 0;
 
-  // standing (live leaderboard position)
-  const order=allPlayers.map(x=>({x,t:pointsUpTo(x,'9999')})).sort((a,b)=>b.t-a.t);
+  // ---- standing: leaderboard position counting only in-scope games ----
+  const totalInScope = x => {
+    let t=0;
+    FIXTURES.forEach(f=>{const num=f.match_num;if(!inScope(num))return;const r=results[num];if(!r||r.h===""||r.a==="")return;
+      const s=scoreMatch((allPreds[x]||{})[num],r,isKO(num),num);if(s!==null)t+=s;});
+    return t;
+  };
+  const order=allPlayers.map(x=>({x,t:totalInScope(x)})).sort((a,b)=>b.t-a.t);
   let pos=0,prev=null,rank=0; order.forEach((o,i)=>{if(o.t!==prev){rank=i+1;prev=o.t;}if(o.x===p)pos=rank;});
   const n=allPlayers.length;
-  const standing = scored? `Currently <b>${pos}${pos===1?"st":pos===2?"nd":pos===3?"rd":"th"}</b> of ${n} on ${total} pts.` : "";
+  const ord = pos===1?"st":pos===2?"nd":pos===3?"rd":"th";
+  const standing = scored? `Currently <b>${pos}${ord}</b> of ${n} on ${total} pts.` : "";
 
-  // too little data
+  // ---- too little data ----
   if(predCount<3 || scored<3){
     return {emoji:"🌱", arch:"The Rookie", blurb:"Too soon to tell! Make a few more predictions and get some games played, and we'll reveal your true colours.", standing};
   }
 
-  // choose archetype by dominant trait (priority order)
+  // ---- archetype by dominant trait (priority order); blurb uses this player's own numbers ----
   let emoji, arch, blurb;
   if(avgGoals>=3.0 && tightPct<0.5){
     emoji="🎲"; arch="The Daredevil";
