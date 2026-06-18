@@ -159,7 +159,7 @@
   .funstats{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin-top:16px}
   .fscard{background:var(--card);border:1px solid #2a3a52;border-radius:12px;padding:12px 14px}
   .fscard h4{margin:0 0 8px;color:var(--gold);font-size:.9rem}
-  .fscard h4.tip{cursor:pointer;display:flex;align-items:center;gap:6px;user-select:none}
+  .fscard h4.tip{cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;user-select:none}
   .fscard h4.tip .tip-i{display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;border-radius:50%;background:#2b3a52;color:var(--accent);font-size:.7rem;font-weight:700;flex:0 0 auto}
   .fscard .tip-body{display:none;margin:6px 0 2px;padding:8px 10px;background:#15263b;border:1px solid #2a3a52;border-radius:8px;color:var(--muted);font-size:.76rem;line-height:1.4}
   .fscard .tip-body.show{display:block}
@@ -446,6 +446,16 @@ function renderMy(){
   });
   if(openRound)html+=footer(openRound);
   contextLabel.textContent=`${done}/${total} predicted`;content.innerHTML=html;
+}
+
+function activeStageKey(){
+  // first ROUND that still has an unplayed game; else the last round
+  const played=num=>{const r=results[num];return !!(r&&r.h!==""&&r.a!=="");};
+  for(const r of ROUNDS){
+    const games=FIXTURES.filter(f=>r.test(f.match_num));
+    if(games.length && games.some(f=>!played(f.match_num))) return r.key;
+  }
+  return ROUNDS[ROUNDS.length-1].key; // everything played -> last round
 }
 
 function renderAll(){
@@ -869,7 +879,7 @@ function render(){
 }
 
 async function showLeaderboard(){mode="lb";await Promise.all([loadAllPreds(),loadResults()]);render();}
-async function showAll(){mode="all";await Promise.all([loadAllPreds(),loadResults()]);render();}
+async function showAll(){mode="all";await Promise.all([loadAllPreds(),loadResults()]);allStageFilter.value=activeStageKey();render();}
 async function showMy(){if(!me){openGate();return;}mode="my";await loadMyPreds();render();}
 
 $("navLb").onclick=showLeaderboard;$("navAll").onclick=showAll;$("navMy").onclick=showMy;$("navStats").onclick=showStats;
