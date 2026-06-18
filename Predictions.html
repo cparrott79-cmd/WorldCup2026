@@ -692,7 +692,7 @@ function funStats(selected){
   const cPerfect = listCard("🎯 Perfect scores",
     "Number of games predicted with the exact scoreline (full 8 pts, or 16 for the Final).",
     byDesc("perfect"), it=>it.perfect, "None yet.");
-  const cClose   = listCard("😬 So close (1 goal off perfect)",
+  const cClose   = listCard("😬 So close",
     "Right outcome and one team's score exact, but the other team's score was off by exactly one goal.",
     byDesc("soClose"), it=>it.soClose, "None yet.");
   const cZeros   = listCard("0️⃣ Most zeros",
