@@ -25,9 +25,11 @@
   .controls button:not(.navbtn):not(.loginbtn):not(.logoutbtn){background:var(--card);border:1px solid #415a77;color:var(--text)}
   .controls button:not(.navbtn):not(.loginbtn):not(.logoutbtn):hover{background:#24344c;border-color:var(--accent);color:var(--text)}
   /* Scoring Format button — dashed border to show it's different (opens a modal) */
-  #scoringBtn{border-style:dashed;border-color:var(--accent);color:var(#fff)}
+  #scoringBtn{border-style:dashed;border-color:var(--accent);color:#fff}
   #scoringBtn:hover{background:var(--accent);border-color:var(--accent);color:#001219;border-style:dashed}
   #scoringBtn.active{border-style:dashed}
+  #navStats{position:relative;overflow:visible}
+  #navStats .newbadge{position:absolute;top:-7px;right:-7px;background:var(--gold);color:#001219;font-size:.58rem;font-weight:800;line-height:1;letter-spacing:.04em;padding:3px 5px;border-radius:6px;box-shadow:0 1px 4px rgba(0,0,0,.4);pointer-events:none}
 
   .gate-overlay{position:fixed;inset:0;background:rgba(3,8,15,.72);display:none;align-items:center;justify-content:center;z-index:120;padding:14px}
   .gate-overlay.show{display:flex}
@@ -95,7 +97,6 @@
   table.matrix thead tr.games th .gh-meta{color:var(--muted);font-weight:400;font-size:.66rem;margin-top:2px}
   table.matrix thead tr.games th .gh-date{color:var(--muted);font-weight:400;font-size:.64rem;margin-top:1px}
   table.matrix thead tr.games th .gh-lock{color:var(--lock);font-weight:700;font-size:.64rem;margin-top:2px}
-  /* played games (result entered) — grey the column text + show FT */
   table.matrix thead tr.games th.gh-played{color:var(--muted)}
   table.matrix thead tr.games th.gh-played .gh-teams{color:var(--muted)}
   table.matrix thead tr.games th .gh-ft{display:block;color:var(--gold);font-weight:700;font-size:.66rem;margin-top:2px}
@@ -117,13 +118,12 @@
   table.matrix td.cell.masked .sc{font-size:1rem}
   table.matrix tr.you-row td.cell{background:rgba(0,180,216,.06)}
   table.matrix tr:nth-child(even) td.cell{background:rgba(255,255,255,.015)}
-   /* perfect prediction on a played game — gold cell, black text */
   table.matrix td.cell.perfect{background:#ffd166 !important;color:#001219 !important}
   table.matrix td.cell.perfect .sc{color:#001219}
   table.matrix td.cell.perfect .rs.home,
   table.matrix td.cell.perfect .rs.away,
   table.matrix td.cell.perfect .rs.draw{color:#001219}
-  /* legend / key under the All Predictions table */
+
   .ap-key{max-width:1060px;margin:6px auto 0;display:flex;gap:18px;justify-content:center;flex-wrap:wrap;color:var(--muted);font-size:.78rem}
   .ap-key .k{display:inline-flex;align-items:center;gap:6px}
   .ap-note{max-width:1060px;margin:0 auto 10px;background:#26303f;border:1px solid #415a77;color:var(--muted);padding:8px 12px;border-radius:8px;font-size:.8rem;text-align:center}
@@ -141,14 +141,12 @@
   table.lb tr.leader td{background:rgba(255,209,102,.10)}
   table.lb tr.leader td.rank{color:var(--gold);font-size:1.05rem}
   table.lb tr.leader td.name{color:var(--gold);font-weight:800}
-  /* prize box above the leaderboard */
   .prize-box{max-width:1060px;margin:0 auto 12px;background:#15263b;border:1px solid var(--gold);border-radius:10px;padding:10px 14px;text-align:center}
   .prize-box .prize-pot{font-size:.92rem}
   .prize-box .prize-pot b{color:var(--gold)}
   .prize-box .prize-sub{color:var(--muted);font-weight:400;font-size:.8rem}
   .prize-box .prize-breakdown{margin-top:6px;font-size:.86rem;color:var(--text)}
   .prize-box .prize-breakdown b{color:var(--gold)}
-  /* dotted lines bracketing 3rd & 4th places */
   table.lb tr.cut-top td{border-top:2px dotted var(--accent)}
   table.lb tr.cut-bottom td{border-bottom:2px dotted var(--accent)}
   table.lb tr.last td{background:rgba(231,111,81,.10)}
@@ -156,6 +154,48 @@
   table.lb tr.you-row td{background:rgba(0,180,216,.08)}
   table.lb tr.you-row.leader td{background:rgba(255,209,102,.14)}
   table.lb tr.you-row.last td{background:rgba(231,111,81,.14)}
+
+  /* Stats */
+  .secbtn2{background:var(--card);border:1px solid #415a77;color:var(--text)}
+  .secbtn2:hover{background:#24344c;border-color:var(--accent)}
+  .stats-wrap{max-width:1060px;margin:0 auto}
+  .stats-filter{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin:6px 0 12px}
+  .stats-filter label{display:inline-flex;align-items:center;gap:5px;font-size:.78rem;background:var(--card);border:1px solid #415a77;border-radius:14px;padding:3px 9px;cursor:pointer}
+  .stats-filter label .swatch{width:12px;height:12px;border-radius:50%;display:inline-block}
+  .chart-card{background:var(--card);border:1px solid #2a3a52;border-radius:12px;padding:12px;overflow-x:auto}
+  .chart-card h3{margin:0 0 8px;color:var(--accent);font-size:.95rem;text-align:center}
+  .funstats{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin-top:16px}
+  .funstats .group-head{grid-column:1/-1;margin:6px 2px 0;color:var(--accent);font-size:.82rem;font-weight:700;letter-spacing:.04em;border-bottom:1px solid #2a3a52;padding-bottom:6px}
+  .fscard{background:var(--card);border:1px solid #2a3a52;border-radius:12px;padding:12px 14px}
+  .fscard h4{margin:0 0 8px;color:var(--gold);font-size:.9rem}
+  .fscard h4.tip{cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;user-select:none;text-align:center}
+  .fscard h4.tip .tip-i{display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;border-radius:50%;background:#2b3a52;color:var(--accent);font-size:.7rem;font-weight:700;flex:0 0 auto}
+  .fscard .tip-body{display:none;margin:6px 0 2px;padding:8px 10px;background:#15263b;border:1px solid #2a3a52;border-radius:8px;color:var(--muted);font-size:.76rem;line-height:1.4}
+  .fscard .tip-body.show{display:block}
+  .fscard table{width:100%;border-collapse:collapse;font-size:.82rem}
+  .fscard td{padding:4px 6px;border-bottom:1px solid #2a3a52}
+  .fscard td.v{text-align:right;font-weight:700;color:var(--accent)}
+  .fscard td.you{color:var(--accent)}
+  .stats-empty{color:var(--muted);text-align:center;font-size:.85rem;margin:14px 0}
+
+  /* Head-to-head */
+  .h2h{background:var(--card);border:1px solid #2a3a52;border-radius:12px;padding:12px 14px;margin-top:16px}
+  .h2h h4{margin:0 0 10px;color:var(--gold);font-size:.9rem}
+  .h2h h4.tip{cursor:pointer;display:flex;align-items:center;gap:6px;user-select:none;justify-content:center}
+  .h2h h4.tip .tip-i{display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;border-radius:50%;background:#2b3a52;color:var(--accent);font-size:.7rem;font-weight:700;flex:0 0 auto}
+  .h2h .tip-body{display:none;margin:0 auto 10px;max-width:480px;padding:8px 10px;background:#15263b;border:1px solid #2a3a52;border-radius:8px;color:var(--muted);font-size:.76rem;line-height:1.4}
+  .h2h .tip-body.show{display:block}
+  .h2h .pickers{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-bottom:12px}
+  .h2h select{min-width:130px}
+  .h2h table{width:100%;border-collapse:collapse;font-size:.84rem;max-width:480px;margin:0 auto}
+  .h2h td,.h2h th{padding:6px 10px;border-bottom:1px solid #2a3a52;text-align:center}
+  .h2h th{color:var(--accent);font-size:.78rem}
+  .h2h tr.section td{background:#15263b;color:var(--gold);font-weight:700;text-align:center;font-size:.74rem;letter-spacing:.03em;border-bottom:1px solid #2a3a52}
+  .h2h td.metric{text-align:left;color:var(--muted)}
+  .h2h td.win{color:var(--win);font-weight:700}
+  .h2h .vs{color:var(--muted);font-weight:700;align-self:center}
+  .h2h .rivalry{max-width:480px;margin:10px auto 0;background:#15263b;border:1px solid #2a3a52;border-radius:8px;padding:8px 10px;font-size:.82rem;text-align:center}
+  .h2h .rivalry b{color:var(--gold)}
 
   /* scoring modal */
   .modal-overlay{position:fixed;inset:0;background:rgba(3,8,15,.72);display:none;align-items:flex-start;justify-content:center;z-index:100;padding:12px;overflow-y:auto}
@@ -185,6 +225,7 @@
 </style>
 </head>
 <body>
+<div id="verTag">v2.0.2</div>  
 <header>
   <h1>⚽ World Cup 2026 — Predictions &amp; Leaderboard</h1>
   <div class="sub">Browse the leaderboard and predictions freely. Log in only when you want to enter or change your own scores.</div>
@@ -202,6 +243,7 @@
   <button class="navbtn" id="navLb">🏆 Leaderboard</button>
   <button class="navbtn" id="navAll">👥 All Predictions</button>
   <button class="navbtn" id="navMy">📝 My Predictions</button>
+  <button class="navbtn" id="navStats">📈 Stats<span class="newbadge" style="display:none">NEW</span></button>
   <button class="navbtn" id="scoringBtn">📖 Scoring Format</button>
 </div>
 
@@ -218,6 +260,11 @@
 <div class="controls" id="lbControls" style="display:none">
   <span id="lbUpdated" class="lb-updated"></span>
   <button id="lbReloadBtn">↻ Reload</button>
+</div>
+<div class="controls" id="statsControls" style="display:none">
+  <button id="statsAll" class="secbtn2">All players</button>
+  <button id="statsNone" class="secbtn2">Unselect all</button>
+  <button id="statsReload">↻ Reload</button>
 </div>
 
 <div id="content"></div>
@@ -303,6 +350,7 @@ function isCode(s){return /^([12][A-L]|3[A-L]+|W\d+|RU\d+)$/.test(s);}
 let FIXTURES=[],FX={},GROUP_LOCK={};
 let preds={},allPreds={},allPlayers=[],results={},resultsUpdatedAt=null;
 let me=null,myPin=null,missing=null,mode="lb";
+let statsSel=null; // Set of selected player names; null = all
 
 const $=id=>document.getElementById(id);
 const content=$("content"),toast=$("toast");
@@ -410,12 +458,21 @@ function renderMy(){
   contextLabel.textContent=`${done}/${total} predicted`;content.innerHTML=html;
 }
 
+function activeStageKey(){
+  // first ROUND that still has an unplayed game; else the last round
+  const played=num=>{const r=results[num];return !!(r&&r.h!==""&&r.a!=="");};
+  for(const r of ROUNDS){
+    const games=FIXTURES.filter(f=>r.test(f.match_num));
+    if(games.length && games.some(f=>!played(f.match_num))) return r.key;
+  }
+  return ROUNDS[ROUNDS.length-1].key; // everything played -> last round
+}
+
 function renderAll(){
   const filter=FILTERS.find(f=>f.val===allStageFilter.value)||FILTERS[0];const q=allSearch.value.trim().toLowerCase();
   const visible=FIXTURES.filter(f=>{if(!filter.test(f.match_num))return false;if(q){if(!((f.home_code+" "+f.away_code).toLowerCase().includes(q)))return false;}return true;});
   const playedOf=num=>{const r=results[num];return !!(r&&r.h!==""&&r.a!=="");};
   const ftText=num=>{const r=results[num];return playedOf(num)?("FT "+r.h+"–"+r.a):"";};
-
   let gameHdr=`<tr class="games"><th class="namecol">Player</th>`;
   visible.forEach(f=>{
     const num=f.match_num,isFinal=num===FINAL_MATCH,ko=new Date(f.kickoff),locked=isLocked(num),played=playedOf(num);
@@ -429,23 +486,14 @@ function renderAll(){
     </th>`;
   });
   gameHdr+=`</tr>`;
-
   let body="";
   allPlayers.forEach(p=>{const isYou=me&&p===me;let cells="";
     visible.forEach(f=>{
-      const num=f.match_num,locked=isLocked(num),played=playedOf(num);
-      const rec=(allPreds[p]||{})[num];
-      // Before a round locks, hide OTHER players' picks — show ✅ if entered, ❌ if not.
-      if(!isYou&&!locked){
-        const has = rec && rec.h!=="" && rec.a!=="";
-        cells+=`<td class="cell masked"><span class="sc">${has?'✅':'❌'}</span></td>`;
-        return;
-      }
+      const num=f.match_num,locked=isLocked(num),played=playedOf(num);const rec=(allPreds[p]||{})[num];
+      if(!isYou&&!locked){const has=rec&&rec.h!==""&&rec.a!=="";cells+=`<td class="cell masked"><span class="sc">${has?'✅':'❌'}</span></td>`;return;}
       if(!rec||rec.h===""||rec.a===""){cells+=`<td class="cell empty${played?' played':''}">–</td>`;return;}
-      const h=+rec.h,a=+rec.a;let rn,rc;
-      if(h>a){rn=f.home_code;rc="home";}else if(a>h){rn=f.away_code;rc="away";}
-      else{if(isKO(num)&&rec.prog){rn=(rec.prog==="H"?f.home_code:f.away_code)+" (thru)";rc="draw";}else{rn="Draw";rc="draw";}}
-            let perfect=false;
+      const h=+rec.h,a=+rec.a;let rn,rc;if(h>a){rn=f.home_code;rc="home";}else if(a>h){rn=f.away_code;rc="away";}else{if(isKO(num)&&rec.prog){rn=(rec.prog==="H"?f.home_code:f.away_code)+" (thru)";rc="draw";}else{rn="Draw";rc="draw";}}
+      let perfect=false;
       if(played){
         const pts=scoreMatch(rec,results[num],isKO(num),num);
         const maxFor=(num===FINAL_MATCH)?16:8;
@@ -455,7 +503,6 @@ function renderAll(){
 
     });
     body+=`<tr class="${isYou?'you-row':''}"><td class="namecol${isYou?' you':''}">${p}${isYou?' (you)':''}</td>${cells}</tr>`;});
-
   const note=me?`🔒 Other players' predictions are hidden for each round until that round locks. Your own row is always visible.`:`🔒 Predictions are hidden for each round until that round locks (1 hour before its first kick-off). Log in to see your own picks.`;
   content.innerHTML=`<div class="ap-note">${note}</div>
     <div class="matrixwrap"><table class="matrix"><thead>${gameHdr}</thead><tbody>${body}</tbody></table></div>
@@ -497,30 +544,405 @@ function renderLeaderboard(){
   });
   content.innerHTML=`${prizeBlock}<div class="lbwrap"><table class="lb">${header}${rows}</table></div><div class="hint">Total beside the name; stage breakdown across (Final column doubled). <b>Perfect</b> = exact scoreline (Final perfect = 16). 🥇 leader · 🥄 last · dotted lines bracket the prize places (3rd &amp; 4th).</div>`;
 }
-function setNavActive(){$("navLb").classList.toggle("active",mode==="lb");$("navAll").classList.toggle("active",mode==="all");$("navMy").classList.toggle("active",mode==="my");}
+
+// ===== STATS view =====
+const STATS_COLORS=["#00b4d8","#ffd166","#2a9d8f","#e76f51","#9b5de5","#f15bb5","#80ed99","#ff8fab","#00bbf9","#fee440","#c77dff","#ff6d00","#56cfe1","#b9fbc0","#ffb703","#8d99ae","#e0e1dd"];
+function statsDates(){const set=new Set();FIXTURES.forEach(f=>{const r=results[f.match_num];if(r&&r.h!==""&&r.a!=="")set.add(new Date(f.kickoff).toISOString().slice(0,10));});return [...set].sort();}
+function pointsUpTo(player,dISO){let total=0;FIXTURES.forEach(f=>{const num=f.match_num;const r=results[num];if(!r||r.h===""||r.a==="")return;if(new Date(f.kickoff).toISOString().slice(0,10)>dISO)return;const s=scoreMatch((allPreds[player]||{})[num],r,isKO(num),num);if(s!==null)total+=s;});return total;}
+function ranksAt(dISO){const totals=allPlayers.map(p=>({p,t:pointsUpTo(p,dISO)})).sort((a,b)=>b.t-a.t||a.p.localeCompare(b.p));const rank={};let r=0,prev=null;totals.forEach((x,i)=>{if(x.t!==prev){r=i+1;prev=x.t;}rank[x.p]=r;});return rank;}
+function colorMap(){
+  const order=allPlayers.slice().sort((a,b)=>pointsUpTo(b,'9999')-pointsUpTo(a,'9999'));
+  const n=order.length,map={};let ci=0;const half=Math.ceil(n/2);const interleaved=[];
+  for(let i=0;i<half;i++){interleaved.push(order[i]);if(order[i+half])interleaved.push(order[i+half]);}
+  interleaved.forEach(p=>{map[p]=STATS_COLORS[ci%STATS_COLORS.length];ci++;});return map;
+}
+function buildRankChart(dates,colors,selected){
+  if(dates.length===0)return `<div class="stats-empty">No results yet — the chart appears once games have been played.</div>`;
+  const padL=44, padR=120, padT=16, padB=46;            // bigger right pad for labels
+  const W=Math.max(680, padL+padR+dates.length*90), H=380;
+  const maxRank=allPlayers.length;
+  const xAt=i=>padL+(dates.length<=1?0:((W-padL-padR)*i/(dates.length-1)));
+  const yAt=rank=>padT+((H-padT-padB)*(rank-1)/(Math.max(1,maxRank-1)));
+  // gridlines + rank labels
+  let grid="";
+  for(let rk=1;rk<=maxRank;rk++){const y=yAt(rk);
+    grid+=`<line x1="${padL}" y1="${y}" x2="${W-padR}" y2="${y}" stroke="#23344b" stroke-width="1"/>`+
+          `<text x="${padL-8}" y="${y+4}" fill="#8d99ae" font-size="11" text-anchor="end">${rk}</text>`;}
+  // date labels
+  let xlab="";dates.forEach((d,i)=>{const dt=new Date(d+"T12:00:00");const lbl=days[dt.getDay()]+" "+p2(dt.getDate())+" "+mons[dt.getMonth()];
+    xlab+=`<text x="${xAt(i)}" y="${H-padB+22}" fill="#8d99ae" font-size="10" text-anchor="middle">${lbl}</text>`;});
+  const rankByDate=dates.map(d=>ranksAt(d));
+
+  // build the line paths + collect end-label targets
+  let lines="";
+  const labels=[]; // {name,col,x,y}
+  allPlayers.forEach(p=>{
+    if(selected&&!selected.has(p))return;
+    const col=colors[p];
+    const pts=dates.map((d,i)=>({x:xAt(i),y:yAt(rankByDate[i][p])}));
+    const dPath=pts.map((pt,i)=>`${i===0?"M":"L"}${pt.x.toFixed(1)},${pt.y.toFixed(1)}`).join(" ");
+    lines+=`<path d="${dPath}" fill="none" stroke="${col}" stroke-width="2.4" stroke-linejoin="round"/>`;
+    pts.forEach(pt=>lines+=`<circle cx="${pt.x.toFixed(1)}" cy="${pt.y.toFixed(1)}" r="3" fill="${col}"/>`);
+    const last=pts[pts.length-1];
+    labels.push({name:p,col,x:last.x+8,y:last.y});
+  });
+
+  // de-collide labels: sort by y, then push apart so each is >=14px from the previous
+  const LH=14;
+  labels.sort((a,b)=>a.y-b.y);
+  for(let i=1;i<labels.length;i++){
+    if(labels[i].y - labels[i-1].y < LH){ labels[i].y = labels[i-1].y + LH; }
+  }
+  // keep within vertical bounds (shift the whole stack up if it overflows the bottom)
+  const bottom=H-6;
+  if(labels.length && labels[labels.length-1].y > bottom){
+    const shift = labels[labels.length-1].y - bottom;
+    labels.forEach(l=>l.y -= shift);
+  }
+  // draw labels with a dark outline for legibility + a tiny connector tick
+  let lab="";
+  labels.forEach(l=>{
+    lab+=`<text x="${l.x.toFixed(1)}" y="${l.y.toFixed(1)}" fill="${l.col}" font-size="11" font-weight="700"
+            paint-order="stroke" stroke="#0d1b2a" stroke-width="3" stroke-linejoin="round">${l.name}</text>`;
+  });
+
+  return `<svg viewBox="0 0 ${W} ${H}" width="100%" preserveAspectRatio="xMidYMid meet" role="img" style="max-width:740px;height:auto;display:block;margin:0 auto">${grid}${xlab}${lines}${lab}</svg>`;
+}
+function funStats(selected){
+  const MIN_PREDS = 5; // style stats only count players with >=5 predictions
+  const HOT_MIN = 4;   // a "scoring game" for the hot streak = >=4 pts
+  const inSel = p => !selected || selected.has(p);
+
+  // played fixtures in kickoff order (then match_num tiebreak) — used for hot streak
+  const playedOrdered = FIXTURES
+    .filter(f=>{const r=results[f.match_num];return r&&r.h!==""&&r.a!=="";})
+    .slice()
+    .sort((a,b)=> new Date(a.kickoff)-new Date(b.kickoff) || a.match_num-b.match_num);
+
+  // ---- per-player aggregates (PLAYERS group cards) ----
+  const rows = allPlayers.filter(inSel).map(p=>{
+    let perfect=0, soClose=0, zeros=0;
+    let draws=0, tight=0, goalSum=0, predCount=0, tightDen=0;
+    const dayPts={}; // ISO date -> points that day
+
+    FIXTURES.forEach(f=>{
+      const num=f.match_num;
+      const pred=(allPreds[p]||{})[num];
+      const r=results[num];
+
+      if(pred && pred.h!=="" && pred.a!==""){
+        predCount++;
+        const ph=+pred.h, pa=+pred.a;
+        goalSum += ph+pa;
+        if(ph===pa) draws++;
+        if(ph===pa || Math.abs(ph-pa)===1) tight++;
+        tightDen++;
+      }
+
+      if(r && r.h!=="" && r.a!==""){
+        const s=scoreMatch(pred,r,isKO(num),num);
+        if(s!==null){
+          const maxFor=num===FINAL_MATCH?16:8;
+          if(s===maxFor) perfect++;
+          else { if(s===0) zeros++;
+            if(pred&&pred.h!==""&&pred.a!==""){
+              const ph=+pred.h,pa=+pred.a,rh=+r.h,ra=+r.a;
+              const outcomeOK=(ph>pa&&rh>ra)||(pa>ph&&ra>rh)||(ph===pa&&rh===ra);
+              const he=ph===rh, ae=pa===ra;
+              const oneOff=(he&&Math.abs(pa-ra)===1)||(ae&&Math.abs(ph-rh)===1);
+              if(outcomeOK&&oneOff&&!(he&&ae)) soClose++;
+            }
+          }
+          const d=new Date(f.kickoff).toISOString().slice(0,10);
+          dayPts[d]=(dayPts[d]||0)+s;
+        }
+      }
+    });
+
+    // hot streak (Rule B)
+    let hot=0, run=0;
+    playedOrdered.forEach(f=>{
+      const num=f.match_num;
+      const pred=(allPreds[p]||{})[num];
+      const r=results[num];
+      const s=scoreMatch(pred,r,isKO(num),num);
+      if(s!==null && s>=HOT_MIN){ run++; if(run>hot)hot=run; }
+      else { run=0; }
+    });
+
+    const avgGoals = predCount? (goalSum/predCount) : 0;
+    const tightPct = tightDen? Math.round(100*tight/tightDen) : 0;
+    return {p,perfect,soClose,zeros,draws,tight,tightPct,avgGoals,predCount,dayPts,hot};
+  });
+
+  // ---- helpers ----
+  const fmtD = iso => { if(!iso) return ""; const d=new Date(iso+"T12:00:00"); return days[d.getDay()]+" "+p2(d.getDate())+" "+mons[d.getMonth()]; };
+  const youTag = p => (me&&p===me)?' (you)':'';
+  const youCls = p => (me&&p===me)?'you':'';
+  const fmtScore = k => k.replace("-","–");
+  const normScore = (h,a) => (Math.max(h,a))+"-"+(Math.min(h,a)); // 0-2 and 2-0 both -> "2-0"
+
+  function listCard(title, tip, items, fmtVal, emptyMsg){
+    const head=`<h4 class="tip" role="button" tabindex="0"><span class="tip-i" aria-hidden="true">i</span>${title}</h4><div class="tip-body">${tip}</div>`;
+    if(!items.length) return `<div class="fscard">${head}<div class="stats-empty">${emptyMsg}</div></div>`;
+    let t="";items.forEach(it=>{t+=`<tr><td class="${youCls(it.p)}">${it.p}${youTag(it.p)}</td><td class="v">${fmtVal(it)}</td></tr>`;});
+    return `<div class="fscard">${head}<table>${t}</table></div>`;
+  }
+  // scoreline card: rows are {score:"h-a", n:count}
+  function scoreCard(title, tip, items, emptyMsg){
+    const head=`<h4 class="tip" role="button" tabindex="0"><span class="tip-i" aria-hidden="true">i</span>${title}</h4><div class="tip-body">${tip}</div>`;
+    if(!items.length) return `<div class="fscard">${head}<div class="stats-empty">${emptyMsg}</div></div>`;
+    let t="";items.forEach(it=>{t+=`<tr><td>${fmtScore(it.score)}</td><td class="v">${it.n}</td></tr>`;});
+    return `<div class="fscard">${head}<table>${t}</table></div>`;
+  }
+  const byDesc = key => rows.slice().filter(r=>r[key]>0).sort((a,b)=>b[key]-a[key]);
+  const eligible = rows.filter(r=>r.predCount>=MIN_PREDS);
+
+  // ===== PLAYERS group =====
+  const cHot = listCard("🔥 Hot streak",
+    "Longest run of consecutive games (in kick-off order) where you scored "+HOT_MIN+" or more points. A played game scoring below "+HOT_MIN+" — or one you didn't predict — ends the run. Only streaks of 2+ are shown.",
+    rows.slice().filter(r=>r.hot>=2).sort((a,b)=>b.hot-a.hot), it=>it.hot, "No hot streaks yet.");
+  const cPerfect = listCard("🎯 Perfect scores",
+    "Number of games predicted with the exact scoreline (full 8 pts, or 16 for the Final).",
+    byDesc("perfect"), it=>it.perfect, "None yet.");
+  const cClose   = listCard("😬 So close",
+    "Right outcome and one team's score exact, but the other team's score was off by exactly one goal.",
+    byDesc("soClose"), it=>it.soClose, "None yet.");
+  const cZeros   = listCard("0️⃣ Most zeros",
+    "Number of played games where the prediction scored 0 points.",
+    byDesc("zeros"), it=>it.zeros, "Nobody's blanked — yet!");
+  const cGoals = listCard("🥅 Goal-fest merchant (avg goals)",
+    "Highest average total goals (home + away) across all their predictions. Min 5 predictions.",
+    eligible.slice().sort((a,b)=>b.avgGoals-a.avgGoals), it=>it.avgGoals.toFixed(1), "Not enough predictions yet.");
+  const cTight = listCard("🤏 Tightest-games tipster",
+    "Share of predictions that are a draw or a one-goal margin. Min 5 predictions.",
+    eligible.slice().filter(r=>r.tight>0).sort((a,b)=>b.tightPct-a.tightPct), it=>`${it.tightPct}%`, "Not enough predictions yet.");
+  // most points in a day (person + their best day)
+  const dayLeaders = rows.filter(r=>{let best=0;Object.keys(r.dayPts).forEach(d=>{if(r.dayPts[d]>best)best=r.dayPts[d];});r._best=best;r._bestDate=null;Object.keys(r.dayPts).forEach(d=>{if(r.dayPts[d]===best)r._bestDate=d;});return best>0;})
+    .sort((a,b)=>b._best-a._best);
+  const cBigDay = listCard("💥 Most points in a day",
+    "Each player's best single-day haul (sum of that day's games) and the date it happened.",
+    dayLeaders, it=>`${it._best} (${fmtD(it._bestDate)})`, "No results yet.");
+
+  // ===== SCORELINES group (counted by scoreline, both ways merged) =====
+  const perfectHits={}, zeroPreds={}, actualResults={};
+  FIXTURES.forEach(f=>{
+    const num=f.match_num, r=results[num];
+    if(r && r.h!=="" && r.a!==""){
+      const ak=normScore(+r.h,+r.a); actualResults[ak]=(actualResults[ak]||0)+1;
+      const maxFor=num===FINAL_MATCH?16:8;
+      allPlayers.forEach(p=>{
+        const pred=(allPreds[p]||{})[num];
+        if(!pred||pred.h===""||pred.a==="")return;
+        const s=scoreMatch(pred,r,isKO(num),num); if(s===null)return;
+        const pk=normScore(+pred.h,+pred.a);
+        if(s===maxFor) perfectHits[pk]=(perfectHits[pk]||0)+1;
+        else if(s===0) zeroPreds[pk]=(zeroPreds[pk]||0)+1;
+      });
+    }
+  });
+  const totalGoals=k=>k.split("-").reduce((x,y)=>(+x)+(+y),0);
+  const topN=(obj,n,asc)=>Object.keys(obj).map(k=>({score:k,n:obj[k]}))
+    .sort((a,b)=> (asc? a.n-b.n : b.n-a.n) || totalGoals(a.score)-totalGoals(b.score) || a.score.localeCompare(b.score))
+    .slice(0,n);
+
+  const bothWays=" Scorelines count both ways (e.g. 2–0 includes 0–2).";
+  const cPerfectScores = scoreCard("🎯 Top perfect-hit predicted scorelines",
+    "The exact scorelines that landed a perfect (full-marks) result most often, counted across every player's predictions."+bothWays,
+    topN(perfectHits,5,false), "No perfect hits yet.");
+   const cZeroScores = scoreCard("0️⃣ Top zero-scoring predicted scorelines",
+    "The predicted scorelines that earned someone 0 points most often — the picks that burn people."+bothWays,
+    topN(zeroPreds,5,false), "No zeros yet.");
+  const cActualScores = scoreCard("📊 Top actual result scorelines",
+    "The most common real full-time scorelines so far (90-min score, penalties ignored)."+bothWays,
+    topN(actualResults,5,false), "No results yet.");
+  const cRareScores = scoreCard("📉 Rarest actual result scorelines",
+    "The least common real full-time scorelines so far (ties broken by fewest goals, then scoreline order)."+bothWays,
+    topN(actualResults,5,true), "No results yet.");
+
+  return `<div class="funstats">
+    <div class="group-head">👤 Players</div>
+    ${cHot}${cPerfect}${cClose}${cZeros}${cGoals}${cTight}${cBigDay}
+    <div class="group-head">⚽ Scorelines</div>
+    ${cPerfectScores}${cZeroScores}${cActualScores}${cRareScores}
+  </div>`;
+}
+
+
+let h2hA=null, h2hB=null; // chosen players
+
+function playerAggForH2H(p){
+  let total=0,perfect=0,soClose=0,zeros=0,games=0;
+  let totalGoals=0, winnerGoalsSum=0, loserGoalsSum=0, decisivePreds=0;
+  const perGame={};        // match_num -> points (played games)
+  const scoreCounts={};    // "h-a" -> count (all predictions)
+  FIXTURES.forEach(f=>{
+    const num=f.match_num;
+    const pred=(allPreds[p]||{})[num];
+    if(pred && pred.h!=="" && pred.a!==""){
+      const ph=+pred.h, pa=+pred.a;
+      totalGoals += ph+pa;
+      const key=ph+"-"+pa; scoreCounts[key]=(scoreCounts[key]||0)+1;
+      if(ph!==pa){ decisivePreds++; winnerGoalsSum+=Math.max(ph,pa); loserGoalsSum+=Math.min(ph,pa); }
+    }
+    const r=results[num]; if(!r||r.h===""||r.a==="")return;
+    const s=scoreMatch(pred,r,isKO(num),num); if(s===null)return;
+    total+=s; games++; perGame[num]=s; const maxFor=num===FINAL_MATCH?16:8;
+    if(s===maxFor)perfect++; else if(s===0)zeros++;
+    if(s!==maxFor&&pred&&pred.h!==""&&pred.a!==""){const ph=+pred.h,pa=+pred.a,rh=+r.h,ra=+r.a;
+      const outcomeOK=(ph>pa&&rh>ra)||(pa>ph&&ra>rh)||(ph===pa&&rh===ra);const he=ph===rh,ae=pa===ra;
+      const oneOff=(he&&Math.abs(pa-ra)===1)||(ae&&Math.abs(ph-rh)===1);if(outcomeOK&&oneOff&&!(he&&ae))soClose++;}
+  });
+  let favScore=null, favCount=0;
+  Object.keys(scoreCounts).forEach(k=>{const c=scoreCounts[k];
+    if(c>favCount || (c===favCount && favScore && (k.split("-").reduce((x,y)=>+x+ +y) < favScore.split("-").reduce((x,y)=>+x+ +y)))){favCount=c;favScore=k;}
+  });
+  return {total,perfect,soClose,zeros,games,perGame,totalGoals,
+    avgWinnerGoals: decisivePreds? winnerGoalsSum/decisivePreds : null,
+    avgLoserGoals: decisivePreds? loserGoalsSum/decisivePreds : null,
+    favScore, favCount};
+}
+
+function renderH2H(){
+  const opts = sel => allPlayers.map(p=>`<option value="${p}" ${sel===p?"selected":""}>${p}</option>`).join("");
+  let body=`<div class="pickers">
+    <select id="h2hSelA"><option value="">— player A —</option>${opts(h2hA)}</select>
+    <span class="vs">vs</span>
+    <select id="h2hSelB"><option value="">— player B —</option>${opts(h2hB)}</select>
+  </div>`;
+  if(h2hA && h2hB && h2hA!==h2hB){
+    const A=playerAggForH2H(h2hA), B=playerAggForH2H(h2hB);
+
+    let aWins=0,bWins=0,ties=0;
+    let bothScoreline=0, sameScoreline=0, bothOutcome=0, sameOutcome=0;
+    let bestGap=-1, bestGame=null;
+    const outcomeOf=pred=>{const h=+pred.h,a=+pred.a;return h>a?"H":a>h?"A":"D";};
+    FIXTURES.forEach(f=>{
+      const num=f.match_num;
+      const pa=(allPreds[h2hA]||{})[num], pb=(allPreds[h2hB]||{})[num];
+      const bothPredicted = pa&&pa.h!==""&&pa.a!=="" && pb&&pb.h!==""&&pb.a!=="";
+      if(bothPredicted){
+        bothScoreline++; if(+pa.h===+pb.h && +pa.a===+pb.a) sameScoreline++;
+        bothOutcome++; if(outcomeOf(pa)===outcomeOf(pb)) sameOutcome++;
+      }
+      const sa=A.perGame[num], sb=B.perGame[num];
+      if(sa!=null && sb!=null){
+        if(sa>sb)aWins++; else if(sb>sa)bWins++; else ties++;
+        const gap=Math.abs(sa-sb);
+        if(gap>bestGap || (gap===bestGap && bestGame && new Date(f.kickoff)>new Date(FX[bestGame.num].kickoff))){
+          bestGap=gap; bestGame={num,sa,sb,f};
+        }
+      }
+    });
+
+    const dates=statsDates(); let aDays=0,bDays=0,tieDays=0;
+    dates.forEach(d=>{const ta=pointsUpTo(h2hA,d), tb=pointsUpTo(h2hB,d); if(ta>tb)aDays++; else if(tb>ta)bDays++; else tieDays++;});
+
+    const win=(a,b,higher=true)=>({aw:higher?a>b:a<b, bw:higher?b>a:a>b});
+    const rowHL=(metric,a,b,higher=true)=>{const {aw,bw}=win(a,b,higher);
+      return `<tr><td class="${aw?'win':''}">${a}</td><td class="metric">${metric}</td><td class="${bw?'win':''}">${b}</td></tr>`;};
+    const rowPlain=(metric,a,b)=>`<tr><td>${a}</td><td class="metric">${metric}</td><td>${b}</td></tr>`;
+    const sect=t=>`<tr class="section"><td colspan="3">${t}</td></tr>`;
+    const pct=(num,den)=>den? Math.round(100*num/den)+"%" : "—";
+    const fav=X=>X.favScore? X.favScore.replace("-","–")+" (×"+X.favCount+")" : "—";
+    const avg1=v=>v==null?"—":v.toFixed(1);
+
+    let tbl=`<table>
+      <tr><th>${h2hA}</th><th></th><th>${h2hB}</th></tr>
+      ${sect("⚔️ Performance")}
+      ${rowHL("Total points",A.total,B.total)}
+      ${rowHL("Perfect scores",A.perfect,B.perfect)}
+      ${rowHL("So close",A.soClose,B.soClose)}
+      ${rowHL("Zeros",A.zeros,B.zeros,false)}
+      ${rowHL("Games scored higher",aWins,bWins)}
+      ${rowHL("Days led (vs each other)",aDays,bDays)}
+      ${sect("🎭 Style")}
+      ${rowPlain("Favourite score",fav(A),fav(B))}
+      ${rowPlain("Avg goals — winner",avg1(A.avgWinnerGoals),avg1(B.avgWinnerGoals))}
+      ${rowPlain("Avg goals — loser",avg1(A.avgLoserGoals),avg1(B.avgLoserGoals))}
+      ${rowPlain("Total goals predicted",A.totalGoals,B.totalGoals)}
+      ${sect("🧠 Agreement")}
+      ${rowPlain("👯 Twin-brain (exact scores)",pct(sameScoreline,bothScoreline),pct(sameScoreline,bothScoreline))}
+      ${rowPlain("🎯 Outcome agreement",pct(sameOutcome,bothOutcome),pct(sameOutcome,bothOutcome))}
+    </table>`;
+
+    let rival="";
+    if(bestGame && bestGap>0){
+      const f=bestGame.f; const fixt=`${f.home_code} v ${f.away_code}`;
+      rival=`<div class="rivalry">🃏 Biggest disagreement — <b>#${bestGame.num}</b> ${fixt} (${dateShort(new Date(f.kickoff))}): `+
+        `<span>${h2hA} ${bestGame.sa}</span> vs <span>${h2hB} ${bestGame.sb}</span> · Δ${bestGap} pts</div>`;
+    } else {
+      rival=`<div class="rivalry">🃏 Biggest disagreement — no shared played games yet.</div>`;
+    }
+
+    const agNote = bothScoreline===0 ? `<div class="hint">No games both have predicted yet — agreement stats will appear once you overlap.</div>` : "";
+
+    body+=tbl+rival+agNote;
+  } else {
+    body+=`<div class="stats-empty">Pick two different players to compare.</div>`;
+  }
+  const h2hTip="Compare any two players. Performance metrics use played games; style metrics use all predictions; agreement uses games both have predicted (scoreline/outcome only, ignoring knockout progression). 'Days led' counts match-days each was ahead of the other on cumulative points.";
+  return `<div class="h2h"><h4 class="tip" role="button" tabindex="0"><span class="tip-i" aria-hidden="true">i</span>🥊 Head-to-head</h4><div class="tip-body">${h2hTip}</div>${body}</div>`;
+}
+
+function renderStats(){
+  const dates=statsDates();const colors=colorMap();const selected=statsSel;
+  let chips="";allPlayers.forEach(p=>{const on=!selected||selected.has(p);
+    chips+=`<label><input type="checkbox" data-statp="${p}" ${on?"checked":""}><span class="swatch" style="background:${colors[p]}"></span>${p}${(me&&p===me)?' (you)':''}</label>`;});
+  content.innerHTML=`<div class="stats-wrap">
+    <div class="stats-filter">${chips}</div>
+    <div class="chart-card"><h3>📈 Leaderboard position by date (1st at the top)</h3>${buildRankChart(dates,colors,selected)}</div>
+    ${funStats(selected)}
+    ${renderH2H()}
+    <div class="hint">Pick players above to focus the chart and the Players stats. Scorelines and head-to-head use all players, independent of the filter. Tap the ⓘ on any card for details.</div>
+  </div>`;
+  content.querySelectorAll("[data-statp]").forEach(cb=>cb.addEventListener("change",()=>{
+    const chosen=new Set([...content.querySelectorAll("[data-statp]:checked")].map(x=>x.dataset.statp));
+    statsSel=(chosen.size===allPlayers.length)?null:chosen;renderStats();
+  }));
+  const selA=$("h2hSelA"), selB=$("h2hSelB");
+  if(selA) selA.addEventListener("change",e=>{h2hA=e.target.value||null;renderStats();});
+  if(selB) selB.addEventListener("change",e=>{h2hB=e.target.value||null;renderStats();});
+}
+async function showStats(){mode="stats";await Promise.all([loadAllPreds(),loadResults()]);statsSel=null;render();}
+
+function setNavActive(){$("navLb").classList.toggle("active",mode==="lb");$("navAll").classList.toggle("active",mode==="all");$("navMy").classList.toggle("active",mode==="my");$("navStats").classList.toggle("active",mode==="stats");}
 function render(){
   myControls.style.display=mode==="my"?"":"none";allControls.style.display=mode==="all"?"":"none";lbControls.style.display=mode==="lb"?"":"none";
+  $("statsControls").style.display=mode==="stats"?"":"none";
   myHint.style.display=(mode==="my"&&me)?"":"none";setNavActive();
-  if(mode==="all")return renderAll();if(mode==="lb")return renderLeaderboard();renderMy();
+  if(mode==="all")return renderAll();if(mode==="lb")return renderLeaderboard();if(mode==="stats")return renderStats();renderMy();
 }
 
 async function showLeaderboard(){mode="lb";await Promise.all([loadAllPreds(),loadResults()]);render();}
-async function showAll(){mode="all";await Promise.all([loadAllPreds(),loadResults()]);render();}
+async function showAll(){mode="all";await Promise.all([loadAllPreds(),loadResults()]);allStageFilter.value=activeStageKey();render();}
 async function showMy(){if(!me){openGate();return;}mode="my";await loadMyPreds();render();}
 
-$("navLb").onclick=showLeaderboard;$("navAll").onclick=showAll;$("navMy").onclick=showMy;
+$("navLb").onclick=showLeaderboard;$("navAll").onclick=showAll;$("navMy").onclick=showMy;$("navStats").onclick=showStats;
 $("allReloadBtn").onclick=async()=>{await Promise.all([loadAllPreds(),loadResults()]);renderAll();toastMsg("↻ Reloaded");};
 $("lbReloadBtn").onclick=async()=>{await Promise.all([loadAllPreds(),loadResults()]);renderLeaderboard();toastMsg("↻ Reloaded");};
+$("statsAll").onclick=()=>{statsSel=null;renderStats();};
+$("statsNone").onclick=()=>{statsSel=new Set();renderStats();}; 
+$("statsReload").onclick=async()=>{await Promise.all([loadAllPreds(),loadResults()]);renderStats();toastMsg("↻ Reloaded");};
 stageFilter.addEventListener("change",()=>{missing=null;renderMy();});
 search.addEventListener("input",renderMy);
 allStageFilter.addEventListener("change",renderAll);
 allSearch.addEventListener("input",renderAll);
 
 content.addEventListener("click",e=>{
+  const h=e.target.closest("h4.tip");
+  if(h){const tb=h.nextElementSibling;if(tb&&tb.classList.contains("tip-body"))tb.classList.toggle("show");return;}
   if(mode!=="my")return;
   const btn=e.target.closest(".stepbtn");
   if(btn){if(btn.disabled)return;adjustScore(btn.dataset.num,btn.dataset.side,+btn.dataset.step);return;}
   const ck=e.target.dataset.copy;if(!ck)return;const round=ROUNDS.find(r=>r.key===ck);const m=missingForRound(round);missing=m.length?{round:ck,items:m}:null;copyText(buildText(ck));renderMy();
+});
+content.addEventListener("keydown",e=>{
+  if((e.key==="Enter"||e.key===" ") && e.target.classList&&e.target.classList.contains("tip")){
+    e.preventDefault();
+    const tb=e.target.nextElementSibling;
+    if(tb&&tb.classList.contains("tip-body")) tb.classList.toggle("show");
+  }
 });
 content.addEventListener("change",e=>{if(mode!=="my")return;if(e.target.dataset.field){const num=+e.target.dataset.num;if(isLocked(num)){renderMy();return;}const s=preds[num]=preds[num]||{h:"",a:"",prog:""};s[e.target.dataset.field]=e.target.value;updateLabel(num);savePrediction(num);}});
 
@@ -550,10 +972,15 @@ async function init(){
       if(mode==="my"&&me&&!search.value.trim())renderMy();
       else if(mode==="all"&&!allSearch.value.trim()){Promise.all([loadAllPreds(),loadResults()]).then(renderAll);}
       else if(mode==="lb"){Promise.all([loadAllPreds(),loadResults()]).then(renderLeaderboard);}
+      else if(mode==="stats"){Promise.all([loadAllPreds(),loadResults()]).then(renderStats);}
     },60000);
   }catch(err){content.innerHTML=`<div class="hint" style="color:#ffb4a2">⚠️ Could not connect: ${err.message}</div>`;}
 }
 init();
+
+// "NEW" badge on the Stats button — auto-hides after 21 Jun 2026, 23:59 BST (22:59 UTC)
+const STATS_NEW_UNTIL = Date.parse("2026-06-22T22:59:00Z");
+(function(){ const b=document.querySelector("#navStats .newbadge"); if(b && Date.now() < STATS_NEW_UNTIL) b.style.display=""; })();
 </script>
 </body>
 </html>
