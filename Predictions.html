@@ -157,9 +157,10 @@
   .chart-card{background:var(--card);border:1px solid #2a3a52;border-radius:12px;padding:12px;overflow-x:auto}
   .chart-card h3{margin:0 0 8px;color:var(--accent);font-size:.95rem;text-align:center}
   .funstats{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin-top:16px}
+  .funstats .group-head{grid-column:1/-1;margin:6px 2px 0;color:var(--accent);font-size:.82rem;font-weight:700;letter-spacing:.04em;border-bottom:1px solid #2a3a52;padding-bottom:6px}
   .fscard{background:var(--card);border:1px solid #2a3a52;border-radius:12px;padding:12px 14px}
   .fscard h4{margin:0 0 8px;color:var(--gold);font-size:.9rem}
-  .fscard h4.tip{cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;user-select:none}
+  .fscard h4.tip{cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;user-select:none;text-align:center}
   .fscard h4.tip .tip-i{display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;border-radius:50%;background:#2b3a52;color:var(--accent);font-size:.7rem;font-weight:700;flex:0 0 auto}
   .fscard .tip-body{display:none;margin:6px 0 2px;padding:8px 10px;background:#15263b;border:1px solid #2a3a52;border-radius:8px;color:var(--muted);font-size:.76rem;line-height:1.4}
   .fscard .tip-body.show{display:block}
@@ -602,7 +603,7 @@ function funStats(selected){
     .slice()
     .sort((a,b)=> new Date(a.kickoff)-new Date(b.kickoff) || a.match_num-b.match_num);
 
-  // ---- per-player aggregates ----
+  // ---- per-player aggregates (PLAYERS group cards) ----
   const rows = allPlayers.filter(inSel).map(p=>{
     let perfect=0, soClose=0, zeros=0;
     let draws=0, tight=0, goalSum=0, predCount=0, tightDen=0;
@@ -613,17 +614,15 @@ function funStats(selected){
       const pred=(allPreds[p]||{})[num];
       const r=results[num];
 
-      // prediction-style metrics (any prediction, played or not)
       if(pred && pred.h!=="" && pred.a!==""){
         predCount++;
         const ph=+pred.h, pa=+pred.a;
         goalSum += ph+pa;
         if(ph===pa) draws++;
-        if(ph===pa || Math.abs(ph-pa)===1) tight++;  // tight = draw OR 1-goal margin
+        if(ph===pa || Math.abs(ph-pa)===1) tight++;
         tightDen++;
       }
 
-      // results-based metrics (only played games)
       if(r && r.h!=="" && r.a!==""){
         const s=scoreMatch(pred,r,isKO(num),num);
         if(s!==null){
@@ -644,16 +643,15 @@ function funStats(selected){
       }
     });
 
-    // ---- hot streak (Rule B): over PLAYED games in order, a game scoring <HOT_MIN
-    //      OR a played game with no prediction breaks the run ----
+    // hot streak (Rule B)
     let hot=0, run=0;
     playedOrdered.forEach(f=>{
       const num=f.match_num;
       const pred=(allPreds[p]||{})[num];
       const r=results[num];
-      const s=scoreMatch(pred,r,isKO(num),num); // null if no/!complete prediction
+      const s=scoreMatch(pred,r,isKO(num),num);
       if(s!==null && s>=HOT_MIN){ run++; if(run>hot)hot=run; }
-      else { run=0; } // <HOT_MIN, or no prediction on a played game -> streak breaks
+      else { run=0; }
     });
 
     const avgGoals = predCount? (goalSum/predCount) : 0;
@@ -661,10 +659,11 @@ function funStats(selected){
     return {p,perfect,soClose,zeros,draws,tight,tightPct,avgGoals,predCount,dayPts,hot};
   });
 
-  // ---- helpers to render a "leaderboard of a stat" ----
+  // ---- helpers ----
   const fmtD = iso => { if(!iso) return ""; const d=new Date(iso+"T12:00:00"); return days[d.getDay()]+" "+p2(d.getDate())+" "+mons[d.getMonth()]; };
   const youTag = p => (me&&p===me)?' (you)':'';
   const youCls = p => (me&&p===me)?'you':'';
+  const fmtScore = k => k.replace("-","–");
 
   function listCard(title, tip, items, fmtVal, emptyMsg){
     const head=`<h4 class="tip" role="button" tabindex="0"><span class="tip-i" aria-hidden="true">i</span>${title}</h4><div class="tip-body">${tip}</div>`;
@@ -672,15 +671,20 @@ function funStats(selected){
     let t="";items.forEach(it=>{t+=`<tr><td class="${youCls(it.p)}">${it.p}${youTag(it.p)}</td><td class="v">${fmtVal(it)}</td></tr>`;});
     return `<div class="fscard">${head}<table>${t}</table></div>`;
   }
+  // scoreline card: rows are {score:"h-a", n:count}
+  function scoreCard(title, tip, items, emptyMsg){
+    const head=`<h4 class="tip" role="button" tabindex="0"><span class="tip-i" aria-hidden="true">i</span>${title}</h4><div class="tip-body">${tip}</div>`;
+    if(!items.length) return `<div class="fscard">${head}<div class="stats-empty">${emptyMsg}</div></div>`;
+    let t="";items.forEach(it=>{t+=`<tr><td>${fmtScore(it.score)}</td><td class="v">${it.n}</td></tr>`;});
+    return `<div class="fscard">${head}<table>${t}</table></div>`;
+  }
   const byDesc = key => rows.slice().filter(r=>r[key]>0).sort((a,b)=>b[key]-a[key]);
   const eligible = rows.filter(r=>r.predCount>=MIN_PREDS);
 
-  // hot streak — longest run of consecutive played games scoring >=4 (streak >=2 shown)
+  // ===== PLAYERS group =====
   const cHot = listCard("🔥 Hot streak",
     "Longest run of consecutive games (in kick-off order) where you scored "+HOT_MIN+"+ points. A played game scoring below "+HOT_MIN+" — or one you didn't predict — ends the run. Only streaks of 2+ are shown.",
     rows.slice().filter(r=>r.hot>=2).sort((a,b)=>b.hot-a.hot), it=>it.hot, "No hot streaks yet.");
-
-  // perfect / soClose / zeros
   const cPerfect = listCard("🎯 Perfect scores",
     "Number of games predicted with the exact scoreline (full 8 pts, or 16 for the Final).",
     byDesc("perfect"), it=>it.perfect, "None yet.");
@@ -690,36 +694,62 @@ function funStats(selected){
   const cZeros   = listCard("0️⃣ Most zeros",
     "Number of played games where the prediction scored 0 points.",
     byDesc("zeros"), it=>it.zeros, "Nobody's blanked — yet!");
-
-  // most points in a day — top 17 day-hauls (>=10), a player may appear more than once
-  const bigDays = [];
-  rows.forEach(r=>{ Object.keys(r.dayPts).forEach(d=>{ if(r.dayPts[d]>=10) bigDays.push({p:r.p, pts:r.dayPts[d], date:d}); }); });
-  bigDays.sort((a,b)=> b.pts-a.pts || a.date.localeCompare(b.date) || a.p.localeCompare(b.p));
-  const topDays = bigDays.slice(0,17);
-  const bigDayTip="Best single-day points hauls of 10 or more (sum of all that day's games). Top 17 days; a player can appear more than once for different days.";
-  const bigDayHead=`<h4 class="tip" role="button" tabindex="0"><span class="tip-i" aria-hidden="true">i</span>💥 Most points in a day</h4><div class="tip-body">${bigDayTip}</div>`;
-  const cBigDay = topDays.length
-    ? `<div class="fscard">${bigDayHead}<table>${
-        topDays.map(it=>`<tr><td class="${youCls(it.p)}">${it.p}${youTag(it.p)}</td><td class="v">${it.pts} (${fmtD(it.date)})</td></tr>`).join("")
-      }</table></div>`
-    : `<div class="fscard">${bigDayHead}<div class="stats-empty">No 10+ point days yet.</div></div>`;
-
-  // style stats (min predictions)
-  const cDraws = listCard("🤝 Draw specialist",
-    "Most games predicted as a draw (equal scoreline). Min 5 predictions.",
-    eligible.slice().filter(r=>r.draws>0).sort((a,b)=>b.draws-a.draws), it=>it.draws, "No draw-pickers yet.");
   const cGoals = listCard("🥅 Goal-fest merchant (avg goals)",
     "Highest average total goals (home + away) across all their predictions. Min 5 predictions.",
     eligible.slice().sort((a,b)=>b.avgGoals-a.avgGoals), it=>it.avgGoals.toFixed(1), "Not enough predictions yet.");
-  const cLow   = listCard("🛡️ Low-scoring specialist (avg goals)",
-    "Lowest average total goals (home + away) across all their predictions. Min 5 predictions.",
-    eligible.slice().sort((a,b)=>a.avgGoals-b.avgGoals), it=>it.avgGoals.toFixed(1), "Not enough predictions yet.");
   const cTight = listCard("🤏 Tightest-games tipster",
     "Share of predictions that are a draw or a one-goal margin. Min 5 predictions.",
     eligible.slice().filter(r=>r.tight>0).sort((a,b)=>b.tightPct-a.tightPct), it=>`${it.tightPct}%`, "Not enough predictions yet.");
+  // most points in a day (person + their best day)
+  const dayLeaders = rows.filter(r=>{let best=0;Object.keys(r.dayPts).forEach(d=>{if(r.dayPts[d]>best)best=r.dayPts[d];});r._best=best;r._bestDate=null;Object.keys(r.dayPts).forEach(d=>{if(r.dayPts[d]===best)r._bestDate=d;});return best>0;})
+    .sort((a,b)=>b._best-a._best);
+  const cBigDay = listCard("💥 Most points in a day",
+    "Each player's best single-day haul (sum of that day's games) and the date it happened.",
+    dayLeaders, it=>`${it._best} (${fmtD(it._bestDate)})`, "No results yet.");
+
+  // ===== SCORELINES group (counted by scoreline, not by person) =====
+  // build counts across all players & results
+  const perfectHits={}, zeroPreds={}, actualResults={};
+  FIXTURES.forEach(f=>{
+    const num=f.match_num, r=results[num];
+    if(r && r.h!=="" && r.a!==""){
+      // actual result scoreline (90-min as stored, ignoring pens)
+      const ak=(+r.h)+"-"+(+r.a); actualResults[ak]=(actualResults[ak]||0)+1;
+      // per player: perfect-hit & zero-scoring predicted scorelines
+      const maxFor=num===FINAL_MATCH?16:8;
+      allPlayers.forEach(p=>{
+        const pred=(allPreds[p]||{})[num];
+        if(!pred||pred.h===""||pred.a==="")return;
+        const s=scoreMatch(pred,r,isKO(num),num); if(s===null)return;
+        const pk=(+pred.h)+"-"+(+pred.a);
+        if(s===maxFor) perfectHits[pk]=(perfectHits[pk]||0)+1;
+        else if(s===0) zeroPreds[pk]=(zeroPreds[pk]||0)+1;
+      });
+    }
+  });
+  const totalGoals=k=>k.split("-").reduce((x,y)=>(+x)+(+y),0);
+  const topN=(obj,n,asc)=>Object.keys(obj).map(k=>({score:k,n:obj[k]}))
+    .sort((a,b)=> (asc? a.n-b.n : b.n-a.n) || totalGoals(a.score)-totalGoals(b.score) || a.score.localeCompare(b.score))
+    .slice(0,n);
+
+  const cPerfectScores = scoreCard("🎯 Top perfect-hit scorelines",
+    "The exact scorelines that landed a perfect (full-marks) result most often, counted across every player's predictions.",
+    topN(perfectHits,3,false), "No perfect hits yet.");
+  const cActualScores = scoreCard("📊 Top actual result scorelines",
+    "The most common real full-time scorelines so far (90-min score, penalties ignored).",
+    topN(actualResults,3,false), "No results yet.");
+  const cZeroScores = scoreCard("0️⃣ Top zero-scoring scorelines",
+    "The predicted scorelines that earned someone 0 points most often — the picks that burn people.",
+    topN(zeroPreds,3,false), "No zeros yet.");
+  const cRareScores = scoreCard("📉 Rarest actual result scorelines",
+    "The least common real full-time scorelines so far (ties broken by fewest goals, then scoreline order).",
+    topN(actualResults,3,true), "No results yet.");
 
   return `<div class="funstats">
-    ${cHot}${cPerfect}${cClose}${cZeros}${cBigDay}${cDraws}${cGoals}${cLow}${cTight}
+    <div class="group-head">👤 Players</div>
+    ${cHot}${cPerfect}${cClose}${cZeros}${cGoals}${cTight}${cBigDay}
+    <div class="group-head">⚽ Scorelines</div>
+    ${cPerfectScores}${cActualScores}${cZeroScores}${cRareScores}
   </div>`;
 }
 
@@ -733,14 +763,12 @@ function playerAggForH2H(p){
   FIXTURES.forEach(f=>{
     const num=f.match_num;
     const pred=(allPreds[p]||{})[num];
-    // style metrics over ALL predictions (played or not)
     if(pred && pred.h!=="" && pred.a!==""){
       const ph=+pred.h, pa=+pred.a;
       totalGoals += ph+pa;
       const key=ph+"-"+pa; scoreCounts[key]=(scoreCounts[key]||0)+1;
       if(ph!==pa){ decisivePreds++; winnerGoalsSum+=Math.max(ph,pa); loserGoalsSum+=Math.min(ph,pa); }
     }
-    // performance metrics over PLAYED games
     const r=results[num]; if(!r||r.h===""||r.a==="")return;
     const s=scoreMatch(pred,r,isKO(num),num); if(s===null)return;
     total+=s; games++; perGame[num]=s; const maxFor=num===FINAL_MATCH?16:8;
@@ -749,7 +777,6 @@ function playerAggForH2H(p){
       const outcomeOK=(ph>pa&&rh>ra)||(pa>ph&&ra>rh)||(ph===pa&&rh===ra);const he=ph===rh,ae=pa===ra;
       const oneOff=(he&&Math.abs(pa-ra)===1)||(ae&&Math.abs(ph-rh)===1);if(outcomeOK&&oneOff&&!(he&&ae))soClose++;}
   });
-  // favourite scoreline = most frequent, tie -> lowest total goals
   let favScore=null, favCount=0;
   Object.keys(scoreCounts).forEach(k=>{const c=scoreCounts[k];
     if(c>favCount || (c===favCount && favScore && (k.split("-").reduce((x,y)=>+x+ +y) < favScore.split("-").reduce((x,y)=>+x+ +y)))){favCount=c;favScore=k;}
@@ -770,7 +797,6 @@ function renderH2H(){
   if(h2hA && h2hB && h2hA!==h2hB){
     const A=playerAggForH2H(h2hA), B=playerAggForH2H(h2hB);
 
-    // shared-game derived metrics: h2h game wins, twin-brain, outcome agreement, biggest disagreement
     let aWins=0,bWins=0,ties=0;
     let bothScoreline=0, sameScoreline=0, bothOutcome=0, sameOutcome=0;
     let bestGap=-1, bestGame=null;
@@ -783,7 +809,6 @@ function renderH2H(){
         bothScoreline++; if(+pa.h===+pb.h && +pa.a===+pb.a) sameScoreline++;
         bothOutcome++; if(outcomeOf(pa)===outcomeOf(pb)) sameOutcome++;
       }
-      // biggest disagreement on a played game both predicted
       const sa=A.perGame[num], sb=B.perGame[num];
       if(sa!=null && sb!=null){
         if(sa>sb)aWins++; else if(sb>sa)bWins++; else ties++;
@@ -794,7 +819,6 @@ function renderH2H(){
       }
     });
 
-    // lead "days in front" using per-date running totals
     const dates=statsDates(); let aDays=0,bDays=0,tieDays=0;
     dates.forEach(d=>{const ta=pointsUpTo(h2hA,d), tb=pointsUpTo(h2hB,d); if(ta>tb)aDays++; else if(tb>ta)bDays++; else tieDays++;});
 
@@ -826,7 +850,6 @@ function renderH2H(){
       ${rowPlain("🎯 Outcome agreement",pct(sameOutcome,bothOutcome),pct(sameOutcome,bothOutcome))}
     </table>`;
 
-    // rivalry moment
     let rival="";
     if(bestGame && bestGap>0){
       const f=bestGame.f; const fixt=`${f.home_code} v ${f.away_code}`;
@@ -836,7 +859,6 @@ function renderH2H(){
       rival=`<div class="rivalry">🃏 Biggest disagreement — no shared played games yet.</div>`;
     }
 
-    // agreement note when no shared games
     const agNote = bothScoreline===0 ? `<div class="hint">No games both have predicted yet — agreement stats will appear once you overlap.</div>` : "";
 
     body+=tbl+rival+agNote;
@@ -856,14 +878,12 @@ function renderStats(){
     <div class="chart-card"><h3>📈 Leaderboard position by date (1st at the top)</h3>${buildRankChart(dates,colors,selected)}</div>
     ${funStats(selected)}
     ${renderH2H()}
-    <div class="hint">Pick players above to focus the chart and stats. Head-to-head compares any two, independent of the filter. Tap the ⓘ on any card for details.</div>
+    <div class="hint">Pick players above to focus the chart and the Players stats. Scorelines and head-to-head use all players, independent of the filter. Tap the ⓘ on any card for details.</div>
   </div>`;
-  // chart filter chips
   content.querySelectorAll("[data-statp]").forEach(cb=>cb.addEventListener("change",()=>{
     const chosen=new Set([...content.querySelectorAll("[data-statp]:checked")].map(x=>x.dataset.statp));
     statsSel=(chosen.size===allPlayers.length)?null:chosen;renderStats();
   }));
-  // head-to-head dropdowns (independent of filter)
   const selA=$("h2hSelA"), selB=$("h2hSelB");
   if(selA) selA.addEventListener("change",e=>{h2hA=e.target.value||null;renderStats();});
   if(selB) selB.addEventListener("change",e=>{h2hB=e.target.value||null;renderStats();});
@@ -894,7 +914,6 @@ allStageFilter.addEventListener("change",renderAll);
 allSearch.addEventListener("input",renderAll);
 
 content.addEventListener("click",e=>{
-  // tap/click to toggle stat tooltips (works on mobile + desktop)
   const h=e.target.closest("h4.tip");
   if(h){const tb=h.nextElementSibling;if(tb&&tb.classList.contains("tip-body"))tb.classList.toggle("show");return;}
   if(mode!=="my")return;
