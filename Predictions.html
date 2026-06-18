@@ -166,6 +166,10 @@
   .chart-card h3{margin:0 0 8px;color:var(--accent);font-size:.95rem;text-align:center}
   .funstats{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin-top:16px}
   .funstats .group-head{grid-column:1/-1;margin:6px 2px 0;color:var(--accent);font-size:.82rem;font-weight:700;letter-spacing:.04em;border-bottom:1px solid #2a3a52;padding-bottom:6px}
+  .funstats .span-full{grid-column:1/-1}
+  .funstats .span-full .h2h,
+  .funstats .span-full .profiles{margin-top:0}
+
   .fscard{background:var(--card);border:1px solid #2a3a52;border-radius:12px;padding:12px 14px}
   .fscard h4{margin:0 0 8px;color:var(--gold);font-size:.9rem}
   .fscard h4.tip{cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;user-select:none;text-align:center}
@@ -636,7 +640,7 @@ function buildRankChart(dates,colors,selected){
 
   return `<svg viewBox="0 0 ${W} ${H}" width="100%" preserveAspectRatio="xMidYMid meet" role="img" style="max-width:740px;height:auto;display:block;margin:0 auto">${grid}${xlab}${lines}${lab}</svg>`;
 }
-function funStats(selected){
+function funStats(selected, extraUnderPlayers){
   const MIN_PREDS = 5; // style stats only count players with >=5 predictions
   const HOT_MIN = 4;   // a "scoring game" for the hot streak = >=4 pts
   const inSel = p => !selected || selected.has(p);
@@ -790,12 +794,12 @@ function funStats(selected){
 
   return `<div class="funstats">
     <div class="group-head">👤 Players</div>
-    ${cHot}${cPerfect}${cClose}${cZeros}${cGoals}${cTight}${cBigDay}
+    ${extraUnderPlayers||""}
+    ${cHot}${cPerfect}${cClose}${cZeros}${cGoals}${cTight}${cBigDay}${cOutcome}
     <div class="group-head">⚽ Scorelines</div>
     ${cPerfectScores}${cZeroScores}${cActualScores}${cRareScores}
   </div>`;
 }
-
 
 let h2hA=null, h2hB=null; // chosen players
 
@@ -1019,12 +1023,11 @@ function renderStats(){
   const dates=statsDates();const colors=colorMap();const selected=statsSel;
   let chips="";allPlayers.forEach(p=>{const on=!selected||selected.has(p);
     chips+=`<label><input type="checkbox" data-statp="${p}" ${on?"checked":""}><span class="swatch" style="background:${colors[p]}"></span>${p}${(me&&p===me)?' (you)':''}</label>`;});
+  const extraPlayers = `<div class="span-full">${renderH2H()}</div><div class="span-full">${renderProfiles()}</div>`;
   content.innerHTML=`<div class="stats-wrap">
     <div class="stats-filter">${chips}</div>
     <div class="chart-card"><h3>📈 Leaderboard position by date (1st at the top)</h3>${buildRankChart(dates,colors,selected)}</div>
-    ${funStats(selected)}
-    ${renderH2H()}
-    ${renderProfiles()}
+    ${funStats(selected, extraPlayers)}
     <div class="hint">Pick players above to focus the chart and the Players stats. Scorelines, head-to-head and profiles use all players, independent of the filter. Tap the ⓘ on any card for details.</div>
   </div>`;
 
