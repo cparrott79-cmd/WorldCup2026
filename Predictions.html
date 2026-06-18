@@ -219,7 +219,7 @@
 </style>
 </head>
 <body>
-<div id="verTag">v2.0.0</div>  
+<div id="verTag">v2.0.1</div>  
 <header>
   <h1>⚽ World Cup 2026 — Predictions &amp; Leaderboard</h1>
   <div class="sub">Browse the leaderboard and predictions freely. Log in only when you want to enter or change your own scores.</div>
@@ -734,15 +734,15 @@ function funStats(selected){
     .slice(0,n);
 
   const bothWays=" Scorelines count both ways (e.g. 2–0 includes 0–2).";
-  const cPerfectScores = scoreCard("🎯 Top perfect-hit scorelines",
+  const cPerfectScores = scoreCard("🎯 Top perfect-hit predicted scorelines",
     "The exact scorelines that landed a perfect (full-marks) result most often, counted across every player's predictions."+bothWays,
     topN(perfectHits,5,false), "No perfect hits yet.");
+   const cZeroScores = scoreCard("0️⃣ Top zero-scoring predicted scorelines",
+    "The predicted scorelines that earned someone 0 points most often — the picks that burn people."+bothWays,
+    topN(zeroPreds,5,false), "No zeros yet.");
   const cActualScores = scoreCard("📊 Top actual result scorelines",
     "The most common real full-time scorelines so far (90-min score, penalties ignored)."+bothWays,
     topN(actualResults,5,false), "No results yet.");
-  const cZeroScores = scoreCard("0️⃣ Top zero-scoring scorelines",
-    "The predicted scorelines that earned someone 0 points most often — the picks that burn people."+bothWays,
-    topN(zeroPreds,5,false), "No zeros yet.");
   const cRareScores = scoreCard("📉 Rarest actual result scorelines",
     "The least common real full-time scorelines so far (ties broken by fewest goals, then scoreline order)."+bothWays,
     topN(actualResults,5,true), "No results yet.");
