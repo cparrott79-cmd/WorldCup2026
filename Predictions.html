@@ -734,16 +734,16 @@ function funStats(selected){
 
   const cPerfectScores = scoreCard("🎯 Top perfect-hit scorelines",
     "The exact scorelines that landed a perfect (full-marks) result most often, counted across every player's predictions.",
-    topN(perfectHits,3,false), "No perfect hits yet.");
+    topN(perfectHits,5,false), "No perfect hits yet.");
   const cActualScores = scoreCard("📊 Top actual result scorelines",
     "The most common real full-time scorelines so far (90-min score, penalties ignored).",
-    topN(actualResults,3,false), "No results yet.");
+    topN(actualResults,5,false), "No results yet.");
   const cZeroScores = scoreCard("0️⃣ Top zero-scoring scorelines",
     "The predicted scorelines that earned someone 0 points most often — the picks that burn people.",
-    topN(zeroPreds,3,false), "No zeros yet.");
+    topN(zeroPreds,5,false), "No zeros yet.");
   const cRareScores = scoreCard("📉 Rarest actual result scorelines",
     "The least common real full-time scorelines so far (ties broken by fewest goals, then scoreline order).",
-    topN(actualResults,3,true), "No results yet.");
+    topN(actualResults,5,true), "No results yet.");
 
   return `<div class="funstats">
     <div class="group-head">👤 Players</div>
