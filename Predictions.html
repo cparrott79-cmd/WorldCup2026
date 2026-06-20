@@ -731,7 +731,7 @@ function funStats(selected, extraUnderPlayers){
   const eligible = rows.filter(r=>r.predCount>=MIN_PREDS);
 
   // ===== PLAYERS group =====
-  const cHot = listCard("🔥 Hot streak",
+  const cHot = listCard("🔥 Longest hot streak",
     "Longest run of consecutive games (in kick-off order) where you scored "+HOT_MIN+" or more points. A played game scoring below "+HOT_MIN+" — or one you didn't predict — ends the run. Only streaks of 2+ are shown.",
     rows.slice().filter(r=>r.hot>=2).sort((a,b)=>b.hot-a.hot), it=>it.hot, "No hot streaks yet.");
   const cPerfect = listCard("🎯 Perfect scores",
