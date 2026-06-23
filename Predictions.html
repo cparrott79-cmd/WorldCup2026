@@ -255,7 +255,7 @@
 </style>
 </head>
 <body>
-<div id="verTag">v2.0.4</div>
+<div id="verTag">v2.0.5</div>
 <header>
   <h1>⚽ World Cup 2026 — Predictions &amp; Leaderboard</h1>
   <div class="sub">Browse the leaderboard and predictions freely. Log in only when you want to enter or change your own scores.</div>
@@ -323,7 +323,7 @@
       <p>Each game is worth up to <b>8 points</b>, earned in four independent ways:</p>
       <table class="score-table">
         <tr><th>What you get right</th><th class="pts">Points</th></tr>
-        <tr><td>✅ Correct game outcome (right winner, or a draw)</td><td class="pts">+2</td></tr>
+        <tr><td>✅ Correct outcome (right winner, or a draw)</td><td class="pts">+2</td></tr>
         <tr><td>✅ Exact home-team score</td><td class="pts">+2</td></tr>
         <tr><td>✅ Exact away-team score</td><td class="pts">+2</td></tr>
         <tr><td>🎯 Spot-on bonus (all three above correct)</td><td class="pts">+2</td></tr>
@@ -819,7 +819,7 @@ function funStats(selected){
         dayLeaders.map(it=>`<div class="bigday-row"><span class="${youCls(it.p)}">${it.p}${youTag(it.p)}</span><span class="v">${it._best} (${fmtD(it._bestDate)})</span></div>`).join("")
       }</div></div>`
     : `<div class="fscard span-full bigday">${bigDayHead}<div class="stats-empty">No results yet.</div></div>`;
-  const cOutcome = listCard("✅ Correct game outcome %",
+  const cOutcome = listCard("✅ Correct outcome %",
     "Of the played games you predicted, the share where you got the result right — home win, away win, or draw (for knockouts, a predicted draw uses your 'who goes through' pick). Min 5 predictions.",
     eligible.slice().filter(r=>r.outcomeDen>0).sort((a,b)=>b.outcomePct-a.outcomePct || b.outcomeOK-a.outcomeOK),
     it=>`${it.outcomePct}% (${it.outcomeOK}/${it.outcomeDen})`, "Not enough results yet.")
