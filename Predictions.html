@@ -415,8 +415,16 @@ async function loadFixtures(){
 }
 async function loadMyPreds(){preds={};if(!me)return;const {data,error}=await SB.from("predictions").select("*").eq("player",me);if(error)throw error;data.forEach(r=>preds[r.match_num]={h:String(r.home),a:String(r.away),prog:r.prog||""});}
 async function loadAllPreds(){
-  const {data,error}=await SB.from("predictions").select("*");if(error)throw error;
-  allPreds={};data.forEach(r=>{allPreds[r.player]=allPreds[r.player]||{};allPreds[r.player][r.match_num]={h:String(r.home),a:String(r.away),prog:r.prog||""};});
+  let rows=[], from=0; const size=1000;
+  while(true){
+    const {data,error}=await SB.from("predictions").select("*").order("player").order("match_num").range(from,from+size-1);
+    if(error)throw error;
+    rows=rows.concat(data||[]);
+    if(!data || data.length<size) break;   // last page reached
+    from+=size;
+  }
+  allPreds={};
+  rows.forEach(r=>{allPreds[r.player]=allPreds[r.player]||{};allPreds[r.player][r.match_num]={h:String(r.home),a:String(r.away),prog:r.prog||""};});
   const set=new Set(Object.keys(allPreds));if(me)set.add(me);
   const {data:pl}=await SB.from("player_names").select("name");(pl||[]).forEach(p=>set.add(p.name));
   allPlayers=[...set].sort((a,b)=>(me&&a===me)?-1:(me&&b===me)?1:a.localeCompare(b));
