@@ -194,6 +194,7 @@
   .fscard .formtoggle{display:flex;gap:5px;justify-content:center;margin:0 0 8px}
   .fscard .formtoggle button{font-size:.68rem;padding:3px 9px;border-radius:10px;background:#15263b;border:1px solid #415a77;color:var(--muted);font-weight:600}
   .fscard .formtoggle button.on{background:var(--accent);border-color:var(--accent);color:#001219}
+  .fscard .formtoggle.spacer{min-height:1.6rem;visibility:hidden}
   .fscard table{width:100%;border-collapse:collapse;font-size:.82rem}
   .fscard td{padding:4px 6px;border-bottom:1px solid #2a3a52}
   .fscard td.v{text-align:right;font-weight:700;color:var(--accent)}
@@ -822,8 +823,9 @@ function funStats(selected){
     "Of the played games you predicted, the share where you got the result right — home win, away win, or draw (for knockouts, a predicted draw uses your 'who goes through' pick). Min 5 predictions.",
     eligible.slice().filter(r=>r.outcomeDen>0).sort((a,b)=>b.outcomePct-a.outcomePct || b.outcomeOK-a.outcomeOK),
     it=>`${it.outcomePct}% (${it.outcomeOK}/${it.outcomeDen})`, "Not enough results yet.")
-    .replace('<div class="fscard">', `<div class="fscard">${newBadge()}`);
-
+    .replace('<div class="fscard">', `<div class="fscard">${newBadge()}`)
+    .replace('</div><table>', '</div><div class="formtoggle spacer"></div><table>')
+    .replace('</div><div class="stats-empty">', '</div><div class="formtoggle spacer"></div><div class="stats-empty">');
 
   // ===== SCORELINES group (counted by scoreline, both ways merged) =====
   const perfectHits={}, zeroPreds={}, actualResults={};
