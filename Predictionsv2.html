@@ -11,6 +11,7 @@
   header{text-align:center;margin-bottom:14px}
   h1{margin:0 0 4px;font-size:1.4rem}
   .sub{color:var(--muted);font-size:.85rem}
+  #verTag{position:fixed;top:4px;right:6px;z-index:60;color:var(--muted);opacity:.6;font-size:.62rem;letter-spacing:.03em;pointer-events:none}
   .controls{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;align-items:center;margin:12px 0}
   select,input[type=text],input[type=password]{background:var(--card);color:var(--text);border:1px solid #415a77;border-radius:8px;padding:8px 12px;font-size:.9rem}
   button{cursor:pointer;transition:.15s;font-size:.9rem;font-weight:600;border-radius:8px;padding:9px 16px}
@@ -132,6 +133,11 @@
   .lb-updated{color:var(--muted);font-size:.78rem}
   .lb-updated b{color:var(--accent)}
   .lbwrap{overflow-x:auto}
+  .progress-box{max-width:1060px;margin:0 auto 12px;background:#15263b;border:1px solid #2a3a52;border-radius:10px;padding:10px 14px}
+  .progress-box .pb-label{text-align:center;font-size:.84rem;margin-bottom:8px;color:var(--text)}
+  .progress-box .pb-label b{color:var(--accent)}
+  .progress-box .pb-track{height:12px;background:#0d1b2a;border:1px solid #2a3a52;border-radius:8px;overflow:hidden}
+  .progress-box .pb-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--win));border-radius:8px 0 0 8px;transition:width .3s}
   table.lb{width:100%;max-width:1060px;margin:0 auto;border-collapse:collapse;font-size:.86rem}
   table.lb th,table.lb td{padding:9px 10px;text-align:center;border-bottom:1px solid #415a77;white-space:nowrap}
   table.lb th{color:var(--accent);font-size:.78rem}
@@ -164,6 +170,9 @@
   .stats-filter label .swatch{width:12px;height:12px;border-radius:50%;display:inline-block}
   .chart-card{background:var(--card);border:1px solid #2a3a52;border-radius:12px;padding:12px;overflow-x:auto}
   .chart-card h3{margin:0 0 8px;color:var(--accent);font-size:.95rem;text-align:center}
+  .chart-toggle{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin:0 0 10px}
+  .chart-toggle button{font-size:.72rem;padding:4px 10px;border-radius:12px;background:#15263b;border:1px solid #415a77;color:var(--muted);font-weight:600}
+  .chart-toggle button.on{background:var(--accent);border-color:var(--accent);color:#001219}
   .funstats{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin-top:16px}
   .funstats .group-head{grid-column:1/-1;margin:6px 2px 0;color:var(--accent);font-size:.82rem;font-weight:700;letter-spacing:.04em;border-bottom:1px solid #2a3a52;padding-bottom:6px}
   .fscard{background:var(--card);border:1px solid #2a3a52;border-radius:12px;padding:12px 14px}
@@ -172,6 +181,12 @@
   .fscard h4.tip .tip-i{display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;border-radius:50%;background:#2b3a52;color:var(--accent);font-size:.7rem;font-weight:700;flex:0 0 auto}
   .fscard .tip-body{display:none;margin:6px 0 2px;padding:8px 10px;background:#15263b;border:1px solid #2a3a52;border-radius:8px;color:var(--muted);font-size:.76rem;line-height:1.4}
   .fscard .tip-body.show{display:block}
+  .fscard{position:relative}
+  .progress-box{position:relative}
+  .card-new{position:absolute;top:-7px;right:-7px;background:var(--gold);color:#001219;font-size:.56rem;font-weight:800;line-height:1;letter-spacing:.04em;padding:3px 5px;border-radius:6px;box-shadow:0 1px 4px rgba(0,0,0,.4);pointer-events:none;z-index:2}
+  .fscard .formtoggle{display:flex;gap:5px;justify-content:center;margin:0 0 8px}
+  .fscard .formtoggle button{font-size:.68rem;padding:3px 9px;border-radius:10px;background:#15263b;border:1px solid #415a77;color:var(--muted);font-weight:600}
+  .fscard .formtoggle button.on{background:var(--accent);border-color:var(--accent);color:#001219}
   .fscard table{width:100%;border-collapse:collapse;font-size:.82rem}
   .fscard td{padding:4px 6px;border-bottom:1px solid #2a3a52}
   .fscard td.v{text-align:right;font-weight:700;color:var(--accent)}
@@ -225,7 +240,7 @@
 </style>
 </head>
 <body>
-<div id="verTag">v2.0.2</div>  
+<div id="verTag">v2.0.4</div>
 <header>
   <h1>⚽ World Cup 2026 — Predictions &amp; Leaderboard</h1>
   <div class="sub">Browse the leaderboard and predictions freely. Log in only when you want to enter or change your own scores.</div>
@@ -351,6 +366,11 @@ let FIXTURES=[],FX={},GROUP_LOCK={};
 let preds={},allPreds={},allPlayers=[],results={},resultsUpdatedAt=null;
 let me=null,myPin=null,missing=null,mode="lb";
 let statsSel=null; // Set of selected player names; null = all
+let formWindow=5;          // form card window: 5 / 10 / 20
+let chartBucket="day";     // chart bucketing: day / 3day / week / phase
+// shared "NEW" cutoff for the new stats cards + progress bar — hides after 26 Jun 2026, 23:59 BST (22:59 UTC)
+const CARD_NEW_UNTIL = Date.parse("2026-06-26T22:59:00Z");
+const newBadge = () => (Date.now() < CARD_NEW_UNTIL) ? `<span class="card-new">NEW</span>` : "";
 
 const $=id=>document.getElementById(id);
 const content=$("content"),toast=$("toast");
@@ -510,6 +530,7 @@ function renderAll(){
     <div class="ap-key">
       <span class="k">✅ Prediction made (hidden until the round locks)</span>
       <span class="k">❌ No prediction entered yet</span>
+      <span class="k">🟨 Perfect score (exact result)</span>
     </div>`;
 }
 
@@ -524,6 +545,13 @@ function renderLeaderboard(){
   $("lbUpdated").innerHTML="🏆 <b>"+fmtUpdated(resultsUpdatedAt)+"</b>";
   const stats=computeStats();const anyScored=stats.some(s=>s.total>0);const n=stats.length;
   const pot=n*5;
+  const playedCount=FIXTURES.filter(f=>{const r=results[f.match_num];return r&&r.h!==""&&r.a!=="";}).length;
+  const totalGames=FIXTURES.length||104;
+  const pctPlayed=totalGames?Math.round(100*playedCount/totalGames):0;
+  const progressBlock=`<div class="progress-box">${newBadge()}
+    <div class="pb-label">⚽ <b>${playedCount}</b> / ${totalGames} games played (${pctPlayed}%)</div>
+    <div class="pb-track"><div class="pb-fill" style="width:${pctPlayed}%"></div></div>
+  </div>`;
   const prizeBlock=`<div class="prize-box">
     <div class="prize-pot">💷 <b>£5 entry</b> · Total pot <b>£${pot}</b> <span class="prize-sub">(£5 × ${n} player${n===1?"":"s"})</span></div>
     <div class="prize-breakdown">🥇 1st = <b>£60</b> · 🥈 2nd = <b>£15</b> · 🥉 3rd &amp; 4th = <b>£5 each</b></div>
@@ -542,7 +570,7 @@ function renderLeaderboard(){
     let cells="";BUCKETS.forEach(x=>cells+=`<td>${t.b[x.key]||0}</td>`);
     rows+=`<tr class="${classes.join(' ')}"><td class="rank">${pos}</td><td class="name">${medal}${t.player}${(me&&t.player===me)?' (you)':''}</td><td class="total">${t.total}</td>${cells}<td>${t.perfect}</td></tr>`;
   });
-  content.innerHTML=`${prizeBlock}<div class="lbwrap"><table class="lb">${header}${rows}</table></div><div class="hint">Total beside the name; stage breakdown across (Final column doubled). <b>Perfect</b> = exact scoreline (Final perfect = 16). 🥇 leader · 🥄 last · dotted lines bracket the prize places (3rd &amp; 4th).</div>`;
+  content.innerHTML=`${progressBlock}${prizeBlock}<div class="lbwrap"><table class="lb">${header}${rows}</table></div><div class="hint">Total beside the name; stage breakdown across (Final column doubled). <b>Perfect</b> = exact scoreline (Final perfect = 16). 🥇 leader · 🥄 last · dotted lines bracket the prize places (3rd &amp; 4th).</div>`;
 }
 
 // ===== STATS view =====
@@ -556,8 +584,37 @@ function colorMap(){
   for(let i=0;i<half;i++){interleaved.push(order[i]);if(order[i+half])interleaved.push(order[i+half]);}
   interleaved.forEach(p=>{map[p]=STATS_COLORS[ci%STATS_COLORS.length];ci++;});return map;
 }
-function buildRankChart(dates,colors,selected){
-  if(dates.length===0)return `<div class="stats-empty">No results yet — the chart appears once games have been played.</div>`;
+// collapse the per-result-date list into the chosen bucket; returns [{iso,label}] (iso = last result-date in bucket)
+function chartPoints(dates,bucket){
+  if(!dates.length) return [];
+  const mk=(iso)=>{const dt=new Date(iso+"T12:00:00");return days[dt.getDay()]+" "+p2(dt.getDate())+" "+mons[dt.getMonth()];};
+  if(bucket==="day"){ return dates.map(d=>({iso:d,label:mk(d)})); }
+  if(bucket==="phase"){
+    // one point per round that has at least one result; iso = last result-date within that round
+    const out=[];
+    ROUNDS.forEach(r=>{
+      let lastIso=null;
+      FIXTURES.forEach(f=>{ if(!r.test(f.match_num))return; const res=results[f.match_num]; if(res&&res.h!==""&&res.a!==""){const iso=new Date(f.kickoff).toISOString().slice(0,10); if(lastIso==null||iso>lastIso)lastIso=iso;} });
+      if(lastIso) out.push({iso:lastIso,label:r.tag});
+    });
+    return out;
+  }
+  // 3day / week: fixed-size day blocks anchored at the first result date
+  const span = bucket==="week" ? 7 : 3;
+  const first = new Date(dates[0]+"T12:00:00").getTime();
+  const dayMs = 86400000;
+  const buckets={}; // bucketIndex -> last iso in bucket
+  dates.forEach(d=>{
+    const t=new Date(d+"T12:00:00").getTime();
+    const idx=Math.floor((t-first)/(span*dayMs));
+    if(buckets[idx]==null || d>buckets[idx]) buckets[idx]=d;
+  });
+  return Object.keys(buckets).map(k=>+k).sort((a,b)=>a-b).map(k=>({iso:buckets[k],label:mk(buckets[k])}));
+}
+function buildRankChart(allDates,colors,selected,bucket){
+  const points=chartPoints(allDates,bucket);
+  if(points.length===0)return `<div class="stats-empty">No results yet — the chart appears once games have been played.</div>`;
+  const dates=points.map(p=>p.iso);
   const padL=44, padR=120, padT=16, padB=46;            // bigger right pad for labels
   const W=Math.max(680, padL+padR+dates.length*90), H=380;
   const maxRank=allPlayers.length;
@@ -568,9 +625,9 @@ function buildRankChart(dates,colors,selected){
   for(let rk=1;rk<=maxRank;rk++){const y=yAt(rk);
     grid+=`<line x1="${padL}" y1="${y}" x2="${W-padR}" y2="${y}" stroke="#23344b" stroke-width="1"/>`+
           `<text x="${padL-8}" y="${y+4}" fill="#8d99ae" font-size="11" text-anchor="end">${rk}</text>`;}
-  // date labels
-  let xlab="";dates.forEach((d,i)=>{const dt=new Date(d+"T12:00:00");const lbl=days[dt.getDay()]+" "+p2(dt.getDate())+" "+mons[dt.getMonth()];
-    xlab+=`<text x="${xAt(i)}" y="${H-padB+22}" fill="#8d99ae" font-size="10" text-anchor="middle">${lbl}</text>`;});
+  // x labels (from bucket points)
+  let xlab="";points.forEach((pt,i)=>{
+    xlab+=`<text x="${xAt(i)}" y="${H-padB+22}" fill="#8d99ae" font-size="10" text-anchor="middle">${pt.label}</text>`;});
   const rankByDate=dates.map(d=>ranksAt(d));
 
   // build the line paths + collect end-label targets
@@ -610,10 +667,10 @@ function buildRankChart(dates,colors,selected){
 }
 function funStats(selected){
   const MIN_PREDS = 5; // style stats only count players with >=5 predictions
-  const HOT_MIN = 4;   // a "scoring game" for the hot streak = >=4 pts
+  const HOT_MIN = 4;   // a "scoring game" for the streak = >=4 pts
   const inSel = p => !selected || selected.has(p);
 
-  // played fixtures in kickoff order (then match_num tiebreak) — used for hot streak
+  // played fixtures in kickoff order (then match_num tiebreak)
   const playedOrdered = FIXTURES
     .filter(f=>{const r=results[f.match_num];return r&&r.h!==""&&r.a!=="";})
     .slice()
@@ -621,9 +678,10 @@ function funStats(selected){
 
   // ---- per-player aggregates (PLAYERS group cards) ----
   const rows = allPlayers.filter(inSel).map(p=>{
-    let perfect=0, soClose=0, zeros=0;
+    let perfect=0, soClose=0, zeros=0, outcomeOK=0, outcomeDen=0;
     let draws=0, tight=0, goalSum=0, predCount=0, tightDen=0;
     const dayPts={}; // ISO date -> points that day
+    const playedSeq=[]; // points per played-predicted game in kickoff order (for form)
 
     FIXTURES.forEach(f=>{
       const num=f.match_num;
@@ -642,15 +700,17 @@ function funStats(selected){
       if(r && r.h!=="" && r.a!==""){
         const s=scoreMatch(pred,r,isKO(num),num);
         if(s!==null){
+          outcomeDen++;
+          if(s>=2) outcomeOK++;
           const maxFor=num===FINAL_MATCH?16:8;
           if(s===maxFor) perfect++;
           else { if(s===0) zeros++;
             if(pred&&pred.h!==""&&pred.a!==""){
               const ph=+pred.h,pa=+pred.a,rh=+r.h,ra=+r.a;
-              const outcomeOK=(ph>pa&&rh>ra)||(pa>ph&&ra>rh)||(ph===pa&&rh===ra);
+              const outcomeOKx=(ph>pa&&rh>ra)||(pa>ph&&ra>rh)||(ph===pa&&rh===ra);
               const he=ph===rh, ae=pa===ra;
               const oneOff=(he&&Math.abs(pa-ra)===1)||(ae&&Math.abs(ph-rh)===1);
-              if(outcomeOK&&oneOff&&!(he&&ae)) soClose++;
+              if(outcomeOKx&&oneOff&&!(he&&ae)) soClose++;
             }
           }
           const d=new Date(f.kickoff).toISOString().slice(0,10);
@@ -659,20 +719,27 @@ function funStats(selected){
       }
     });
 
-    // hot streak (Rule B)
+    // Streak (Rule B) + build playedSeq in kickoff order
     let hot=0, run=0;
     playedOrdered.forEach(f=>{
       const num=f.match_num;
       const pred=(allPreds[p]||{})[num];
       const r=results[num];
       const s=scoreMatch(pred,r,isKO(num),num);
+      if(s!==null){ playedSeq.push(s); }
       if(s!==null && s>=HOT_MIN){ run++; if(run>hot)hot=run; }
       else { run=0; }
     });
 
+    // form: average over last `formWindow` played-predicted games (or however many exist)
+    const win = playedSeq.slice(-formWindow);
+    const formN = win.length;
+    const formAvg = formN ? (win.reduce((a,b)=>a+b,0)/formN) : null;
+
     const avgGoals = predCount? (goalSum/predCount) : 0;
     const tightPct = tightDen? Math.round(100*tight/tightDen) : 0;
-    return {p,perfect,soClose,zeros,draws,tight,tightPct,avgGoals,predCount,dayPts,hot};
+    const outcomePct = outcomeDen? Math.round(100*outcomeOK/outcomeDen) : 0;
+    return {p,perfect,soClose,zeros,outcomeOK,outcomeDen,outcomePct,draws,tight,tightPct,avgGoals,predCount,dayPts,hot,formAvg,formN};
   });
 
   // ---- helpers ----
@@ -688,7 +755,6 @@ function funStats(selected){
     let t="";items.forEach(it=>{t+=`<tr><td class="${youCls(it.p)}">${it.p}${youTag(it.p)}</td><td class="v">${fmtVal(it)}</td></tr>`;});
     return `<div class="fscard">${head}<table>${t}</table></div>`;
   }
-  // scoreline card: rows are {score:"h-a", n:count}
   function scoreCard(title, tip, items, emptyMsg){
     const head=`<h4 class="tip" role="button" tabindex="0"><span class="tip-i" aria-hidden="true">i</span>${title}</h4><div class="tip-body">${tip}</div>`;
     if(!items.length) return `<div class="fscard">${head}<div class="stats-empty">${emptyMsg}</div></div>`;
@@ -696,15 +762,26 @@ function funStats(selected){
     return `<div class="fscard">${head}<table>${t}</table></div>`;
   }
   const byDesc = key => rows.slice().filter(r=>r[key]>0).sort((a,b)=>b[key]-a[key]);
+  const byDescAll = key => rows.slice().sort((a,b)=>b[key]-a[key]); // includes zeros
   const eligible = rows.filter(r=>r.predCount>=MIN_PREDS);
 
   // ===== PLAYERS group =====
-  const cHot = listCard("🔥 Longest Hot streak",
+  // form card (with 5/10/20 toggle)
+  const formItems = rows.filter(r=>r.formN>0).sort((a,b)=> b.formAvg-a.formAvg || b.formN-a.formN);
+  const formBtns = [5,10,20].map(w=>`<button data-formwin="${w}" class="${formWindow===w?'on':''}">${w}</button>`).join("");
+  const formHead = `<h4 class="tip" role="button" tabindex="0"><span class="tip-i" aria-hidden="true">i</span>📊 Best form</h4>`+
+    `<div class="tip-body">Average points per game over your last ${formWindow} played-and-predicted games (or however many you have). Toggle 5 / 10 / 20. Highest first.</div>`+
+    `<div class="formtoggle">${formBtns}</div>`;
+   const cForm = formItems.length
+    ? `<div class="fscard">${newBadge()}${formHead}<table>${formItems.map(it=>`<tr><td class="${youCls(it.p)}">${it.p}${youTag(it.p)}</td><td class="v">${it.formAvg.toFixed(1)} (${it.formN})</td></tr>`).join("")}</table></div>`
+    : `<div class="fscard">${newBadge()}${formHead}<div class="stats-empty">No results yet.</div></div>`;
+
+  const cHot = listCard("🔥 Longest streak",
     "Longest run of consecutive games (in kick-off order) where you scored "+HOT_MIN+" or more points. A played game scoring below "+HOT_MIN+" — or one you didn't predict — ends the run. Only streaks of 2+ are shown.",
-    rows.slice().filter(r=>r.hot>=2).sort((a,b)=>b.hot-a.hot), it=>it.hot, "No hot streaks yet.");
+    rows.slice().filter(r=>r.hot>=2).sort((a,b)=>b.hot-a.hot), it=>it.hot, "No streaks yet.");
   const cPerfect = listCard("🎯 Perfect scores",
-    "Number of games predicted with the exact scoreline (full 8 pts, or 16 for the Final).",
-    byDesc("perfect"), it=>it.perfect, "None yet.");
+    "Number of games predicted with the exact scoreline (full 8 pts, or 16 for the Final). Everyone is listed, including those still on zero.",
+    byDescAll("perfect"), it=>it.perfect, "No players yet.");
   const cClose   = listCard("😬 So close",
     "Right outcome and one team's score exact, but the other team's score was off by exactly one goal.",
     byDesc("soClose"), it=>it.soClose, "None yet.");
@@ -717,12 +794,17 @@ function funStats(selected){
   const cTight = listCard("🤏 Tightest-games tipster",
     "Share of predictions that are a draw or a one-goal margin. Min 5 predictions.",
     eligible.slice().filter(r=>r.tight>0).sort((a,b)=>b.tightPct-a.tightPct), it=>`${it.tightPct}%`, "Not enough predictions yet.");
-  // most points in a day (person + their best day)
   const dayLeaders = rows.filter(r=>{let best=0;Object.keys(r.dayPts).forEach(d=>{if(r.dayPts[d]>best)best=r.dayPts[d];});r._best=best;r._bestDate=null;Object.keys(r.dayPts).forEach(d=>{if(r.dayPts[d]===best)r._bestDate=d;});return best>0;})
     .sort((a,b)=>b._best-a._best);
   const cBigDay = listCard("💥 Most points in a day",
     "Each player's best single-day haul (sum of that day's games) and the date it happened.",
     dayLeaders, it=>`${it._best} (${fmtD(it._bestDate)})`, "No results yet.");
+  const cOutcome = listCard("✅ Correct outcome %",
+    "Of the played games you predicted, the share where you got the result right — home win, away win, or draw (for knockouts, a predicted draw uses your 'who goes through' pick). Min 5 predictions.",
+    eligible.slice().filter(r=>r.outcomeDen>0).sort((a,b)=>b.outcomePct-a.outcomePct || b.outcomeOK-a.outcomeOK),
+    it=>`${it.outcomePct}% (${it.outcomeOK}/${it.outcomeDen})`, "Not enough results yet.")
+    .replace('<div class="fscard">', `<div class="fscard">${newBadge()}`);
+
 
   // ===== SCORELINES group (counted by scoreline, both ways merged) =====
   const perfectHits={}, zeroPreds={}, actualResults={};
@@ -762,7 +844,7 @@ function funStats(selected){
 
   return `<div class="funstats">
     <div class="group-head">👤 Players</div>
-    ${cHot}${cPerfect}${cClose}${cZeros}${cGoals}${cTight}${cBigDay}
+    ${cForm}${cOutcome}${cHot}${cPerfect}${cClose}${cZeros}${cGoals}${cTight}${cBigDay}
     <div class="group-head">⚽ Scorelines</div>
     ${cPerfectScores}${cZeroScores}${cActualScores}${cRareScores}
   </div>`;
@@ -889,9 +971,11 @@ function renderStats(){
   const dates=statsDates();const colors=colorMap();const selected=statsSel;
   let chips="";allPlayers.forEach(p=>{const on=!selected||selected.has(p);
     chips+=`<label><input type="checkbox" data-statp="${p}" ${on?"checked":""}><span class="swatch" style="background:${colors[p]}"></span>${p}${(me&&p===me)?' (you)':''}</label>`;});
+  const bkBtn=(k,t)=>`<button data-chartbk="${k}" class="${chartBucket===k?'on':''}">${t}</button>`;
+  const chartToggle=`<div class="chart-toggle">${bkBtn("day","Day")}${bkBtn("3day","3-day")}${bkBtn("week","Week")}${bkBtn("phase","Phase")}</div>`;
   content.innerHTML=`<div class="stats-wrap">
     <div class="stats-filter">${chips}</div>
-    <div class="chart-card"><h3>📈 Leaderboard position by date (1st at the top)</h3>${buildRankChart(dates,colors,selected)}</div>
+    <div class="chart-card"><h3>📈 Leaderboard position by date (1st at the top)</h3>${chartToggle}${buildRankChart(dates,colors,selected,chartBucket)}</div>
     ${funStats(selected)}
     ${renderH2H()}
     <div class="hint">Pick players above to focus the chart and the Players stats. Scorelines and head-to-head use all players, independent of the filter. Tap the ⓘ on any card for details.</div>
@@ -900,6 +984,8 @@ function renderStats(){
     const chosen=new Set([...content.querySelectorAll("[data-statp]:checked")].map(x=>x.dataset.statp));
     statsSel=(chosen.size===allPlayers.length)?null:chosen;renderStats();
   }));
+  content.querySelectorAll("[data-chartbk]").forEach(b=>b.addEventListener("click",()=>{chartBucket=b.dataset.chartbk;renderStats();}));
+  content.querySelectorAll("[data-formwin]").forEach(b=>b.addEventListener("click",()=>{formWindow=+b.dataset.formwin;renderStats();}));
   const selA=$("h2hSelA"), selB=$("h2hSelB");
   if(selA) selA.addEventListener("change",e=>{h2hA=e.target.value||null;renderStats();});
   if(selB) selB.addEventListener("change",e=>{h2hB=e.target.value||null;renderStats();});
