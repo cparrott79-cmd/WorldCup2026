@@ -667,7 +667,7 @@ function buildRankChart(allDates,colors,selected,bucket){
 }
 function funStats(selected){
   const MIN_PREDS = 5; // style stats only count players with >=5 predictions
-  const HOT_MIN = 4;   // a "scoring game" for the hot streak = >=4 pts
+  const HOT_MIN = 4;   // a "scoring game" for the streak = >=4 pts
   const inSel = p => !selected || selected.has(p);
 
   // played fixtures in kickoff order (then match_num tiebreak)
@@ -719,7 +719,7 @@ function funStats(selected){
       }
     });
 
-    // hot streak (Rule B) + build playedSeq in kickoff order
+    // Streak (Rule B) + build playedSeq in kickoff order
     let hot=0, run=0;
     playedOrdered.forEach(f=>{
       const num=f.match_num;
@@ -776,9 +776,9 @@ function funStats(selected){
     ? `<div class="fscard">${newBadge()}${formHead}<table>${formItems.map(it=>`<tr><td class="${youCls(it.p)}">${it.p}${youTag(it.p)}</td><td class="v">${it.formAvg.toFixed(1)} (${it.formN})</td></tr>`).join("")}</table></div>`
     : `<div class="fscard">${newBadge()}${formHead}<div class="stats-empty">No results yet.</div></div>`;
 
-  const cHot = listCard("🔥 Longest Hot streak",
+  const cHot = listCard("🔥 Longest streak",
     "Longest run of consecutive games (in kick-off order) where you scored "+HOT_MIN+" or more points. A played game scoring below "+HOT_MIN+" — or one you didn't predict — ends the run. Only streaks of 2+ are shown.",
-    rows.slice().filter(r=>r.hot>=2).sort((a,b)=>b.hot-a.hot), it=>it.hot, "No hot streaks yet.");
+    rows.slice().filter(r=>r.hot>=2).sort((a,b)=>b.hot-a.hot), it=>it.hot, "No streaks yet.");
   const cPerfect = listCard("🎯 Perfect scores",
     "Number of games predicted with the exact scoreline (full 8 pts, or 16 for the Final). Everyone is listed, including those still on zero.",
     byDescAll("perfect"), it=>it.perfect, "No players yet.");
