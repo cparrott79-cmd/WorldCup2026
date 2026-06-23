@@ -235,7 +235,14 @@
   .examples th{color:var(--accent);font-size:.72rem}
   .examples td.pred{text-align:left;font-weight:600}.examples td.tot{font-weight:700;color:var(--gold)}.examples tr.perfect td.tot{color:var(--win)}
 
-  @media(max-width:640px){.team{font-size:.95rem}.stepper{gap:6px}.stepbtn{width:30px;height:30px}}
+  @media(max-width:640px){
+    .team{font-size:.95rem}.stepper{gap:6px}.stepbtn{width:30px;height:30px}
+    .funstats{grid-template-columns:1fr 1fr;gap:10px}
+    .fscard{padding:10px 10px}
+    .fscard h4.tip{font-size:.82rem;gap:4px}
+    .fscard table{font-size:.78rem}
+    .fscard td{padding:4px 4px}
+  }
   @media(min-width:641px){.modal-overlay{align-items:center}}
 </style>
 </head>
