@@ -181,6 +181,9 @@
   .fscard h4.tip .tip-i{display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;border-radius:50%;background:#2b3a52;color:var(--accent);font-size:.7rem;font-weight:700;flex:0 0 auto}
   .fscard .tip-body{display:none;margin:6px 0 2px;padding:8px 10px;background:#15263b;border:1px solid #2a3a52;border-radius:8px;color:var(--muted);font-size:.76rem;line-height:1.4}
   .fscard .tip-body.show{display:block}
+  .fscard{position:relative}
+  .progress-box{position:relative}
+  .card-new{position:absolute;top:-7px;right:-7px;background:var(--gold);color:#001219;font-size:.56rem;font-weight:800;line-height:1;letter-spacing:.04em;padding:3px 5px;border-radius:6px;box-shadow:0 1px 4px rgba(0,0,0,.4);pointer-events:none;z-index:2}
   .fscard .formtoggle{display:flex;gap:5px;justify-content:center;margin:0 0 8px}
   .fscard .formtoggle button{font-size:.68rem;padding:3px 9px;border-radius:10px;background:#15263b;border:1px solid #415a77;color:var(--muted);font-weight:600}
   .fscard .formtoggle button.on{background:var(--accent);border-color:var(--accent);color:#001219}
@@ -237,7 +240,7 @@
 </style>
 </head>
 <body>
-<div id="verTag">v2.0.3</div>
+<div id="verTag">v2.0.4</div>
 <header>
   <h1>⚽ World Cup 2026 — Predictions &amp; Leaderboard</h1>
   <div class="sub">Browse the leaderboard and predictions freely. Log in only when you want to enter or change your own scores.</div>
@@ -365,6 +368,9 @@ let me=null,myPin=null,missing=null,mode="lb";
 let statsSel=null; // Set of selected player names; null = all
 let formWindow=5;          // form card window: 5 / 10 / 20
 let chartBucket="day";     // chart bucketing: day / 3day / week / phase
+// shared "NEW" cutoff for the new stats cards + progress bar — hides after 26 Jun 2026, 23:59 BST (22:59 UTC)
+const CARD_NEW_UNTIL = Date.parse("2026-06-26T22:59:00Z");
+const newBadge = () => (Date.now() < CARD_NEW_UNTIL) ? `<span class="card-new">NEW</span>` : "";
 
 const $=id=>document.getElementById(id);
 const content=$("content"),toast=$("toast");
@@ -542,7 +548,7 @@ function renderLeaderboard(){
   const playedCount=FIXTURES.filter(f=>{const r=results[f.match_num];return r&&r.h!==""&&r.a!=="";}).length;
   const totalGames=FIXTURES.length||104;
   const pctPlayed=totalGames?Math.round(100*playedCount/totalGames):0;
-  const progressBlock=`<div class="progress-box">
+  const progressBlock=`<div class="progress-box">${newBadge()}
     <div class="pb-label">⚽ <b>${playedCount}</b> / ${totalGames} games played (${pctPlayed}%)</div>
     <div class="pb-track"><div class="pb-fill" style="width:${pctPlayed}%"></div></div>
   </div>`;
@@ -766,9 +772,9 @@ function funStats(selected){
   const formHead = `<h4 class="tip" role="button" tabindex="0"><span class="tip-i" aria-hidden="true">i</span>📊 Best form</h4>`+
     `<div class="tip-body">Average points per game over your last ${formWindow} played-and-predicted games (or however many you have). Toggle 5 / 10 / 20. Highest first.</div>`+
     `<div class="formtoggle">${formBtns}</div>`;
-  const cForm = formItems.length
-    ? `<div class="fscard">${formHead}<table>${formItems.map(it=>`<tr><td class="${youCls(it.p)}">${it.p}${youTag(it.p)}</td><td class="v">${it.formAvg.toFixed(1)} (${it.formN})</td></tr>`).join("")}</table></div>`
-    : `<div class="fscard">${formHead}<div class="stats-empty">No results yet.</div></div>`;
+   const cForm = formItems.length
+    ? `<div class="fscard">${newBadge()}${formHead}<table>${formItems.map(it=>`<tr><td class="${youCls(it.p)}">${it.p}${youTag(it.p)}</td><td class="v">${it.formAvg.toFixed(1)} (${it.formN})</td></tr>`).join("")}</table></div>`
+    : `<div class="fscard">${newBadge()}${formHead}<div class="stats-empty">No results yet.</div></div>`;
 
   const cHot = listCard("🔥 Longest Hot streak",
     "Longest run of consecutive games (in kick-off order) where you scored "+HOT_MIN+" or more points. A played game scoring below "+HOT_MIN+" — or one you didn't predict — ends the run. Only streaks of 2+ are shown.",
@@ -796,7 +802,9 @@ function funStats(selected){
   const cOutcome = listCard("✅ Correct outcome %",
     "Of the played games you predicted, the share where you got the result right — home win, away win, or draw (for knockouts, a predicted draw uses your 'who goes through' pick). Min 5 predictions.",
     eligible.slice().filter(r=>r.outcomeDen>0).sort((a,b)=>b.outcomePct-a.outcomePct || b.outcomeOK-a.outcomeOK),
-    it=>`${it.outcomePct}% (${it.outcomeOK}/${it.outcomeDen})`, "Not enough results yet.");
+    it=>`${it.outcomePct}% (${it.outcomeOK}/${it.outcomeDen})`, "Not enough results yet.")
+    .replace('<div class="fscard">', `<div class="fscard">${newBadge()}`);
+
 
   // ===== SCORELINES group (counted by scoreline, both ways merged) =====
   const perfectHits={}, zeroPreds={}, actualResults={};
@@ -836,7 +844,7 @@ function funStats(selected){
 
   return `<div class="funstats">
     <div class="group-head">👤 Players</div>
-    ${cForm}${cHot}${cPerfect}${cClose}${cZeros}${cGoals}${cTight}${cBigDay}${cOutcome}
+    ${cForm}${cOutcome}${cHot}${cPerfect}${cClose}${cZeros}${cGoals}${cTight}${cBigDay}
     <div class="group-head">⚽ Scorelines</div>
     ${cPerfectScores}${cZeroScores}${cActualScores}${cRareScores}
   </div>`;
