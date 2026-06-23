@@ -175,6 +175,13 @@
   .chart-toggle button.on{background:var(--accent);border-color:var(--accent);color:#001219}
   .funstats{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin-top:16px}
   .funstats .group-head{grid-column:1/-1;margin:6px 2px 0;color:var(--accent);font-size:.82rem;font-weight:700;letter-spacing:.04em;border-bottom:1px solid #2a3a52;padding-bottom:6px}
+  .funstats .span-full{grid-column:1/-1}
+  .bigday .bigday-list{column-gap:18px}
+  .bigday .bigday-row{display:flex;justify-content:space-between;gap:10px;padding:4px 6px;border-bottom:1px solid #2a3a52;font-size:.82rem;break-inside:avoid}
+  .bigday .bigday-row .v{font-weight:700;color:var(--accent);white-space:nowrap}
+  .bigday .bigday-row .you{color:var(--accent)}
+  @media(min-width:900px){ .bigday .bigday-list{column-count:3} }
+  @media(min-width:641px) and (max-width:899px){ .bigday .bigday-list{column-count:2} }
   .fscard{background:var(--card);border:1px solid #2a3a52;border-radius:12px;padding:12px 14px}
   .fscard h4{margin:0 0 8px;color:var(--gold);font-size:.9rem}
   .fscard h4.tip{cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;user-select:none;text-align:center}
@@ -242,7 +249,6 @@
     .fscard h4.tip{font-size:.82rem;gap:4px}
     .fscard table{font-size:.78rem}
     .fscard td{padding:4px 4px}
-    .fscard .day-date{display:block;font-size:.7rem;color:var(--muted);font-weight:400}
   }
   @media(min-width:641px){.modal-overlay{align-items:center}}
 </style>
@@ -804,9 +810,14 @@ function funStats(selected){
     eligible.slice().filter(r=>r.tight>0).sort((a,b)=>b.tightPct-a.tightPct), it=>`${it.tightPct}%`, "Not enough predictions yet.");
   const dayLeaders = rows.filter(r=>{let best=0;Object.keys(r.dayPts).forEach(d=>{if(r.dayPts[d]>best)best=r.dayPts[d];});r._best=best;r._bestDate=null;Object.keys(r.dayPts).forEach(d=>{if(r.dayPts[d]===best)r._bestDate=d;});return best>0;})
     .sort((a,b)=>b._best-a._best);
-  const cBigDay = listCard("💥 Most points in a day",
-    "Each player's best single-day haul (sum of that day's games) and the date it happened.",
-    dayLeaders, it=>`${it._best} <span class="day-date">(${fmtD(it._bestDate)})</span>`, "No results yet.");
+  // Most points in a day — full-width card; multi-column list on desktop/tablet, single column on mobile
+  const bigDayHead = `<h4 class="tip" role="button" tabindex="0"><span class="tip-i" aria-hidden="true">i</span>💥 Most points in a day</h4>`+
+    `<div class="tip-body">Each player's best single-day haul (sum of that day's games) and the date it happened.</div>`;
+  const cBigDay = dayLeaders.length
+    ? `<div class="fscard span-full bigday">${bigDayHead}<div class="bigday-list">${
+        dayLeaders.map(it=>`<div class="bigday-row"><span class="${youCls(it.p)}">${it.p}${youTag(it.p)}</span><span class="v">${it._best} (${fmtD(it._bestDate)})</span></div>`).join("")
+      }</div></div>`
+    : `<div class="fscard span-full bigday">${bigDayHead}<div class="stats-empty">No results yet.</div></div>`;
   const cOutcome = listCard("✅ Correct game outcome %",
     "Of the played games you predicted, the share where you got the result right — home win, away win, or draw (for knockouts, a predicted draw uses your 'who goes through' pick). Min 5 predictions.",
     eligible.slice().filter(r=>r.outcomeDen>0).sort((a,b)=>b.outcomePct-a.outcomePct || b.outcomeOK-a.outcomeOK),
