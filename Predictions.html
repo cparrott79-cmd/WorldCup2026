@@ -128,9 +128,14 @@
   .ap-key{max-width:1060px;margin:6px auto 0;display:flex;gap:18px;justify-content:center;flex-wrap:wrap;color:var(--muted);font-size:.78rem}
   .ap-key .k{display:inline-flex;align-items:center;gap:6px}
   .ap-note{max-width:1060px;margin:0 auto 10px;background:#26303f;border:1px solid #415a77;color:var(--muted);padding:8px 12px;border-radius:8px;font-size:.8rem;text-align:center}
-  .ap-filter{max-width:1060px;margin:0 auto 10px;display:flex;flex-wrap:wrap;gap:6px;justify-content:center}
-  .ap-filter label{display:inline-flex;align-items:center;gap:5px;font-size:.78rem;background:var(--card);border:1px solid #415a77;border-radius:14px;padding:3px 9px;cursor:pointer}
+  .ap-filter-panel{max-width:1060px;margin:0 auto 10px;border:1px solid #415a77;border-radius:12px;background:var(--card);padding:12px 14px;position:relative}
+  .ap-filter-panel .apf-close{position:absolute;top:8px;right:8px;background:#2b3a52;border:none;color:var(--text);width:28px;height:28px;border-radius:8px;font-size:.95rem;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0}
+  .ap-filter-panel .apf-close:hover{background:var(--danger);color:#001219}
+  .ap-filter-panel .apf-actions{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin:0 0 10px}
+  .ap-filter{display:flex;flex-wrap:wrap;gap:6px;justify-content:center}
+  .ap-filter label{display:inline-flex;align-items:center;gap:5px;font-size:.78rem;background:#15263b;border:1px solid #415a77;border-radius:14px;padding:3px 9px;cursor:pointer}
   .ap-filter label .swatch{width:12px;height:12px;border-radius:50%;display:inline-block}
+
 
   /* Leaderboard */
   .lb-updated{color:var(--muted);font-size:.78rem}
@@ -284,7 +289,7 @@
 </style>
 </head>
 <body>
-<div id="verTag">v2.1.0</div>
+<div id="verTag">v2.1.1</div>
 <header>
   <h1>⚽ World Cup 2026 — Predictions &amp; Leaderboard</h1>
   <div class="sub">Browse the leaderboard and predictions freely. Log in only when you want to enter or change your own scores.</div>
@@ -314,8 +319,7 @@
 <div class="controls" id="allControls" style="display:none">
   <select id="allStageFilter"></select>
   <input type="text" id="allSearch" placeholder="🔍 Search team…">
-  <button id="allPlayersBtn" class="secbtn2">All players</button>
-  <button id="allNoneBtn" class="secbtn2">Unselect all</button>
+  <button id="allFilterBtn" class="secbtn2">🔍 Filter</button>
   <button id="allReloadBtn">↻ Reload</button>
 </div>
 <div class="controls" id="lbControls" style="display:none">
@@ -413,6 +417,7 @@ let preds={},allPreds={},allPlayers=[],results={},resultsUpdatedAt=null;
 let me=null,myPin=null,missing=null,mode="lb";
 let statsSel=null; // Set of selected player names; null = all
 let allSel=null;   // All-Predictions player filter: Set of names; null = all
+let allFilterOpen=false; // is the All-Predictions filter panel open?
 let formWindow=5;          // form card window: 5 / 10 / 20
 let chartBucket="day";     // chart bucketing: day / 3day / week / phase
 // shared "NEW" cutoff for the new stats cards + progress bar — hides after 26 Jun 2026, 23:59 BST (22:59 UTC)
@@ -579,10 +584,15 @@ function renderAll(){
     });
     body+=`<tr class="${isYou?'you-row':''}"><td class="namecol${isYou?' you':''}">${p}${isYou?' (you)':''}</td>${cells}</tr>`;});
   const note=me?`🔒 Other players' predictions are hidden for each round until that round locks. Your own row is always visible.`:`🔒 Predictions are hidden for each round until that round locks (1 hour before its first kick-off). Log in to see your own picks.`;
-  const colors=colorMap();
+    const colors=colorMap();
   let chips="";allPlayers.forEach(p=>{const on=!allSel||allSel.has(p);
     chips+=`<label><input type="checkbox" data-allp="${p}" ${on?"checked":""}><span class="swatch" style="background:${colors[p]}"></span>${p}${(me&&p===me)?' (you)':''}</label>`;});
-  content.innerHTML=`<div class="ap-filter">${chips}</div>
+  const panel = allFilterOpen ? `<div class="ap-filter-panel">
+      <button class="apf-close" id="apfClose" aria-label="Close filter">✕</button>
+      <div class="apf-actions"><button id="allPlayersBtn" class="secbtn2">All players</button><button id="allNoneBtn" class="secbtn2">Unselect all</button></div>
+      <div class="ap-filter">${chips}</div>
+    </div>` : "";
+  content.innerHTML=`${panel}
     <div class="ap-note">${note}</div>
     <div class="matrixwrap"><table class="matrix"><thead>${gameHdr}</thead><tbody>${body}</tbody></table></div>
     <div class="hint">Players down the left${me?" (you first)":""}; swipe sideways for more games.</div>
@@ -591,12 +601,22 @@ function renderAll(){
       <span class="k">❌ No prediction entered yet</span>
       <span class="k">🟨 Perfect score (exact result)</span>
     </div>`;
-  content.querySelectorAll("[data-allp]").forEach(cb=>cb.addEventListener("change",()=>{
-    const chosen=new Set([...content.querySelectorAll("[data-allp]:checked")].map(x=>x.dataset.allp));
-    allSel=(chosen.size===allPlayers.length)?null:chosen;renderAll();
-  }));
+  // update the Filter button label with active count
+  const fb=$("allFilterBtn");
+  if(fb){ const sel = allSel ? allSel.size : allPlayers.length;
+    fb.textContent = (allSel && allSel.size!==allPlayers.length) ? `🔍 Filter (${sel})` : "🔍 Filter";
+    fb.classList.toggle("active", !!(allSel && allSel.size!==allPlayers.length)); }
+  // wire panel controls (only present when open)
+  if(allFilterOpen){
+    const c=$("apfClose"); if(c) c.onclick=()=>{allFilterOpen=false;renderAll();};
+    const ap=$("allPlayersBtn"); if(ap) ap.onclick=()=>{allSel=null;renderAll();};
+    const an=$("allNoneBtn"); if(an) an.onclick=()=>{allSel=new Set();renderAll();};
+    content.querySelectorAll("[data-allp]").forEach(cb=>cb.addEventListener("change",()=>{
+      const chosen=new Set([...content.querySelectorAll("[data-allp]:checked")].map(x=>x.dataset.allp));
+      allSel=(chosen.size===allPlayers.length)?null:chosen;renderAll();
+    }));
+  }
 }
-
 function computeStats(){
   return allPlayers.map(p=>{const b={};BUCKETS.forEach(x=>b[x.key]=0);let total=0,perfect=0;
     FIXTURES.forEach(f=>{const num=f.match_num;const pred=(allPreds[p]||{})[num],res=results[num];const s=scoreMatch(pred,res,isKO(num),num);
@@ -1075,8 +1095,7 @@ async function showMy(){if(!me){openGate();return;}mode="my";await loadMyPreds()
 
 $("navLb").onclick=showLeaderboard;$("navAll").onclick=showAll;$("navMy").onclick=showMy;$("navStats").onclick=showStats;
 $("allReloadBtn").onclick=async()=>{await Promise.all([loadAllPreds(),loadResults()]);renderAll();toastMsg("↻ Reloaded");};
-$("allPlayersBtn").onclick=()=>{allSel=null;renderAll();};
-$("allNoneBtn").onclick=()=>{allSel=new Set();renderAll();};
+$("allFilterBtn").onclick=()=>{allFilterOpen=!allFilterOpen;renderAll();};
 $("lbReloadBtn").onclick=async()=>{await Promise.all([loadAllPreds(),loadResults()]);renderLeaderboard();toastMsg("↻ Reloaded");};
 $("statsAll").onclick=()=>{statsSel=null;renderStats();};
 $("statsNone").onclick=()=>{statsSel=new Set();renderStats();}; 
