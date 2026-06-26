@@ -13,7 +13,8 @@
   .sub{color:var(--muted);font-size:.85rem}
   #verTag{position:fixed;top:4px;right:6px;z-index:60;color:var(--muted);opacity:.6;font-size:.62rem;letter-spacing:.03em;pointer-events:none}
   .controls{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;align-items:center;margin:12px 0}
-  select,input[type=text],input[table.lb tr.you-row.last td{background:rgba(231,111,81,.14)}type=password]{background:var(--card);color:var(--text);border:1px solid #415a77;border-radius:8px;padding:8px 12px;font-size:.9rem}
+  select,input[type=text],input[type=password]{-webkit-appearance:none;appearance:none;background:var(--card);color:var(--text);border:1px solid #415a77;border-radius:8px;padding:8px 12px;font-size:.9rem}
+  select{background-image:url("data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%238d99ae' d='M1 1l5 5 5-5'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;padding-right:30px}
   button{cursor:pointer;transition:.15s;font-size:.9rem;font-weight:600;border-radius:8px;padding:9px 16px}
   .navbtn{background:var(--card);border:1px solid #415a77;color:var(--text);display:inline-flex;align-items:center;gap:6px}
   .navbtn:hover{background:#24344c;border-color:var(--accent);color:var(--text)}
@@ -135,7 +136,8 @@
   .ap-filter{display:flex;flex-wrap:wrap;gap:6px;justify-content:center}
   .ap-filter label{display:inline-flex;align-items:center;gap:5px;font-size:.78rem;background:#15263b;border:1px solid #415a77;border-radius:14px;padding:3px 9px;cursor:pointer}
   .ap-filter label .swatch{width:12px;height:12px;border-radius:50%;display:inline-block}
-
+  .ap-filter-panel .apf-search{display:flex;justify-content:center;margin-top:10px}
+  .ap-filter-panel .apf-search input{width:100%;max-width:260px}
 
   /* Leaderboard */
   .lb-updated{color:var(--muted);font-size:.78rem}
@@ -182,18 +184,18 @@
   table.lb thead th{z-index:4}
   table.lb thead th:nth-child(1),table.lb thead th:nth-child(2),table.lb thead th.total{z-index:5}
   /* re-apply row highlight tints to the frozen cells (sticky needs an opaque bg, so we restate the tints) */
-  table.lb tr.leader td.rank,table.lb tr.leader td.name{background:rgba(255,209,102,.10)}
-  table.lb tr.last td.rank,table.lb tr.last td.name{background:rgba(231,111,81,.10)}
-  table.lb tr.you-row td.rank,table.lb tr.you-row td.name{background:rgba(0,180,216,.08)}
-  table.lb tr.you-row.leader td.rank,table.lb tr.you-row.leader td.name{background:rgba(255,209,102,.14)}
-  table.lb tr.you-row.last td.rank,table.lb tr.you-row.last td.name{background:rgba(231,111,81,.14)}
-  /* the Total column already has its own dark bg + tints, restate so they win over the sticky base */
+  /* opaque equivalents of the row tints so the sticky cells don't bleed-through on scroll */
+  table.lb tr.leader td.rank,table.lb tr.leader td.name{background:#2c2f3a}
+  table.lb tr.last td.rank,table.lb tr.last td.name{background:#2a2733}
+  table.lb tr.you-row td.rank,table.lb tr.you-row td.name{background:#172a3f}
+  table.lb tr.you-row.leader td.rank,table.lb tr.you-row.leader td.name{background:#33323b}
+  table.lb tr.you-row.last td.rank,table.lb tr.you-row.last td.name{background:#322a34}
   table.lb td.total{background:#15263b}
-  table.lb tr.leader td.total{background:rgba(255,209,102,.10)}
-  table.lb tr.last td.total{background:rgba(231,111,81,.10)}
-  table.lb tr.you-row td.total{background:rgba(0,180,216,.08)}
-  table.lb tr.you-row.leader td.total{background:rgba(255,209,102,.14)}
-  table.lb tr.you-row.last td.total{background:rgba(231,111,81,.14)}
+  table.lb tr.leader td.total{background:#26303a}
+  table.lb tr.last td.total{background:#242733}
+  table.lb tr.you-row td.total{background:#142a40}
+  table.lb tr.you-row.leader td.total{background:#2d313a}
+  table.lb tr.you-row.last td.total{background:#2a2a36}
 
   /* Stats */
   .secbtn2{background:var(--card);border:1px solid #415a77;color:var(--text)}
@@ -289,7 +291,7 @@
 </style>
 </head>
 <body>
-<div id="verTag">v2.1.1</div>
+<div id="verTag">v2.1.2</div>
 <header>
   <h1>⚽ World Cup 2026 — Predictions &amp; Leaderboard</h1>
   <div class="sub">Browse the leaderboard and predictions freely. Log in only when you want to enter or change your own scores.</div>
@@ -309,6 +311,7 @@
   <button class="navbtn" id="navMy">📝 My Predictions</button>
   <button class="navbtn" id="navStats">📈 Stats<span class="newbadge" style="display:none">NEW</span></button>
   <button class="navbtn" id="scoringBtn">📖 Scoring Format</button>
+  <button class="navbtn secbtn2" id="allFilterBtn" style="display:none">🔍 Filter</button>
 </div>
 
 <div class="controls" id="myControls" style="display:none">
@@ -318,8 +321,7 @@
 </div>
 <div class="controls" id="allControls" style="display:none">
   <select id="allStageFilter"></select>
-  <input type="text" id="allSearch" placeholder="🔍 Search team…">
-  <button id="allFilterBtn" class="secbtn2">🔍 Filter</button>
+  <input type="text" id="allSearch" style="display:none">
   <button id="allReloadBtn">↻ Reload</button>
 </div>
 <div class="controls" id="lbControls" style="display:none">
@@ -587,10 +589,12 @@ function renderAll(){
     const colors=colorMap();
   let chips="";allPlayers.forEach(p=>{const on=!allSel||allSel.has(p);
     chips+=`<label><input type="checkbox" data-allp="${p}" ${on?"checked":""}><span class="swatch" style="background:${colors[p]}"></span>${p}${(me&&p===me)?' (you)':''}</label>`;});
+   const curSearch = allSearch.value || "";
   const panel = allFilterOpen ? `<div class="ap-filter-panel">
       <button class="apf-close" id="apfClose" aria-label="Close filter">✕</button>
       <div class="apf-actions"><button id="allPlayersBtn" class="secbtn2">All players</button><button id="allNoneBtn" class="secbtn2">Unselect all</button></div>
       <div class="ap-filter">${chips}</div>
+      <div class="apf-search"><input type="text" id="allSearchPanel" placeholder="🔍 Search team…" value="${curSearch.replace(/"/g,'&quot;')}"></div>
     </div>` : "";
   content.innerHTML=`${panel}
     <div class="ap-note">${note}</div>
@@ -607,7 +611,7 @@ function renderAll(){
     fb.textContent = (allSel && allSel.size!==allPlayers.length) ? `🔍 Filter (${sel})` : "🔍 Filter";
     fb.classList.toggle("active", !!(allSel && allSel.size!==allPlayers.length)); }
   // wire panel controls (only present when open)
-  if(allFilterOpen){
+   if(allFilterOpen){
     const c=$("apfClose"); if(c) c.onclick=()=>{allFilterOpen=false;renderAll();};
     const ap=$("allPlayersBtn"); if(ap) ap.onclick=()=>{allSel=null;renderAll();};
     const an=$("allNoneBtn"); if(an) an.onclick=()=>{allSel=new Set();renderAll();};
@@ -615,6 +619,8 @@ function renderAll(){
       const chosen=new Set([...content.querySelectorAll("[data-allp]:checked")].map(x=>x.dataset.allp));
       allSel=(chosen.size===allPlayers.length)?null:chosen;renderAll();
     }));
+    const sp=$("allSearchPanel");
+    if(sp) sp.addEventListener("input",()=>{ allSearch.value=sp.value; renderAll(); setTimeout(()=>{const el=$("allSearchPanel");if(el){el.focus();el.setSelectionRange(el.value.length,el.value.length);}},0); });
   }
 }
 function computeStats(){
@@ -1085,6 +1091,7 @@ function setNavActive(){$("navLb").classList.toggle("active",mode==="lb");$("nav
 function render(){
   myControls.style.display=mode==="my"?"":"none";allControls.style.display=mode==="all"?"":"none";lbControls.style.display=mode==="lb"?"":"none";
   $("statsControls").style.display=mode==="stats"?"":"none";
+  $("allFilterBtn").style.display=mode==="all"?"":"none";
   myHint.style.display=(mode==="my"&&me)?"":"none";setNavActive();
   if(mode==="all")return renderAll();if(mode==="lb")return renderLeaderboard();if(mode==="stats")return renderStats();renderMy();
 }
