@@ -13,7 +13,8 @@
   .sub{color:var(--muted);font-size:.85rem}
   #verTag{position:fixed;top:4px;right:6px;z-index:60;color:var(--muted);opacity:.6;font-size:.62rem;letter-spacing:.03em;pointer-events:none}
   .controls{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;align-items:center;margin:12px 0}
-  select,input[type=text],input[type=password]{background:var(--card);color:var(--text);border:1px solid #415a77;border-radius:8px;padding:8px 12px;font-size:.9rem}
+  select,input[type=text],input[type=password]{-webkit-appearance:none;appearance:none;background:var(--card);color:var(--text);border:1px solid #415a77;border-radius:8px;padding:8px 12px;font-size:.9rem}
+  select{background-image:url("data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%238d99ae' d='M1 1l5 5 5-5'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;padding-right:30px}
   button{cursor:pointer;transition:.15s;font-size:.9rem;font-weight:600;border-radius:8px;padding:9px 16px}
   .navbtn{background:var(--card);border:1px solid #415a77;color:var(--text);display:inline-flex;align-items:center;gap:6px}
   .navbtn:hover{background:#24344c;border-color:var(--accent);color:var(--text)}
@@ -128,6 +129,15 @@
   .ap-key{max-width:1060px;margin:6px auto 0;display:flex;gap:18px;justify-content:center;flex-wrap:wrap;color:var(--muted);font-size:.78rem}
   .ap-key .k{display:inline-flex;align-items:center;gap:6px}
   .ap-note{max-width:1060px;margin:0 auto 10px;background:#26303f;border:1px solid #415a77;color:var(--muted);padding:8px 12px;border-radius:8px;font-size:.8rem;text-align:center}
+  .ap-filter-panel{max-width:1060px;margin:0 auto 10px;border:1px solid #415a77;border-radius:12px;background:var(--card);padding:12px 14px;position:relative}
+  .ap-filter-panel .apf-close{position:absolute;top:8px;right:8px;background:#2b3a52;border:none;color:var(--text);width:28px;height:28px;border-radius:8px;font-size:.95rem;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0}
+  .ap-filter-panel .apf-close:hover{background:var(--danger);color:#001219}
+  .ap-filter-panel .apf-actions{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin:0 0 10px}
+  .ap-filter{display:flex;flex-wrap:wrap;gap:6px;justify-content:center}
+  .ap-filter label{display:inline-flex;align-items:center;gap:5px;font-size:.78rem;background:#15263b;border:1px solid #415a77;border-radius:14px;padding:3px 9px;cursor:pointer}
+  .ap-filter label .swatch{width:12px;height:12px;border-radius:50%;display:inline-block}
+  .ap-filter-panel .apf-search{display:flex;justify-content:center;margin-top:10px}
+  .ap-filter-panel .apf-search input{width:100%;max-width:260px}
 
   /* Leaderboard */
   .lb-updated{color:var(--muted);font-size:.78rem}
@@ -160,6 +170,32 @@
   table.lb tr.you-row td{background:rgba(0,180,216,.08)}
   table.lb tr.you-row.leader td{background:rgba(255,209,102,.14)}
   table.lb tr.you-row.last td{background:rgba(231,111,81,.14)}
+  /* ===== Freeze first three leaderboard columns (#, Players, Total) on horizontal scroll ===== */
+  table.lb th:nth-child(1), table.lb td.rank{
+    position:sticky;left:0;z-index:3;width:34px;min-width:34px;max-width:34px;
+    background:var(--card)}
+  table.lb th:nth-child(2), table.lb td.name{
+    position:sticky;left:34px;z-index:3;width:110px;min-width:110px;max-width:110px;
+    background:var(--card);overflow:hidden;text-overflow:ellipsis}
+  table.lb th.total, table.lb td.total{
+    position:sticky;left:144px;z-index:3;width:52px;min-width:52px;max-width:52px;
+    box-shadow:1px 0 0 #2a3a52}
+  /* headers sit above body cells while scrolling */
+  table.lb thead th{z-index:4}
+  table.lb thead th:nth-child(1),table.lb thead th:nth-child(2),table.lb thead th.total{z-index:5}
+  /* re-apply row highlight tints to the frozen cells (sticky needs an opaque bg, so we restate the tints) */
+  /* opaque equivalents of the row tints so the sticky cells don't bleed-through on scroll */
+  table.lb tr.leader td.rank,table.lb tr.leader td.name{background:#2c2f3a}
+  table.lb tr.last td.rank,table.lb tr.last td.name{background:#2a2733}
+  table.lb tr.you-row td.rank,table.lb tr.you-row td.name{background:#172a3f}
+  table.lb tr.you-row.leader td.rank,table.lb tr.you-row.leader td.name{background:#33323b}
+  table.lb tr.you-row.last td.rank,table.lb tr.you-row.last td.name{background:#322a34}
+  table.lb td.total{background:#15263b}
+  table.lb tr.leader td.total{background:#26303a}
+  table.lb tr.last td.total{background:#242733}
+  table.lb tr.you-row td.total{background:#142a40}
+  table.lb tr.you-row.leader td.total{background:#2d313a}
+  table.lb tr.you-row.last td.total{background:#2a2a36}
 
   /* Stats */
   .secbtn2{background:var(--card);border:1px solid #415a77;color:var(--text)}
@@ -255,7 +291,7 @@
 </style>
 </head>
 <body>
-<div id="verTag">v2.0.5</div>
+<div id="verTag">v2.1.1</div>
 <header>
   <h1>⚽ World Cup 2026 — Predictions &amp; Leaderboard</h1>
   <div class="sub">Browse the leaderboard and predictions freely. Log in only when you want to enter or change your own scores.</div>
@@ -275,6 +311,7 @@
   <button class="navbtn" id="navMy">📝 My Predictions</button>
   <button class="navbtn" id="navStats">📈 Stats<span class="newbadge" style="display:none">NEW</span></button>
   <button class="navbtn" id="scoringBtn">📖 Scoring Format</button>
+  <button class="navbtn secbtn2" id="allFilterBtn" style="display:none">🔍 Filter</button>
 </div>
 
 <div class="controls" id="myControls" style="display:none">
@@ -284,7 +321,7 @@
 </div>
 <div class="controls" id="allControls" style="display:none">
   <select id="allStageFilter"></select>
-  <input type="text" id="allSearch" placeholder="🔍 Search team…">
+  <input type="text" id="allSearch" style="display:none">
   <button id="allReloadBtn">↻ Reload</button>
 </div>
 <div class="controls" id="lbControls" style="display:none">
@@ -381,8 +418,11 @@ let FIXTURES=[],FX={},GROUP_LOCK={};
 let preds={},allPreds={},allPlayers=[],results={},resultsUpdatedAt=null;
 let me=null,myPin=null,missing=null,mode="lb";
 let statsSel=null; // Set of selected player names; null = all
+let allSel=null;   // All-Predictions player filter: Set of names; null = all
+let allFilterOpen=false; // is the All-Predictions filter panel open?
 let formWindow=5;          // form card window: 5 / 10 / 20
 let chartBucket="day";     // chart bucketing: day / 3day / week / phase
+let chartMode="position";  // chart Y-axis: position / points
 // shared "NEW" cutoff for the new stats cards + progress bar — hides after 26 Jun 2026, 23:59 BST (22:59 UTC)
 const CARD_NEW_UNTIL = Date.parse("2026-06-26T22:59:00Z");
 const newBadge = () => (Date.now() < CARD_NEW_UNTIL) ? `<span class="card-new">NEW</span>` : "";
@@ -530,7 +570,7 @@ function renderAll(){
   });
   gameHdr+=`</tr>`;
   let body="";
-  allPlayers.forEach(p=>{const isYou=me&&p===me;let cells="";
+  allPlayers.forEach(p=>{if(allSel&&!allSel.has(p))return;const isYou=me&&p===me;let cells="";
     visible.forEach(f=>{
       const num=f.match_num,locked=isLocked(num),played=playedOf(num);const rec=(allPreds[p]||{})[num];
       if(!isYou&&!locked){const has=rec&&rec.h!==""&&rec.a!=="";cells+=`<td class="cell masked"><span class="sc">${has?'✅':'❌'}</span></td>`;return;}
@@ -547,7 +587,18 @@ function renderAll(){
     });
     body+=`<tr class="${isYou?'you-row':''}"><td class="namecol${isYou?' you':''}">${p}${isYou?' (you)':''}</td>${cells}</tr>`;});
   const note=me?`🔒 Other players' predictions are hidden for each round until that round locks. Your own row is always visible.`:`🔒 Predictions are hidden for each round until that round locks (1 hour before its first kick-off). Log in to see your own picks.`;
-  content.innerHTML=`<div class="ap-note">${note}</div>
+    const colors=colorMap();
+  let chips="";allPlayers.forEach(p=>{const on=!allSel||allSel.has(p);
+    chips+=`<label><input type="checkbox" data-allp="${p}" ${on?"checked":""}><span class="swatch" style="background:${colors[p]}"></span>${p}${(me&&p===me)?' (you)':''}</label>`;});
+   const curSearch = allSearch.value || "";
+  const panel = allFilterOpen ? `<div class="ap-filter-panel">
+      <button class="apf-close" id="apfClose" aria-label="Close filter">✕</button>
+      <div class="apf-actions"><button id="allPlayersBtn" class="secbtn2">All players</button><button id="allNoneBtn" class="secbtn2">Unselect all</button></div>
+      <div class="ap-filter">${chips}</div>
+      <div class="apf-search"><input type="text" id="allSearchPanel" placeholder="🔍 Search team…" value="${curSearch.replace(/"/g,'&quot;')}"></div>
+    </div>` : "";
+  content.innerHTML=`${panel}
+    <div class="ap-note">${note}</div>
     <div class="matrixwrap"><table class="matrix"><thead>${gameHdr}</thead><tbody>${body}</tbody></table></div>
     <div class="hint">Players down the left${me?" (you first)":""}; swipe sideways for more games.</div>
     <div class="ap-key">
@@ -555,8 +606,24 @@ function renderAll(){
       <span class="k">❌ No prediction entered yet</span>
       <span class="k">🟨 Perfect score (exact result)</span>
     </div>`;
+  // update the Filter button label with active count
+  const fb=$("allFilterBtn");
+  if(fb){ const sel = allSel ? allSel.size : allPlayers.length;
+    fb.textContent = (allSel && allSel.size!==allPlayers.length) ? `🔍 Filter (${sel})` : "🔍 Filter";
+    fb.classList.toggle("active", !!(allSel && allSel.size!==allPlayers.length)); }
+  // wire panel controls (only present when open)
+   if(allFilterOpen){
+    const c=$("apfClose"); if(c) c.onclick=()=>{allFilterOpen=false;renderAll();};
+    const ap=$("allPlayersBtn"); if(ap) ap.onclick=()=>{allSel=null;renderAll();};
+    const an=$("allNoneBtn"); if(an) an.onclick=()=>{allSel=new Set();renderAll();};
+    content.querySelectorAll("[data-allp]").forEach(cb=>cb.addEventListener("change",()=>{
+      const chosen=new Set([...content.querySelectorAll("[data-allp]:checked")].map(x=>x.dataset.allp));
+      allSel=(chosen.size===allPlayers.length)?null:chosen;renderAll();
+    }));
+    const sp=$("allSearchPanel");
+    if(sp) sp.addEventListener("input",()=>{ allSearch.value=sp.value; renderAll(); setTimeout(()=>{const el=$("allSearchPanel");if(el){el.focus();el.setSelectionRange(el.value.length,el.value.length);}},0); });
+  }
 }
-
 function computeStats(){
   return allPlayers.map(p=>{const b={};BUCKETS.forEach(x=>b[x.key]=0);let total=0,perfect=0;
     FIXTURES.forEach(f=>{const num=f.match_num;const pred=(allPreds[p]||{})[num],res=results[num];const s=scoreMatch(pred,res,isKO(num),num);
@@ -634,32 +701,62 @@ function chartPoints(dates,bucket){
   });
   return Object.keys(buckets).map(k=>+k).sort((a,b)=>a-b).map(k=>({iso:buckets[k],label:mk(buckets[k])}));
 }
-function buildRankChart(allDates,colors,selected,bucket){
+// points for a player at/through a date (reuse pointsUpTo)
+function pointsAt(p,dISO){return pointsUpTo(p,dISO);}
+function buildRankChart(allDates,colors,selected,bucket,modeArg){
+  const mode = modeArg||"position";
   const points=chartPoints(allDates,bucket);
   if(points.length===0)return `<div class="stats-empty">No results yet — the chart appears once games have been played.</div>`;
   const dates=points.map(p=>p.iso);
-  const padL=44, padR=120, padT=16, padB=46;            // bigger right pad for labels
+  const padL=44, padR=120, padT=16, padB=46;
   const W=Math.max(680, padL+padR+dates.length*90), H=380;
+
+  // per-date values for each player: position (1..N, lower=better) or points (0..max)
+  const rankByDate = (mode==="position") ? dates.map(d=>ranksAt(d)) : null;
+  const ptsByDate  = (mode==="points")   ? dates.map(d=>{const o={};allPlayers.forEach(p=>o[p]=pointsAt(p,d));return o;}) : null;
+
+  // y-axis setup
   const maxRank=allPlayers.length;
+  let maxPts=0;
+  if(mode==="points"){ ptsByDate.forEach(o=>allPlayers.forEach(p=>{if(o[p]>maxPts)maxPts=o[p];})); if(maxPts<1)maxPts=1; }
+
   const xAt=i=>padL+(dates.length<=1?0:((W-padL-padR)*i/(dates.length-1)));
-  const yAt=rank=>padT+((H-padT-padB)*(rank-1)/(Math.max(1,maxRank-1)));
-  // gridlines + rank labels
+  // position: rank 1 at top -> small y; points: high points at top -> small y
+  const yRank=rank=>padT+((H-padT-padB)*(rank-1)/(Math.max(1,maxRank-1)));
+  const yPts =val =>padT+((H-padT-padB)*(1-(val/maxPts)));
+
+  // gridlines + axis labels
   let grid="";
-  for(let rk=1;rk<=maxRank;rk++){const y=yAt(rk);
-    grid+=`<line x1="${padL}" y1="${y}" x2="${W-padR}" y2="${y}" stroke="#23344b" stroke-width="1"/>`+
-          `<text x="${padL-8}" y="${y+4}" fill="#8d99ae" font-size="11" text-anchor="end">${rk}</text>`;}
-  // x labels (from bucket points)
+  if(mode==="position"){
+    for(let rk=1;rk<=maxRank;rk++){const y=yRank(rk);
+      grid+=`<line x1="${padL}" y1="${y}" x2="${W-padR}" y2="${y}" stroke="#23344b" stroke-width="1"/>`+
+            `<text x="${padL-8}" y="${y+4}" fill="#8d99ae" font-size="11" text-anchor="end">${rk}</text>`;}
+  } else {
+    // auto "nice" interval for points
+    const targetLines=6;
+    const raw=maxPts/targetLines;
+    const pow=Math.pow(10,Math.floor(Math.log10(raw)));
+    const niceMults=[1,2,2.5,5,10];
+    let step=pow*niceMults.find(m=>pow*m>=raw); if(!step||!isFinite(step))step=Math.max(1,Math.round(raw));
+    for(let v=0; v<=maxPts+0.001; v+=step){const y=yPts(v);
+      grid+=`<line x1="${padL}" y1="${y}" x2="${W-padR}" y2="${y}" stroke="#23344b" stroke-width="1"/>`+
+            `<text x="${padL-8}" y="${y+4}" fill="#8d99ae" font-size="11" text-anchor="end">${Math.round(v)}</text>`;}
+  }
+
+  // x labels
   let xlab="";points.forEach((pt,i)=>{
     xlab+=`<text x="${xAt(i)}" y="${H-padB+22}" fill="#8d99ae" font-size="10" text-anchor="middle">${pt.label}</text>`;});
-  const rankByDate=dates.map(d=>ranksAt(d));
 
-  // build the line paths + collect end-label targets
+  // lines + end labels
   let lines="";
-  const labels=[]; // {name,col,x,y}
+  const labels=[];
   allPlayers.forEach(p=>{
     if(selected&&!selected.has(p))return;
     const col=colors[p];
-    const pts=dates.map((d,i)=>({x:xAt(i),y:yAt(rankByDate[i][p])}));
+    const pts=dates.map((d,i)=>{
+      const y = (mode==="position") ? yRank(rankByDate[i][p]) : yPts(ptsByDate[i][p]);
+      return {x:xAt(i),y};
+    });
     const dPath=pts.map((pt,i)=>`${i===0?"M":"L"}${pt.x.toFixed(1)},${pt.y.toFixed(1)}`).join(" ");
     lines+=`<path d="${dPath}" fill="none" stroke="${col}" stroke-width="2.4" stroke-linejoin="round"/>`;
     pts.forEach(pt=>lines+=`<circle cx="${pt.x.toFixed(1)}" cy="${pt.y.toFixed(1)}" r="3" fill="${col}"/>`);
@@ -667,19 +764,12 @@ function buildRankChart(allDates,colors,selected,bucket){
     labels.push({name:p,col,x:last.x+8,y:last.y});
   });
 
-  // de-collide labels: sort by y, then push apart so each is >=14px from the previous
+  // de-collide labels
   const LH=14;
   labels.sort((a,b)=>a.y-b.y);
-  for(let i=1;i<labels.length;i++){
-    if(labels[i].y - labels[i-1].y < LH){ labels[i].y = labels[i-1].y + LH; }
-  }
-  // keep within vertical bounds (shift the whole stack up if it overflows the bottom)
+  for(let i=1;i<labels.length;i++){ if(labels[i].y - labels[i-1].y < LH){ labels[i].y = labels[i-1].y + LH; } }
   const bottom=H-6;
-  if(labels.length && labels[labels.length-1].y > bottom){
-    const shift = labels[labels.length-1].y - bottom;
-    labels.forEach(l=>l.y -= shift);
-  }
-  // draw labels with a dark outline for legibility + a tiny connector tick
+  if(labels.length && labels[labels.length-1].y > bottom){ const shift=labels[labels.length-1].y-bottom; labels.forEach(l=>l.y-=shift); }
   let lab="";
   labels.forEach(l=>{
     lab+=`<text x="${l.x.toFixed(1)}" y="${l.y.toFixed(1)}" fill="${l.col}" font-size="11" font-weight="700"
@@ -1001,10 +1091,13 @@ function renderStats(){
   let chips="";allPlayers.forEach(p=>{const on=!selected||selected.has(p);
     chips+=`<label><input type="checkbox" data-statp="${p}" ${on?"checked":""}><span class="swatch" style="background:${colors[p]}"></span>${p}${(me&&p===me)?' (you)':''}</label>`;});
   const bkBtn=(k,t)=>`<button data-chartbk="${k}" class="${chartBucket===k?'on':''}">${t}</button>`;
-  const chartToggle=`<div class="chart-toggle">${bkBtn("day","Day")}${bkBtn("3day","3-day")}${bkBtn("week","Week")}${bkBtn("phase","Phase")}</div>`;
+  const modeBtn=(k,t)=>`<button data-chartmode="${k}" class="${chartMode===k?'on':''}">${t}</button>`;
+  const chartToggle=`<div class="chart-toggle">${modeBtn("position","Position")}${modeBtn("points","Points")}</div>`+
+    `<div class="chart-toggle">${bkBtn("day","Day")}${bkBtn("3day","3-day")}${bkBtn("week","Week")}${bkBtn("phase","Phase")}</div>`;
+  const chartTitle = chartMode==="points" ? "📈 Leaderboard points by date" : "📈 Leaderboard position by date (1st at the top)";
   content.innerHTML=`<div class="stats-wrap">
     <div class="stats-filter">${chips}</div>
-    <div class="chart-card"><h3>📈 Leaderboard position by date (1st at the top)</h3>${chartToggle}${buildRankChart(dates,colors,selected,chartBucket)}</div>
+    <div class="chart-card"><h3>${chartTitle}</h3>${chartToggle}${buildRankChart(dates,colors,selected,chartBucket,chartMode)}</div>
     ${funStats(selected)}
     ${renderH2H()}
     <div class="hint">Pick players above to focus the chart and the Players stats. Scorelines and head-to-head use all players, independent of the filter. Tap the ⓘ on any card for details.</div>
@@ -1014,6 +1107,7 @@ function renderStats(){
     statsSel=(chosen.size===allPlayers.length)?null:chosen;renderStats();
   }));
   content.querySelectorAll("[data-chartbk]").forEach(b=>b.addEventListener("click",()=>{chartBucket=b.dataset.chartbk;renderStats();}));
+  content.querySelectorAll("[data-chartmode]").forEach(b=>b.addEventListener("click",()=>{chartMode=b.dataset.chartmode;renderStats();}));
   content.querySelectorAll("[data-formwin]").forEach(b=>b.addEventListener("click",()=>{formWindow=+b.dataset.formwin;renderStats();}));
   const selA=$("h2hSelA"), selB=$("h2hSelB");
   if(selA) selA.addEventListener("change",e=>{h2hA=e.target.value||null;renderStats();});
@@ -1025,6 +1119,7 @@ function setNavActive(){$("navLb").classList.toggle("active",mode==="lb");$("nav
 function render(){
   myControls.style.display=mode==="my"?"":"none";allControls.style.display=mode==="all"?"":"none";lbControls.style.display=mode==="lb"?"":"none";
   $("statsControls").style.display=mode==="stats"?"":"none";
+  $("allFilterBtn").style.display=mode==="all"?"":"none";
   myHint.style.display=(mode==="my"&&me)?"":"none";setNavActive();
   if(mode==="all")return renderAll();if(mode==="lb")return renderLeaderboard();if(mode==="stats")return renderStats();renderMy();
 }
@@ -1035,6 +1130,7 @@ async function showMy(){if(!me){openGate();return;}mode="my";await loadMyPreds()
 
 $("navLb").onclick=showLeaderboard;$("navAll").onclick=showAll;$("navMy").onclick=showMy;$("navStats").onclick=showStats;
 $("allReloadBtn").onclick=async()=>{await Promise.all([loadAllPreds(),loadResults()]);renderAll();toastMsg("↻ Reloaded");};
+$("allFilterBtn").onclick=()=>{allFilterOpen=!allFilterOpen;renderAll();};
 $("lbReloadBtn").onclick=async()=>{await Promise.all([loadAllPreds(),loadResults()]);renderLeaderboard();toastMsg("↻ Reloaded");};
 $("statsAll").onclick=()=>{statsSel=null;renderStats();};
 $("statsNone").onclick=()=>{statsSel=new Set();renderStats();}; 
@@ -1083,9 +1179,11 @@ async function init(){
     const sName=sessionStorage.getItem("wc_name"),sPin=sessionStorage.getItem("wc_pin");
     if(sName&&sPin){const {data}=await SB.rpc("verify_pin",{p_player:sName,p_pin:sPin});if(data){me=sName;myPin=sPin;await loadMyPreds();}}
     updateUserBar();await showLeaderboard();
+        let tick=0;
     setInterval(()=>{
+      tick++;
       if(mode==="my"&&me&&!search.value.trim())renderMy();
-      else if(mode==="all"&&!allSearch.value.trim()){Promise.all([loadAllPreds(),loadResults()]).then(renderAll);}
+      else if(mode==="all"&&!allSearch.value.trim()){ if(tick%5===0){Promise.all([loadAllPreds(),loadResults()]).then(renderAll);} }
       else if(mode==="lb"){Promise.all([loadAllPreds(),loadResults()]).then(renderLeaderboard);}
       else if(mode==="stats"){Promise.all([loadAllPreds(),loadResults()]).then(renderStats);}
     },60000);
