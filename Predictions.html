@@ -110,11 +110,13 @@
   table.matrix th.namecol,table.matrix td.namecol{position:sticky;left:0;z-index:3;background:var(--card);width:66px;min-width:66px;max-width:66px;overflow:hidden;text-overflow:ellipsis;padding:7px 6px;text-align:left;font-weight:700;box-shadow:1px 0 0 #2a3a52}
   table.matrix thead tr.games th.namecol{z-index:6;background:#15263b}
   table.matrix td.namecol.you{color:var(--accent)}
-  table.matrix td.cell{text-align:center;padding:6px;font-variant-numeric:tabular-nums;width:108px;min-width:108px;max-width:108px}
+  table.matrix td.cell{position:relative;text-align:center;padding:6px;font-variant-numeric:tabular-nums;width:108px;min-width:108px;max-width:108px}
   table.matrix td.cell .sc{font-size:.95rem;font-weight:700}
   table.matrix td.cell .rs{display:block;font-size:.66rem;margin-top:2px;overflow:hidden;text-overflow:ellipsis}
   table.matrix td.cell .rs.home,table.matrix td.cell .rs.away{color:var(--win)}
   table.matrix td.cell .rs.draw{color:var(--draw)}
+  table.matrix td.cell .pts-badge{position:absolute;right:4px;bottom:3px;font-size:.66rem;color:var(--muted);font-weight:600;line-height:1}
+  table.matrix td.cell.perfect .pts-badge{color:#001219}
   table.matrix td.cell.empty{color:#43526a}
   table.matrix td.cell.masked{color:var(--lock)}
   table.matrix td.cell.masked .sc{font-size:1rem}
@@ -291,7 +293,7 @@
 </style>
 </head>
 <body>
-<div id="verTag">v2.1.3</div>
+<div id="verTag">v2.1.4</div>
 <header>
   <h1>⚽ World Cup 2026 — Predictions &amp; Leaderboard</h1>
   <div class="sub">Browse the leaderboard and predictions freely. Log in only when you want to enter or change your own scores.</div>
@@ -576,13 +578,15 @@ function renderAll(){
       if(!isYou&&!locked){const has=rec&&rec.h!==""&&rec.a!=="";cells+=`<td class="cell masked"><span class="sc">${has?'✅':'❌'}</span></td>`;return;}
       if(!rec||rec.h===""||rec.a===""){cells+=`<td class="cell empty${played?' played':''}">–</td>`;return;}
       const h=+rec.h,a=+rec.a;let rn,rc;if(h>a){rn=f.home_code;rc="home";}else if(a>h){rn=f.away_code;rc="away";}else{if(isKO(num)&&rec.prog){rn=(rec.prog==="H"?f.home_code:f.away_code)+" (thru)";rc="draw";}else{rn="Draw";rc="draw";}}
-      let perfect=false;
+  let perfect=false, ptsBadge="";
       if(played){
         const pts=scoreMatch(rec,results[num],isKO(num),num);
         const maxFor=(num===FINAL_MATCH)?16:8;
         perfect = pts===maxFor;
+        if(pts!==null) ptsBadge=`<span class="pts-badge">${pts} pts</span>`;
       }
-      cells+=`<td class="cell${played?' played':''}${perfect?' perfect':''}"><span class="sc">${rec.h}–${rec.a}</span><span class="rs ${rc}">${rn}</span></td>`;
+      cells+=`<td class="cell${played?' played':''}${perfect?' perfect':''}"><span class="sc">${rec.h}–${rec.a}</span><span class="rs ${rc}">${rn}</span>${ptsBadge}</td>`;
+
 
     });
     body+=`<tr class="${isYou?'you-row':''}"><td class="namecol${isYou?' you':''}">${p}${isYou?' (you)':''}</td>${cells}</tr>`;});
