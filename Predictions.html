@@ -583,7 +583,7 @@ function renderAll(){
         const pts=scoreMatch(rec,results[num],isKO(num),num);
         const maxFor=(num===FINAL_MATCH)?16:8;
         perfect = pts===maxFor;
-        if(pts!==null) ptsBadge=`<span class="pts-badge">${pts} pts</span>`;
+        if(pts!==null) ptsBadge=`<span class="pts-badge">${pts}</span>`;
       }
       cells+=`<td class="cell${played?' played':''}${perfect?' perfect':''}"><span class="sc">${rec.h}–${rec.a}</span><span class="rs ${rc}">${rn}</span>${ptsBadge}</td>`;
 
